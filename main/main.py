@@ -5,13 +5,20 @@ Architecture:
     - Thread 2+     : user-defined worker threads with read-only access to storage
 """
 
+# TODO
+# do readme
+# auto find files from data_structure folder then retreive metaData class
+# create a folder for worker functions
+
 from datetime import datetime
+import time
 import threading
 
 from support.server import ReadOnlyStorage, threadManager
 
 from data_structures.projectCars2_packets import MetaData as PC2MetaData
 from data_structures.f1_2024_struct import MetaData as F12024MetaData
+from data_structures.beamng_drive import MetaData as BNGMetaData
 
 
 def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_event: threading.Event) -> None:
@@ -22,25 +29,49 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         # do something here
         # -----------------------------------------------
 
-        # demo - stopping within thread
+        time.sleep(0.2)
+        # * demo - stopping within thread
         # a = input("enter [a]: ")
         # if a == "a":
         #     stop_event.set()
 
-        # demo - printing your current speed in f1 24
+        # * demo - printing your current speed in f1 24
+        # data = snapshot.get("lastestData")
+        # if data:
+        #     telemetry = data.get("PacketCarTelemetryData")
+        #     if telemetry:
+        #         speed = telemetry.m_carTelemetryData[0].m_speed
+        #         print(speed)
+
+        # * demo - printing your current speed in beamng
+
         data = snapshot.get("lastestData")
         if data:
-            telemetry = data.get("PacketCarTelemetryData")
+            telemetry = data.get("TelemetryData")
             if telemetry:
-                speed = telemetry.m_carTelemetryData[0].m_speed
-                print(speed)
+                speed = telemetry.speed
+                roundedSpeed = round(speed * 2.23694, 2)
+                gear = telemetry.gear if telemetry.gear else "\x00"
+                print(f"{ord(gear)-1} : {roundedSpeed}")
+
+        # * demo - printing your current speed in project cars 2
+        # data = snapshot.get("lastestData")
+        # if data:
+        #     telemetry = data.get("TelemetryData")
+        #     if telemetry:
+        #         speed = telemetry.sSpeed
+        #         print(round(speed * 2.23694, 2))
 
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
 
 
 def main() -> None:
     # Setup active metadata and local IP
-    ACTIVE_META = F12024MetaData
+    # ACTIVE_META = F12024MetaData
+    ACTIVE_META = BNGMetaData
+    # ACTIVE_META = PC2MetaData
+
+    # localIP = "127.0.0.1"
     localIP = "0.0.0.0"
 
     activeThreads = threadManager()

@@ -1,2 +1,3 @@
 /main/temp.py
-main/__pycache__/*
+main/support/__pycache__/*
+main/data_structures/__pycache__/*

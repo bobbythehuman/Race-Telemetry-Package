@@ -1,11 +1,19 @@
 import ctypes
 from enum import Enum
-from typing import Union
 
+'''
+packet information from
+https://github.com/MacManley/project-cars-2-udp
+and
+https://web.archive.org/web/20220818194601/https://www.projectcarsgame.com/two/wp-content/uploads/sites/4/2018/01/sms_udp_definitions.hh
+however this is outdated and the only one accessable from:
+https://web.archive.org/web/20230201014848/https://www.projectcarsgame.com/two/project-cars-2-api/#1526544680534-1e10fcf7-b72a
+
+'''
 
 class DataTypes(Enum):
     STRUCTURE = ctypes.LittleEndianStructure
-    UNION = ctypes.Union
+    # UNION = ctypes.Union
 
     SIGNED_BYTE = ctypes.c_byte
     SIGNED_SHORT = ctypes.c_short
@@ -19,8 +27,15 @@ class DataTypes(Enum):
 
 
 ### Packet Header
+#
+#   Description: 
+#    Base definitions of udp packet structure
+#    The data definition mostly follows the data set for the Shared memory, so it is strongly suggested to have a look to the
+#    latest shared memory header if you have problem decoding any data.
+#
 
 class PacketHeader(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs
     _fields_ = [
         ("mPacketNumber",           DataTypes.UNSIGNED_INT.value),     # Counter reflecting all the packets that have been sent during the game run
         ("mCategoryPacketNumber",   DataTypes.UNSIGNED_INT.value),     # Counter of the packet groups belonging to the given category
@@ -33,6 +48,11 @@ class PacketHeader(DataTypes.STRUCTURE.value):
 
 ### Telemetry Packet -- Packet 0
 
+#
+#   Telemetry data for the viewed participant. 
+#   Frequency: Each tick of the UDP streamer how it is set in the options
+#   When it is sent: in race
+#
 
 class TelemetryData(DataTypes.STRUCTURE.value):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (556 instead of at least 564 bytes)
@@ -113,11 +133,17 @@ class TelemetryData(DataTypes.STRUCTURE.value):
         ("sTurboBoostPressure",         DataTypes.FLOAT.value),
         ("sFullPosition",               DataTypes.FLOAT.value * 3),
         ("sBrakeBias",                  DataTypes.UNSIGNED_BYTE.value),
+        ("sTickCount",                  DataTypes.UNSIGNED_INT.value),
     ]
 
 
 ### Race Packet -- Packet 1
 
+#
+#   Race stats data.
+#   Frequency: Logaritmic decrease
+#   When it is sent: Counter resets on entering InRace state and again each time any of the values changes
+#
 
 class RaceData(DataTypes.STRUCTURE.value):
     _fields_ = [
@@ -142,6 +168,13 @@ class RaceData(DataTypes.STRUCTURE.value):
 
 ### Participants Packet -- Packet 2
 
+#
+#   Participant names data.
+#   Frequency: Logarithmic decrease
+#   When it is sent: Counter resets on entering InRace state and again each  the participants change. 
+#   The sParticipantsChangedTimestamp represent last time the participants has changed and is to be used to sync
+#   this information with the rest of the participant related packets
+#
 
 class ParticipantsData(DataTypes.STRUCTURE.value):
     _fields_ = [
@@ -155,6 +188,11 @@ class ParticipantsData(DataTypes.STRUCTURE.value):
 
 ### Timings Packet -- Packet 3
 
+#
+#   Participant timings data. 
+#   Frequency: Each tick of the UDP streamer how it is set in the options.
+#   When it is sent: in race
+#
 
 class ParticipantsInfo(DataTypes.STRUCTURE.value):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1059 instead of at least 1192 bytes)
@@ -185,15 +223,23 @@ class TimingsData(DataTypes.STRUCTURE.value):
         ("sSplitTimeAhead",                 DataTypes.FLOAT.value),
         ("sSplitTimeBehind",                DataTypes.FLOAT.value),
         ("sSplitTime",                      DataTypes.FLOAT.value),
-        ("sParticipants",                    ParticipantsInfo * 32),
+        ("sParticipants",                   ParticipantsInfo * 32),
         ("sLocalParticipantIndex",          DataTypes.UNSIGNED_SHORT.value),
+        ("sTickCount",                      DataTypes.UNSIGNED_INT.value),
     ]
 
 
 ### Game State Packet -- Packet 4
 
+#
+#   Game State. 
+#   Frequency: Each 5s while being in Main Menu, Each 10s while being in race + on each change Main Menu<->Race several times.
+#   the frequency in Race is increased in case of weather timer being faster  up to each 5s for 30x time progression
+#   When it is sent: Always
+#
 
 class GameStateData(DataTypes.STRUCTURE.value):
+    _pack_ = 1
     _fields_ = [
         ("s_header",                PacketHeader),
         ("mBuildVersionNumber",     DataTypes.UNSIGNED_SHORT.value),
@@ -210,6 +256,11 @@ class GameStateData(DataTypes.STRUCTURE.value):
 
 ### Time Stats Packet -- Packet 7
 
+#
+#   Participant Stats and records
+#   Frequency: When entering the race and each time any of the values change, so basically each time any of the participants crosses a sector boundary.
+#   When it is sent: In Race
+#
 
 class ParticipantStatsInfo(DataTypes.STRUCTURE.value):
     _fields_ = [
@@ -240,6 +291,14 @@ class TimeStatsData(DataTypes.STRUCTURE.value):
 
 ### Participants Vehicle Names Packet / Vehicle Class Names Packet -- Packet 8
 
+#
+#   Participant Vehicle names
+#   Frequency: Logarithmic decrease
+#   When it is sent: Counter resets on entering InRace state and again each  the participants change. 
+#	The sParticipantsChangedTimestamp represent last time the participants has changed and is  to be used to sync 
+#	this information with the rest of the participant related packets
+#   Note: This data is always sent with at least 2 packets. The 1-(n-1) holds the vehicle name for each participant
+#	The last one holding the class names.
 
 class VehicleInfo(DataTypes.STRUCTURE.value):
     _fields_ = [
@@ -279,10 +338,10 @@ class MetaData:
     headerInfo: tuple[int, type] = (12, PacketHeader)
     packetIDAttribute: str = 'mPacketType'
     packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((556, TelemetryData),),
+        0: ((559, TelemetryData),),
         1: ((308, RaceData),),
         2: ((1136, ParticipantsData),),
-        3: ((1059, TimingsData),),
+        3: ((1063, TimingsData),),
         4: ((24, GameStateData),),
         7: ((1040, TimeStatsData),),
         8: ((1452, VehicleClassNamesData), (1164, ParticipantVehicleNamesData),),

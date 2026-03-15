@@ -1,6 +1,6 @@
 import socket
-from dataclasses import dataclass
 import threading
+from dataclasses import dataclass
 from typing import Generator, Tuple, Type, Any, Optional
 
 from support.digestion import dynamic_ingest
@@ -169,8 +169,8 @@ def construct_packet(data: bytes, packetID: int, packetInfo) -> type | None:
         try:
             rawPacket = packetStruct.from_buffer_copy(data[0:packetBufferSize])
         except ValueError as exc:
-            raise ValueError(f"[Error]\tFailed to construct packet {packetStruct.__name__}: {exc}")
-            # continue
+            # raise ValueError(f"[Error]\tFailed to construct packet {packetStruct.__name__}: {exc}")
+            continue
         else:
             packet = dynamic_ingest(rawPacket)
             structureMatch = True
@@ -183,6 +183,32 @@ def construct_packet(data: bytes, packetID: int, packetInfo) -> type | None:
     return packet
 
 
+def retrieve_packet(data: bytes, MetaData) -> tuple[type | None, int, Any]:
+    _headerPacketStruct = MetaData.headerInfo[1]
+
+    if _headerPacketStruct:
+        _headerBufferSize = MetaData.headerInfo[0]
+        _packetIDName = MetaData.packetIDAttribute
+
+        rawHeaderPacket = _headerPacketStruct.from_buffer_copy(data[0:_headerBufferSize])
+        headerPacket = dynamic_ingest(rawHeaderPacket)
+
+        packetID = int(getattr(headerPacket, _packetIDName))
+    else:
+        headerPacket = None
+        packetID = 0
+
+    packetInfo = MetaData.packetInfo.get(packetID)
+
+    if packetInfo:
+        packet = construct_packet(data, packetID, packetInfo)
+    else:
+        print("ID not found")
+        packet = None
+
+    return packet, packetID, headerPacket
+
+
 # ---------------------------------------------------------------------------
 # Thread 1 — Network Listener
 # ---------------------------------------------------------------------------
@@ -190,7 +216,7 @@ def construct_packet(data: bytes, packetID: int, packetInfo) -> type | None:
 
 def get_telemetry(
     MetaData: Type, IP: str = "0.0.0.0", stop_event: Optional[threading.Event] = None
-) -> Generator[Tuple[Type[Any] | None, int, Type[Any]], None, None]:
+) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
 
     UDP_IP = IP
     UDP_PORT = MetaData.port
@@ -207,28 +233,26 @@ def get_telemetry(
     print(f"[NTWK] [Info]\tServer started on {UDP_IP}:{UDP_PORT}")
 
     if not stop_event:
+        # * Method 1
+        # no stop_event avaiable, probably running single threaded
         print("[NTWK] [Warning]\tNo stop event provided, running indefinitely. Use Ctrl+C to stop.")
         while True:
             try:
                 data, _ = sock.recvfrom(_fullBufferSize)
+            except TimeoutError:
+                continue
             except KeyboardInterrupt:
                 print("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
                 break
+            except OSError as exc:
+                print(f"[NTWK] [Error]\tSocket error: {exc}")
+                break
 
-            rawHeaderPacket = _headerPacketStruct.from_buffer_copy(data[0:_headerBufferSize])
-            headerPacket = dynamic_ingest(rawHeaderPacket)
-
-            packetID = int(getattr(headerPacket, _packetIDName))
-            packetInfo = MetaData.packetInfo.get(packetID)
-
-            if packetInfo:
-                packet = construct_packet(data, packetID, packetInfo)
-            else:
-                print("ID not found")
-                packet = None
+            packet, packetID, headerPacket = retrieve_packet(data, MetaData)
 
             yield packet, packetID, headerPacket
     else:
+        # * Method 2
         # only run if stop_event is provided, allowing for graceful shutdown
         print("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
         while not stop_event.is_set():
@@ -239,25 +263,15 @@ def get_telemetry(
             except KeyboardInterrupt:
                 print("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
                 stop_event.set()
-                break
             except OSError as exc:
                 print(f"[NTWK] [Error]\tSocket error: {exc}")
                 stop_event.set()
-                break
 
-            rawHeaderPacket = _headerPacketStruct.from_buffer_copy(data[0:_headerBufferSize])
-            headerPacket = dynamic_ingest(rawHeaderPacket)
-
-            packetID = int(getattr(headerPacket, _packetIDName))
-            packetInfo = MetaData.packetInfo.get(packetID)
-
-            if packetInfo:
-                packet = construct_packet(data, packetID, packetInfo)
-            else:
-                print("ID not found")
-                packet = None
+            packet, packetID, headerPacket = retrieve_packet(data, MetaData)
 
             yield packet, packetID, headerPacket
+
+    sock.close()
     print("[NTWK] [Info]\tServer shutting down.")
 
 
