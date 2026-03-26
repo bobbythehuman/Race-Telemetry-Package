@@ -55,6 +55,9 @@ def dynamic_ingest(packet):
         elif isinstance(value, float):
             value = round(value, 5)
 
+        elif isinstance(value, bool):
+            pass
+
         elif isinstance(value, ctypes.Array):
             value = list(value)
 

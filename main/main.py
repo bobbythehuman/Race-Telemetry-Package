@@ -15,11 +15,12 @@ import threading
 
 from support.server import ReadOnlyStorage, multiThreadedTelemetry, get_telemetry
 
-from data_structures.f1_2024_struct import MetaData as F12024MetaData
+from data_structures.F1_2024_struct import MetaData as F12024MetaData
 from data_structures.BNG_struct import MetaData as BNGMetaData
 from data_structures.PC2_struct import MetaData as PC2MetaData
 from data_structures.FH5_struct import MetaData as FH5MetaData
 from data_structures.FM8_struct import MetaData as FM8MetaData
+from data_structures.AC_struct import MetaData as ACMetaData
 
 # from data_structures.GT7_struct import MetaData as GT7MetaData
 
@@ -84,6 +85,18 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #         speed = telemetry.speed
         #         print(round(speed * 2.23694, 2))
 
+        # * demo - printing your current speed in assetto corsa
+        data = snapshot.get("lastestData")
+        if data:
+            telemetry = data.get("RTCarData")
+            if telemetry:
+                speed = telemetry.gear
+                print(speed)
+            lapData = data.get("RTLapData")
+            if lapData:
+                lap = telemetry.lap
+                print(lap)
+
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
 
 
@@ -92,20 +105,24 @@ def main() -> None:
     # ACTIVE_META = F12024MetaData
     # ACTIVE_META = BNGMetaData
     # ACTIVE_META = PC2MetaData
-    ACTIVE_META = FM8MetaData
+    # ACTIVE_META = FM8MetaData
     # ACTIVE_META = FH5MetaData
     # ACTIVE_META = GT7MetaData
+    ACTIVE_META = ACMetaData
 
-    # localIP = "127.0.0.1"
-    localIP = "0.0.0.0"
+    # --
+
+    localIP = "127.0.0.1"
+    # localIP = "0.0.0.0"
 
     # the ip of the device that is sending the data/ running the game
     sendIP = "192.168.1.161"
 
+    # setup
     activeThreads = multiThreadedTelemetry()
     activeThreads.updateMeta(ACTIVE_META)
     activeThreads.updateIP(localIP)
-    activeThreads.updateSendIP(sendIP)
+    activeThreads.updateSendIP(localIP)
 
     activeThreads.addWorkerThread(example_worker_thread)
 

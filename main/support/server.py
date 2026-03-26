@@ -72,7 +72,7 @@ class ReadOnlyStorage:
 
 class multiThreadedTelemetry:
     def __init__(self):
-        self.ACTIVE_META = None
+        self.ACTIVE_METADATA = None
         self.IP = "0.0.0.0"
         self.destinationIP = None
 
@@ -87,10 +87,12 @@ class multiThreadedTelemetry:
         self.workersAreWorking = False
         self.threadCount = 0
 
+    # user controlled functions
+
     def updateMeta(self, MetaData):
-        if self.ACTIVE_META != MetaData:
-            self.ACTIVE_META = MetaData
-            self.activeStorage = CentralStorage(self.ACTIVE_META)
+        if self.ACTIVE_METADATA != MetaData:
+            self.ACTIVE_METADATA = MetaData
+            self.activeStorage = CentralStorage(self.ACTIVE_METADATA)
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
 
     def updateIP(self, ip: str):
@@ -109,8 +111,48 @@ class multiThreadedTelemetry:
         )
         self.workerThreads.update({self.threadCount: workerThread})
 
+    def manualStop(self, target: bool):
+        self.manuallyStop = target
+
+    # misc functions
+    def metaDataCheck(self, value: str):
+        if hasattr(self.ACTIVE_METADATA, value):
+            return getattr(self.ACTIVE_METADATA, value)
+            # _heartBeatPort = self.ACTIVE_METADATA.value
+        else:
+            return None
+            # _heartBeatPort = None
+
+    def unpackMetaData(self):
+        self.mainPort = self.metaDataCheck("port")
+        self.fullBufferSize = self.metaDataCheck("fullBufferSize")
+
+        self.heartBeatPort = self.metaDataCheck("heartBeatPort")
+        self.heartBeatFunc = self.metaDataCheck("heartBeatFunc")
+
+        self.handShakePort = self.metaDataCheck("handShakePort")
+        self.handShakeFunc = self.metaDataCheck("handShakeFunc")
+
+        self.decryptionFunc = self.metaDataCheck("decrytionFunc")
+
+        self.headerInfo = self.metaDataCheck("headerInfo")
+        self.packetIDAttr = self.metaDataCheck("packetIDAttribute")
+
+        self.packetInfo = self.metaDataCheck("packetInfo")
+
+    def wait(self, time: float):
+        self.stop_event.wait(time)
+
+    def triggerStop(self):
+        self.stop_event.set()
+
+    def isStillActive(self) -> bool:
+        return self.stop_event.is_set()
+
+    # start and stop functions
+
     def startThreads(self) -> None:
-        if not self.ACTIVE_META:
+        if not self.ACTIVE_METADATA:
             return
         if not self.IP:
             return
@@ -118,7 +160,7 @@ class multiThreadedTelemetry:
         self.networkThread = threading.Thread(
             target=network_listener,
             kwargs={
-                "MetaData": self.ACTIVE_META,
+                "MetaData": self.ACTIVE_METADATA,
                 "IP": self.IP,
                 "storage": self.activeStorage,
                 "stop_event": self.stop_event,
@@ -134,17 +176,23 @@ class multiThreadedTelemetry:
 
         self.workersAreWorking = True
 
-    def isStillActive(self) -> bool:
-        return self.stop_event.is_set()
+    def waitForStopSignal(self):
+        endProgram = ""
+        try:
+            while not self.isStillActive():
+                self.wait(0.5)
 
-    def wait(self, time: float):
-        self.stop_event.wait(time)
+                if self.manuallyStop:
+                    # only stop threads here if they dont get stopped any where else
+                    endProgram = input(f"[Q] to quit the program: ")
+                    if endProgram.lower() == "q":
+                        self.triggerStop()
 
-    def triggerStop(self):
-        self.stop_event.set()
-
-    def manualStop(self, target):
-        self.manuallyStop = target
+        except KeyboardInterrupt:
+            print("\n[MAIN] [INFO]\tKeyboardInterrupt received.")
+        finally:
+            print("[MAIN] [INFO]\tStopping all threads\n")
+            self.stopThreads()
 
     def stopThreads(self):
         if not self.workersAreWorking:
@@ -170,23 +218,7 @@ class multiThreadedTelemetry:
         self.waitForStopSignal()
         print("[MAIN] [INFO]\tEnd at ", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
 
-    def waitForStopSignal(self):
-        endProgram = ""
-        try:
-            while not self.isStillActive():
-                self.wait(0.5)
-
-                if self.manuallyStop:
-                    # only stop threads here if they dont get stopped any where else
-                    endProgram = input(f"[Q] to quit the program: ")
-                    if endProgram.lower() == "q":
-                        self.triggerStop()
-
-        except KeyboardInterrupt:
-            print("\n[MAIN] [INFO]\tKeyboardInterrupt received.")
-        finally:
-            print("[MAIN] [INFO]\tStopping all threads\n")
-            self.stopThreads()
+    # packet function
 
 
 # ---------------------------------------------------------------------------
@@ -224,9 +256,9 @@ def construct_packet(data: bytes, packetID: int, packetInfo) -> type | None:
         print(f"[Warning]\tNo matching packet buffer size [{packetSizes}] for data length {dataLength}")
         packet = None
 
-    if not structureMatch:
-        print(f"[Error]\tNo matching structure found for packet ID {packetID} with data length {len(data)}")
-        packet = None
+    # if not structureMatch:
+    #     print(f"[Error]\tNo matching structure found for packet ID {packetID} with data length {len(data)}")
+    #     packet = None
 
     return packet
 
@@ -280,16 +312,18 @@ def get_telemetry(
         heartBeat = MetaData.heartBeatFunc
     else:
         heartBeat = None
-
-    if hasattr(MetaData, "destinationPort"):
-        _destinationPort = MetaData.destinationPort
+    # get heart beat port
+    if hasattr(MetaData, "heartBearPort"):
+        _heartBeatPort = MetaData.heartBearPort
     else:
-        _destinationPort = None
+        _heartBeatPort = None
 
     HEARTBEAT_INTERVAL = 5
     PACKET_COUNTER = 0
     if heartBeat and not destinationIP:
         raise Exception(f"Heart beat is present, but no destination IP was provided!")
+    else:
+        heartBeatDestination = (destinationIP, _heartBeatPort)
 
     # if the game data requires decrytion/ de-ciphering
     if hasattr(MetaData, "decrytionFunc"):
@@ -297,11 +331,29 @@ def get_telemetry(
     else:
         _decryptionAlgorithm = None
 
+    # if the game requires a hand shake
+    if hasattr(MetaData, "handShakePort"):
+        _handShakePort = MetaData.handShakePort
+    else:
+        _handShakePort = None
+    if hasattr(MetaData, "handShakeFunc"):
+        handShake = MetaData.handShakeFunc
+    else:
+        handShake = None
+    if handShake and not destinationIP:
+        raise Exception(f"Hand shake is present, but no destination IP was provided!")
+    else:
+        handShakeDestination = (destinationIP, _handShakePort)
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # listen to occupied ports
     sock.settimeout(1.0)  # allows checking stop_event periodically
     sock.bind((UDP_IP, UDP_PORT))
 
     print(f"[NTWK] [Info]\tServer started on {UDP_IP}:{UDP_PORT}")
+
+    if handShake:
+        handShake[0](sock, handShakeDestination)
 
     if not stop_event:
         # * Method 1
@@ -311,7 +363,7 @@ def get_telemetry(
         while not manuallyStopped:
             if heartBeat:
                 if PACKET_COUNTER % HEARTBEAT_INTERVAL == 0:
-                    heartBeat(sock, (destinationIP, _destinationPort))
+                    heartBeat(sock, heartBeatDestination)
                     PACKET_COUNTER += 1
                 else:
                     PACKET_COUNTER = 0
@@ -320,7 +372,7 @@ def get_telemetry(
                 data, _ = sock.recvfrom(_fullBufferSize)
             except TimeoutError:
                 if heartBeat:
-                    heartBeat(sock, (destinationIP, _destinationPort))
+                    heartBeat(sock, heartBeatDestination)
                     PACKET_COUNTER = 0
                 # continue
             except KeyboardInterrupt:
@@ -345,7 +397,7 @@ def get_telemetry(
         while not stop_event.is_set():
             if heartBeat:
                 if PACKET_COUNTER % HEARTBEAT_INTERVAL == 0:
-                    heartBeat(sock, (destinationIP, _destinationPort))
+                    heartBeat(sock, heartBeatDestination)
                     PACKET_COUNTER += 1
                 else:
                     PACKET_COUNTER = 0
@@ -354,7 +406,7 @@ def get_telemetry(
                 data, _ = sock.recvfrom(_fullBufferSize)
             except TimeoutError:
                 if heartBeat:
-                    heartBeat(sock, (destinationIP, _destinationPort))
+                    heartBeat(sock, heartBeatDestination)
                     PACKET_COUNTER = 0
                 # continue
             except KeyboardInterrupt:
@@ -373,6 +425,8 @@ def get_telemetry(
 
                 yield packet, packetID, headerPacket
 
+    if handShake:
+        handShake[1](sock, handShakeDestination)
     sock.close()
     print("[NTWK] [Info]\tServer shutting down.")
 
