@@ -5,12 +5,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from data_structures.GT7_struct import MetaData
-from support.server import get_telemetry
+from support.server import telemetryManager
 
 # the UP of the PS5
 sourceIP = "192.168.1.1"
 
-for packet, packetID, headerPacket in get_telemetry(MetaData, destinationIP=sourceIP):
+telemetry = telemetryManager()
+telemetry.isMultiThreaded(False)
+telemetry.updateMeta(MetaData)
+telemetry.updateSendIP(sourceIP)
+
+for packet, packetID, headerPacket in telemetry.get_telemetry():
     if not packet:
         continue
 

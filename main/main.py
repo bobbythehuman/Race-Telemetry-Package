@@ -13,7 +13,7 @@ Architecture:
 import time
 import threading
 
-from support.server import ReadOnlyStorage, multiThreadedTelemetry, get_telemetry
+from support.server import ReadOnlyStorage, telemetryManager
 
 from data_structures.F1_2024_struct import MetaData as F12024MetaData
 from data_structures.BNG_struct import MetaData as BNGMetaData
@@ -119,7 +119,7 @@ def main() -> None:
     sendIP = "192.168.1.161"
 
     # setup
-    activeThreads = multiThreadedTelemetry()
+    activeThreads = telemetryManager()
     activeThreads.updateMeta(ACTIVE_META)
     activeThreads.updateIP(localIP)
     activeThreads.updateSendIP(localIP)
@@ -128,9 +128,8 @@ def main() -> None:
 
     activeThreads.StartTelemetry()
 
-    # for packet, packetID, headerPacket in get_telemetry(ACTIVE_META):
+    # for packet, packetID, headerPacket in activeThreads.get_telemetry():
     #     if packetID == 6:
-
     #         if not packet:
     #             continue
 

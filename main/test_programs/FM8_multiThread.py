@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from data_structures.FM8_struct import MetaData
-from support.server import multiThreadedTelemetry
+from support.server import telemetryManager
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -41,7 +41,7 @@ def displayFormat(worker_id: int, ro_storage, stop_event):
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
 
 
-activeThreads = multiThreadedTelemetry()
+activeThreads = telemetryManager()
 activeThreads.updateMeta(MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayFormat)

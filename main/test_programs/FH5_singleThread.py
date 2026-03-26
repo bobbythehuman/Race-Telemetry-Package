@@ -5,9 +5,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from data_structures.FH5_struct import MetaData
-from support.server import get_telemetry
+from support.server import telemetryManager
 
-for packet, packetID, headerPacket in get_telemetry(MetaData):
+telemetry = telemetryManager()
+telemetry.isMultiThreaded(False)
+telemetry.updateMeta(MetaData)
+
+for packet, packetID, headerPacket in telemetry.get_telemetry():
     if not packet:
         continue
 

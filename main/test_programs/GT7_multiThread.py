@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from data_structures.BNG_struct import MetaData
-from support.server import multiThreadedTelemetry
+from support.server import telemetryManager
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -44,7 +44,7 @@ def displayGear(worker_id: int, ro_storage, stop_event):
 # the IP of the PS5
 sourceIP = "192.168.1.1"
 
-activeThreads = multiThreadedTelemetry()
+activeThreads = telemetryManager()
 activeThreads.updateMeta(MetaData)
 # add the source IP of the PS5
 activeThreads.updateSendIP(sourceIP)

@@ -4,10 +4,14 @@ from pathlib import Path
 # Add parent directory to path so imports work when running this file directly
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from data_structures.f1_2024_struct import MetaData
-from support.server import get_telemetry
+from data_structures.F1_2024_struct import MetaData
+from support.server import telemetryManager
 
-for packet, packetID, headerPacket in get_telemetry(MetaData):
+telemetry = telemetryManager()
+telemetry.isMultiThreaded(False)
+telemetry.updateMeta(MetaData)
+
+for packet, packetID, headerPacket in telemetry.get_telemetry():
     if not packet:
         continue
 

@@ -4,8 +4,8 @@ from pathlib import Path
 # Add parent directory to path so imports work when running this file directly
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from data_structures.f1_2024_struct import MetaData
-from support.server import multiThreadedTelemetry
+from data_structures.F1_2024_struct import MetaData
+from support.server import telemetryManager
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -42,7 +42,7 @@ def displayCurrentLap(worker_id: int, ro_storage, stop_event):
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
 
 
-activeThreads = multiThreadedTelemetry()
+activeThreads = telemetryManager()
 activeThreads.updateMeta(MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayCurrentLap)
