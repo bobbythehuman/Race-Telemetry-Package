@@ -300,6 +300,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - BeamNG Drive
 - F1 2023 (untested)
 - F1 2024
+- F1 2025 (untested)
 - Forza Horizon 4
 - Forza Horizon 5
 - Forza Motorsport 7 (untested)
