@@ -20,7 +20,7 @@ class DataTypes(Enum):
     DOUBLE = ctypes.c_double
 
 
-### Packet Header
+### Packet Header -- 32 bytes
 
 
 class PacketHeader(DataTypes.STRUCTURE.value):
@@ -139,8 +139,8 @@ class PacketSessionData(DataTypes.STRUCTURE.value):
         ("m_gearboxAssist",                     DataTypes.UNSIGNED_INT8.value),         # 1 = manual, 2 = manual & suggested gear, 3 = auto
         ("m_pitAssist",                         DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
         ("m_pitReleaseAssist",                  DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
-        ("m_ersAssist",                         DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
-        ("m_drsAssist",                         DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
+        ("m_ERSAssist",                         DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
+        ("m_DRSAssist",                         DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
         ("m_dynamicRacingLine",                 DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = corners only, 2 = full
         ("m_dynamicRacingLineType",             DataTypes.UNSIGNED_INT8.value),         # 0 = 2D, 1 = 3D
         ("m_gameMode",                          DataTypes.UNSIGNED_INT8.value),         # Game mode id - see appendix
