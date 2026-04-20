@@ -26,7 +26,7 @@ class DataTypes(Enum):
 class PacketHeader(DataTypes.STRUCTURE.value):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),    # 2022
+        ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),    # 2021
         ("m_gameMajorVersion",          DataTypes.UNSIGNED_INT8.value),     # Game major version - "X.00"
         ("m_gameMinorVersion",          DataTypes.UNSIGNED_INT8.value),     # Game minor version - "1.XX"
         ("m_packetVersion",             DataTypes.UNSIGNED_INT8.value),     # Version of this packet type, all start from 1
@@ -90,7 +90,7 @@ class PacketMotionData(DataTypes.STRUCTURE.value):
     ]
 
 
-### Session Packet -- 2 per second -- 632 bytes
+### Session Packet -- 2 per second -- 625 bytes
 
 
 class MarshalZone(DataTypes.STRUCTURE.value):
@@ -139,7 +139,7 @@ class PacketSessionData(DataTypes.STRUCTURE.value):
         ("m_safetyCarStatus",                   DataTypes.UNSIGNED_INT8.value),         # 0 = no safety car, 1 = full, 2 = virtual, 3 = formation lap
         ("m_networkGame",                       DataTypes.UNSIGNED_INT8.value),         # 0 = offline, 1 = online
         ("m_numWeatherForecastSamples",         DataTypes.UNSIGNED_INT8.value),         # Number of weather samples to follow
-        ("m_weatherForecastSamples",            WeatherForecastSample * 64),            # Array of weather forecast samples
+        ("m_weatherForecastSamples",            WeatherForecastSample * 56),            # Array of weather forecast samples
         ("m_forecastAccuracy",                  DataTypes.UNSIGNED_INT8.value),         # 0 = Perfect, 1 = Approximate
         ("m_aiDifficulty",                      DataTypes.UNSIGNED_INT8.value),         # AI Difficulty rating – 0-110
         ("m_seasonLinkIdentifier",              DataTypes.UNSIGNED_INT32.value),        # Identifier for season - persists across saves
@@ -157,14 +157,10 @@ class PacketSessionData(DataTypes.STRUCTURE.value):
         ("m_DRSAssist",                         DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
         ("m_dynamicRacingLine",                 DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = corners only, 2 = full
         ("m_dynamicRacingLineType",             DataTypes.UNSIGNED_INT8.value),         # 0 = 2D, 1 = 3D
-        ("m_gameMode",                          DataTypes.UNSIGNED_INT8.value),         # Game mode id - see appendix
-        ("m_ruleSet",                           DataTypes.UNSIGNED_INT8.value),         # Ruleset - see appendix
-        ("m_timeOfDay",                         DataTypes.UNSIGNED_INT32.value),        # Local time of day - minutes since midnight
-        ("m_sessionLength",                     DataTypes.UNSIGNED_INT8.value),         # 0 = None, 2 = Very Short, 3 = Short, 4 = Medium, 5 = Medium Long, 6 = Long, 7 = Full
     ]
 
 
-### Lap Data Packet -- Rate as specified in menus -- 972 bytes
+### Lap Data Packet -- Rate as specified in menus -- 970 bytes
 
 
 class LapData(DataTypes.STRUCTURE.value):
@@ -202,12 +198,10 @@ class PacketLapData(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("m_header",                PacketHeader),                      # Header
         ("m_lapData",               LapData * 22),                      # Lap data for all cars on track
-        ("m_timeTrialPBCarIdx",     DataTypes.UNSIGNED_INT8.value),     # Index of Personal Best car in time trial (255 if invalid)
-        ("m_timeTrialRivalCarIdx",  DataTypes.UNSIGNED_INT8.value),     # Index of Rival car in time trial (255 if invalid)
     ]
 
 
-### Event Packet -- When the event occurs -- 40 bytes
+### Event Packet -- When the event occurs -- 36 bytes
 
 
 class FastestLap(DataTypes.STRUCTURE.value):
@@ -252,10 +246,8 @@ class SpeedTrap(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("vehicleIdx",                  DataTypes.UNSIGNED_INT8.value),     # Vehicle index of the vehicle triggering speed trap
         ("speed",                       DataTypes.FLOAT.value),             # Top speed achieved in kilometres per hour
-        ("isOverallFastestInSession",   DataTypes.UNSIGNED_INT8.value),     # Overall fastest speed in session = 1, otherwise 0
-        ("isDriverFastestInSession",    DataTypes.UNSIGNED_INT8.value),     # Fastest speed for driver in session = 1, otherwise 0
-        ("fastestVehicleIdxInSession",  DataTypes.UNSIGNED_INT8.value),     # Vehicle index of the vehicle that is the fastest in this session
-        ("fastestSpeedInSession",       DataTypes.FLOAT.value),             # Speed of the vehicle that is the fastest in this session
+        ("overallFastestInSession",   DataTypes.UNSIGNED_INT8.value),     # Overall fastest speed in session = 1, otherwise 0
+        ("driverFastestInSession",    DataTypes.UNSIGNED_INT8.value),     # Fastest speed for driver in session = 1, otherwise 0
     ]
 
 
@@ -461,7 +453,7 @@ class PacketCarStatusData(DataTypes.STRUCTURE.value):
     ]
 
 
-### Final Classification Packet -- Once at the end of a race -- 1015 bytes
+### Final Classification Packet -- Once at the end of a race -- 839 bytes
 
 
 class FinalClassificationData(DataTypes.STRUCTURE.value):
@@ -480,7 +472,6 @@ class FinalClassificationData(DataTypes.STRUCTURE.value):
         ("m_numTyreStints",     DataTypes.UNSIGNED_INT8.value),         # Number of tyres stints up to maximum
         ("m_tyreStintsActual",  DataTypes.UNSIGNED_INT8.value * 8),     # Actual tyres used by this driver
         ("m_tyreStintsVisual",  DataTypes.UNSIGNED_INT8.value * 8),     # Visual tyres used by this driver
-        ("tyreStintsEndLaps",   DataTypes.UNSIGNED_INT8.value * 8),     # The lap number stints end on
     ]
 
 
@@ -515,7 +506,7 @@ class PacketLobbyInfoData(DataTypes.STRUCTURE.value):
     ]
 
 
-### Car Damage Packet -- 10 per second -- 948 bytes
+### Car Damage Packet -- 10 per second -- 882 bytes
 
 
 class CarDamageData(DataTypes.STRUCTURE.value):
@@ -531,7 +522,6 @@ class CarDamageData(DataTypes.STRUCTURE.value):
         ("m_diffuserDamage",        DataTypes.UNSIGNED_INT8.value),         # Diffuser damage (percentage)
         ("m_sidepodDamage",         DataTypes.UNSIGNED_INT8.value),         # Sidepod damage (percentage)
         ("m_drsFault",              DataTypes.UNSIGNED_INT8.value),         # Indicator for DRS fault, 0 = OK, 1 = fault
-        ("m_ersFault",              DataTypes.UNSIGNED_INT8.value),         # Indicator for ERS fault, 0 = OK, 1 = fault
         ("m_gearBoxDamage",         DataTypes.UNSIGNED_INT8.value),         # Gear box damage (percentage)
         ("m_engineDamage",          DataTypes.UNSIGNED_INT8.value),         # Engine damage (percentage)
         ("m_engineMGUHWear",        DataTypes.UNSIGNED_INT8.value),         # Engine wear MGU-H (percentage)
@@ -540,8 +530,6 @@ class CarDamageData(DataTypes.STRUCTURE.value):
         ("m_engineICEWear",         DataTypes.UNSIGNED_INT8.value),         # Engine wear ICE (percentage)
         ("m_engineMGUKWear",        DataTypes.UNSIGNED_INT8.value),         # Engine wear MGU-K (percentage)
         ("m_engineTCWear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear TC (percentage)
-        ("m_engineBlown",           DataTypes.UNSIGNED_INT8.value),         # Engine blown, 0 = OK, 1 = fault
-        ("m_engineSeized",          DataTypes.UNSIGNED_INT8.value),         # Engine seized, 0 = OK, 1 = fault
     ]
 
 
@@ -617,16 +605,16 @@ class MetaData:
     # standard packet info
     packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
         0: ((1464, PacketMotionData),),                 # Contains all motion data for player’s car – only sent while player is in control
-        1: ((632, PacketSessionData),),                 # Data about the session – track, time left
-        2: ((972, PacketLapData),),                     # Data about all the lap times of cars in the session
-        3: ((40, PacketEventData),),                    # Various notable events that happen during a session
+        1: ((625, PacketSessionData),),                 # Data about the session – track, time left
+        2: ((970, PacketLapData),),                     # Data about all the lap times of cars in the session
+        3: ((36, PacketEventData),),                    # Various notable events that happen during a session
         4: ((1257, PacketParticipantsData),),           # List of participants in the session, mostly relevant for multiplayer
         5: ((1102, PacketCarSetupData),),               # Packet detailing car setups for cars in the race
         6: ((1347, PacketCarTelemetryData),),           # Telemetry data for all cars
         7: ((1058, PacketCarStatusData),),              # Status data for all cars
-        8: ((1015, PacketFinalClassificationData),),    # Final classification confirmation at the end of a race
+        8: ((839, PacketFinalClassificationData),),     # Final classification confirmation at the end of a race
         9: ((1191, PacketLobbyInfoData),),              # Information about players in a multiplayer lobby
-        10: ((948, PacketCarDamageData),),              # Damage status for all cars
+        10: ((882, PacketCarDamageData),),              # Damage status for all cars
         11: ((1155, PacketSessionHistoryData),),        # Lap and tyre data for session
     }
 

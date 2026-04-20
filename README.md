@@ -298,6 +298,8 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 - Assetto Corsa
 - BeamNG Drive
+- F1 2020 (untested)
+- F1 2021 (untested)
 - F1 2022 (untested)
 - F1 2023 (untested)
 - F1 2024
@@ -322,5 +324,9 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 Additional documentation and debugging guides are available in the `Supporting Docs/` folder:
 
+- **Data Output from F1 2021 Link.txt** - Link to [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)
+- **Data Output from F1 22 v16.docx** - Detailed analysis of packet structures and data output for F1 2022 version 16 (official release)
+- **Data Output from F1 23 v29x3.docx** - Detailed analysis of packet structures and data output for F1 2023 version 29x3 (official release)
 - **Data Output from F1 24 v27.2x.docx** - Detailed analysis of packet structures and data output for F1 2024 version 27.2x (official release)
+- **Data Output from F1 25 v3.docx** - Detailed analysis of packet structures and data output for F1 2025 version 3 (official release)
 - **forza debug.txt** - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
