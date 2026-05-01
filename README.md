@@ -1,11 +1,11 @@
 # Race-Telemetry-Package
 
-A single telemetry package that can extract UDP data from multiple racing games including: `<br>`
+A single telemetry package that can extract UDP data from multiple racing games including: <br>
 F1 2020 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon 4, Forza Horizon 5, Forza Motorsport 7, Forza Motorsport 8, Gran Turismo 7, and Assetto Corsa.
 
 ## Features
 
-- Unified package for multiple racing game telemetry protocols
+- Single package for multiple racing game telemetry protocols
 - Support for both single-threaded and multi-threaded operation modes
 - Extensible packet structure system for adding new games
 - Real-time UDP data reception and decoding
@@ -62,7 +62,6 @@ from data_structures.f1_2024_struct import MetaData
 from support.server import telemetryManager
 
 telemetry = telemetryManager()
-# telemetry.isMultiThreaded(False) # currently does nothing
 telemetry.updateMeta(MetaData)
 
 for packet, packetID, headerPacket in telemetry.get_telemetry():
@@ -302,6 +301,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 - Assetto Corsa
 - BeamNG Drive
+- F1 2016 (untested)
 - F1 2017 (untested)
 - F1 2018 (untested)
 - F1 2019 (untested)
