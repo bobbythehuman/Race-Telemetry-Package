@@ -17,9 +17,10 @@ def displaySpeed(worker_id: int, ro_storage, stop_event):
         if data:
             telemetry = data.get("UDPPacket")
             if telemetry:
-                currnetPlayer = telemetry.m_speed
+                packetSpeed = telemetry.m_speed
+                speedValue = round(packetSpeed * 2.237, 2)
 
-                print(f"{currnetPlayer} MPH")
+                print(f"{speedValue} MPH")
 
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
 

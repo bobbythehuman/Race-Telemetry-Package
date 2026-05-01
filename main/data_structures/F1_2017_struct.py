@@ -92,8 +92,8 @@ class UDPPacket(DataTypes.STRUCTURE.value):
         ("m_sector",                    DataTypes.FLOAT.value),     # 0 = sector1, 1 = sector2, 2 = sector3
         ("m_sector1_time",              DataTypes.FLOAT.value),     # time of sector1 (or 0)
         ("m_sector2_time",              DataTypes.FLOAT.value),     # time of sector2 (or 0)
-        ("m_brakes_temp",               DataTypes.FLOAT.value),     # brakes temperature (centigrade)
-        ("m_tyres_pressure",            DataTypes.FLOAT.value),     # tyres pressure PSI
+        ("m_brakes_temp",               DataTypes.FLOAT.value * 4), # brakes temperature (centigrade)
+        ("m_tyres_pressure",            DataTypes.FLOAT.value * 4), # tyres pressure PSI
         ("m_team_info",                 DataTypes.FLOAT.value),     # team ID 
         ("m_total_laps",                DataTypes.FLOAT.value),     # total number of laps in this race
         ("m_track_size",                DataTypes.FLOAT.value),     # track size meters
@@ -111,13 +111,13 @@ class UDPPacket(DataTypes.STRUCTURE.value):
         ("m_ang_vel_x",                 DataTypes.FLOAT.value),     # angular velocity x-component
         ("m_ang_vel_y",                 DataTypes.FLOAT.value),     # angular velocity y-component
         ("m_ang_vel_z",                 DataTypes.FLOAT.value),     # angular velocity z-component
-        ("m_tyres_temperature",         DataTypes.BYTE.value),      # tyres temperature (centigrade)
-        ("m_tyres_wear",                DataTypes.BYTE.value),      # tyre wear percentage
+        ("m_tyres_temperature",         DataTypes.BYTE.value * 4),  # tyres temperature (centigrade)
+        ("m_tyres_wear",                DataTypes.BYTE.value * 4),  # tyre wear percentage
         ("m_tyre_compound",             DataTypes.BYTE.value),      # compound of tyre – 0 = ultra soft, 1 = super soft, 2 = soft, 3 = medium, 4 = hard, 5 = inter, 6 = wet
         ("m_front_brake_bias",          DataTypes.BYTE.value),      # front brake bias (percentage)
         ("m_fuel_mix",                  DataTypes.BYTE.value),      # fuel mix - 0 = lean, 1 = standard, 2 = rich, 3 = max
         ("m_currentLapInvalid",         DataTypes.BYTE.value),      # current lap invalid - 0 = valid, 1 = invalid
-        ("m_tyres_damage",              DataTypes.BYTE.value),      # tyre damage (percentage)
+        ("m_tyres_damage",              DataTypes.BYTE.value * 4),  # tyre damage (percentage)
         ("m_front_left_wing_damage",    DataTypes.BYTE.value),      # front left wing damage (percentage)
         ("m_front_right_wing_damage",   DataTypes.BYTE.value),      # front right wing damage (percentage)
         ("m_rear_wing_damage",          DataTypes.BYTE.value),      # rear wing damage (percentage)
@@ -140,7 +140,7 @@ class UDPPacket(DataTypes.STRUCTURE.value):
         ("m_x_local_velocity",      DataTypes.FLOAT.value),     # Velocity in local space
         ("m_y_local_velocity",      DataTypes.FLOAT.value),     # Velocity in local space
         ("m_z_local_velocity",      DataTypes.FLOAT.value),     # Velocity in local space
-        ("m_susp_acceleration",     DataTypes.FLOAT.value),     # RL, RR, FL, FR
+        ("m_susp_acceleration",     DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
         ("m_ang_acc_x",             DataTypes.FLOAT.value),     # angular acceleration x-component
         ("m_ang_acc_y",             DataTypes.FLOAT.value),     # angular acceleration x-component
         ("m_ang_acc_z",             DataTypes.FLOAT.value),     # angular acceleration x-component

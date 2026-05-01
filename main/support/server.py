@@ -242,7 +242,7 @@ class telemetryManager:
                 else:
                     packet = dynamic_ingest(rawPacket)
                     break
-        if len(self.packetInfo) == len(packetSizes):
+        if len(possiblePacketStruct) == len(packetSizes):
             print(f"[Warning]\tNo matching packet buffer size [{packetSizes}] for data length {dataLength}")
             packet = None
         return packet

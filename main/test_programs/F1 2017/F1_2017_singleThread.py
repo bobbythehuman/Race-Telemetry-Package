@@ -19,6 +19,6 @@ for packet, packetID, headerPacket in telemetry.get_telemetry():
 
     if packetName == "UDPPacket":
         packetSpeed = packet.m_speed
-        # speedValue = currnetPlayer.m_speed
+        speedValue = round(packetSpeed * 2.237, 2)
 
-        print(f"{packetSpeed} MPH")
+        print(f"{speedValue} MPH")
