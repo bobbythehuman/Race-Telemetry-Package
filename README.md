@@ -1,7 +1,7 @@
 # Race-Telemetry-Package
 
 A single telemetry package that can extract UDP data from multiple racing games including: <br>
-F1 2017 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon 4 and 5, Forza Motorsport 7 and 8, Gran Turismo 7, and Assetto Corsa.
+F1 2017 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon 4, 5 and 6, Forza Motorsport 7 and 8, Gran Turismo 7, and Assetto Corsa.
 
 ## Features
 
@@ -313,6 +313,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - F1 2025 (untested)
 - Forza Horizon 4
 - Forza Horizon 5
+- Forza Horizon 6
 - Forza Motorsport 7 (untested)
 - Forza Motorsport 8
 - Gran Turismo 7
