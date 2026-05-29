@@ -27,7 +27,7 @@ Data is stored in `CentralStorage` with thread-safe locking mechanisms. Worker t
 
 The single-threaded mode provides a simple, blocking function that listens for UDP packets and returns decoded telemetry data. This is suitable for applications that don't require concurrent processing or real-time worker threads.
 
-Located in `main/support/server.py`, the `telemetryManager.get_telemetry()` function:
+Located in `main/support/server.py`, the `telemetryManager.GetTelemetry()` function:
 
 - Blocks until a packet is received
 - Decodes the packet according to the game's protocol
@@ -64,7 +64,7 @@ from support.server import telemetryManager
 telemetry = telemetryManager()
 telemetry.updateMeta(MetaData)
 
-for packet, packetID, headerPacket in telemetry.get_telemetry():
+for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
         continue
 
@@ -280,7 +280,7 @@ activeThreads = telemetryManager()
 activeThreads.updateMeta(YourGameMetaData)
 
 ## Use in single-threaded mode
-for packet, packetID, headerPacket in telemetry.get_telemetry():
+for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
         continue
 

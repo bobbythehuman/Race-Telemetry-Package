@@ -14,7 +14,7 @@ telemetry.isMultiThreaded(False)
 telemetry.updateMeta(MetaData)
 telemetry.updateSendIP(sourceIP)
 
-for packet, packetID, headerPacket in telemetry.get_telemetry():
+for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
         continue
 
