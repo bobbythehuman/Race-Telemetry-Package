@@ -1,14 +1,14 @@
 # Race-Telemetry-Package
 
-A single telemetry package that can extract UDP data from multiple racing games including: <br>
-F1 2017 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon 4, 5 and 6, Forza Motorsport 7 and 8, Gran Turismo 7, and Assetto Corsa.
+A single telemetry package that can extract UDP and shared memory data from multiple racing games including: <br>
+F1 2017 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon, Forza Motorsport, Gran Turismo, and more.
 
 ## Features
 
 - Single package for multiple racing game telemetry protocols
 - Support for both single-threaded and multi-threaded operation modes
 - Extensible packet structure system for adding new games
-- Real-time UDP data reception and decoding
+- Real-time UDP or shared memory data reception and decoding
 - Thread-safe data storage for concurrent access
 
 ## Architecture
@@ -16,7 +16,7 @@ F1 2017 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon 4, 5 and 6, Forz
 The multi-threaded system uses the following architecture:
 
 - **Main Thread**: Creates and manages the telemetry system, starts worker threads, waits for stop signal
-- **Network Listener Thread**: Continuously receives UDP packets, decodes them according to the game protocol, and stores the latest data in `CentralStorage`
+- **Network Listener Thread**: Continuously receives UDP or shared memory packets, decodes them according to the game protocol, and stores the latest data in `CentralStorage`
 - **Worker Threads**: User-defined threads that access telemetry data via read-only snapshots, preventing accidental data mutation
 
 Data is stored in `CentralStorage` with thread-safe locking mechanisms. Worker threads receive a `ReadOnlyStorage` interface that only allows taking immutable snapshots, ensuring thread safety without requiring manual locking.
@@ -27,43 +27,49 @@ Data is stored in `CentralStorage` with thread-safe locking mechanisms. Worker t
 
 The single-threaded mode provides a simple, blocking function that listens for UDP packets and returns decoded telemetry data. This is suitable for applications that don't require concurrent processing or real-time worker threads.
 
-Located in `main/support/server.py`, the `telemetryManager.GetTelemetry()` function:
+Located in [`server.py`](main/support/server.py), the `telemetryManager.GetTelemetry()` function:
 
 - Blocks until a packet is received
-- Decodes the packet according to the game's protocol
-- Returns the processed telemetry data
 - No threading overhead, simpler for basic usage
 
 ### Multi-Threaded Mode
 
 The multi-threaded mode runs a full telemetry server with separate threads for network listening and data processing. This allows for real-time data processing while continuously receiving new packets.
 
-Located in `main/support/server.py`, the `telemetryManager.StartTelemetry()` class:
+Located in [`server.py`](main/support/server.py), the `telemetryManager.StartTelemetry()` class:
 
 - Starts a network listener thread that continuously receives UDP data
 - Provides a thread-safe central storage system (`CentralStorage`) for data
 - Allows multiple worker threads to process data concurrently via read-only access
-- Manages thread lifecycle with proper startup and shutdown procedures
 
 ## Setup
 
 ### Prerequisites
 
 - Python 3.8+
-- Access to UDP telemetry data from supported racing games
+- On the same local network as the gaming device (or loopback for same device)
+- For UDP telemetry: Game configured to send telemetry data to the correct IP and port
+- For shared memory telemetry: Game configured to write telemetry data to shared memory (if supported)
 
 ### Single-Threaded Setup
 
-For basic telemetry extraction without threading: `<br>`
-See `test_programs` for more single thread examples.
+For basic telemetry extraction without threading: <br>
+See [`test_programs`](main/test_programs) for more single thread examples.
 
 ```python
 from data_structures.f1_2024_struct import MetaData
 from support.server import telemetryManager
 
+# Initialize the class
 telemetry = telemetryManager()
+
+# Configure metadata and network settings
 telemetry.updateMeta(MetaData)
 
+# Use shared memory instead of UDP (if supported by the game)
+telemetry.isSharedMemory(True)
+
+# Start receiving telemetry data
 for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
         continue
@@ -71,16 +77,17 @@ for packet, packetID, headerPacket in telemetry.GetTelemetry():
     # Check packetID, if available
     if packetID == 6:
         pass # Process data here
-
+    
     # Check packet name
+    packetName = packet.__name__
     if packetName == 'PacketCarTelemetryData'
         pass # Process data here
 ```
 
 ### Multi-Threaded Setup
 
-For real-time telemetry processing with multiple threads:`<br>`
-See `test_programs` for more multi thread examples.
+For real-time telemetry processing with multiple threads: <br>
+See [`test_programs`](main/test_programs) for more multi thread examples.
 
 ```python
 from data_structures.f1_2024_struct import MetaData
@@ -106,10 +113,15 @@ activeThreads = telemetryManager()
 activeThreads.updateMeta(MetaData)
 
 activeThreads.updateLocalIP("127.0.0.1") # Optional. Defaults to 0.0.0.0
-# activeThreads.updateSendIP("192.168.1.100")  # Optional: for heartbeat destination
+activeThreads.updateSendIP("192.168.1.100")  # Optional: for heartbeat destination
 
+# Use shared memory instead of UDP (if supported by the game)
+activeThreads.isSharedMemory(True)
+
+# Add worker threads to process telemetry data concurrently
 activeThreads.addWorkerThread(my_worker_thread)
 
+# Start the telemetry system with active worker threads
 activeThreads.StartTelemetry()
 ```
 
@@ -117,7 +129,7 @@ activeThreads.StartTelemetry()
 
 ### Step 1: Create the Packet Structure File
 
-Create a new file in `main/data_structures/` following the naming convention `{game}_struct.py`.
+Create a new file in [`main/data_structures/`](main/data_structures/) following the naming convention `{game}_struct.py`.
 
 Example structure:
 
@@ -148,16 +160,11 @@ class PacketHeader(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),
         ("m_gameYear",                  DataTypes.UNSIGNED_INT8.value),
-        ("m_gameMajorVersion",          DataTypes.UNSIGNED_INT8.value),
-        ("m_gameMinorVersion",          DataTypes.UNSIGNED_INT8.value),
-        ("m_packetVersion",             DataTypes.UNSIGNED_INT8.value),
         ("m_packetId",                  DataTypes.UNSIGNED_INT8.value),
+        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32.value),
         ("m_sessionUID",                DataTypes.UNSIGNED_INT64.value),
         ("m_sessionTime",               DataTypes.FLOAT.value),
-        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32.value),
-        ("m_overallFrameIdentifier",    DataTypes.UNSIGNED_INT32.value),
-        ("m_playerCarIndex",            DataTypes.UNSIGNED_INT8.value),
-        ("m_secondaryPlayerCarIndex",   DataTypes.UNSIGNED_INT8.value),
+        # ...
     ]
 
 # Define any sub-packet
@@ -197,6 +204,8 @@ In your main script, import the new metadata:
 | decrytionFunc     | Function                               | Data decryption function                                                             |
 | headerInfo        | Tuple [int, type]                      | Tuple containing, the packet size and header struct class (if protocol uses header). |
 | packetIDAttribute | String                                 | An attribute in the header packet defining the packet ID                             |
+| sharedMemoryName  | String                                 | Name of the shared memory segment used for data exchange                             |
+| sharedMemorySize  | Integer                                | Size of the shared memory segment used for data exchange                             |
 | packetInfo        | Dict [int, List [Same as headerInfo] ] | Game packet mapping - See more below                                                 |
 
 #### PacketInfo
@@ -242,7 +251,7 @@ packetInfo = {
 # MetaData class with packet information
 class MetaData:
     # standard network info
-    port: int = 20777  # UDP port for your game
+    port: int| None = 20777  # UDP port for your game
     fullBufferSize: int = 1464  # Maximum packet size
 
     # use if a heartbeat is needed
@@ -259,6 +268,10 @@ class MetaData:
     # use if there is a header packet
     headerInfo: tuple[int, type] = (32, PacketHeader)  # Header size and type
     packetIDAttribute: str = "m_packetId"  # Attribute name for packet ID
+    
+    # use for shared memory
+    sharedMemoryName: str = "Local\\SCSTelemetry" # Name of the shared memory segment
+    sharedMemorySize: int = 32 * 1024 # Size of the shared memory segment in bytes
 
     # standard packet info
     packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
@@ -299,6 +312,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ## Supported Games
 
+### UDP
 - Assetto Corsa
 - BeamNG Drive
 - F1 2016 (untested)
@@ -319,6 +333,9 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - Gran Turismo 7
 - Project Cars 2
 
+### Shared Memory
+- Euro Truck Simulator 2
+
 ## Troubleshooting
 
 - Check that the game is configured to send telemetry data
@@ -326,27 +343,40 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - Verify IP addresses are correctly configured for network communication
 - Use packet capture tools to verify data transmission (wireshark, and filter based on UDP, port, incoming and source IP)
 - Ensure firewall allows UDP traffic on the configured port
-- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see `forza debug.txt` in supporting docs)
+
+## Game Specific Notes
+- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](./Supporting%20Docs/forza%20debug.txt) in supporting docs)
+- Euro Truck Simulator 2 requires a 'scs-sdk-plugin' to be installed in the plugins folder, see support docs for more details
+
 
 ## Support Documentation
 
-Documentation and links to packet structures in the `Supporting Docs/` folder:
+### Documents
 
-- Assetto Corsa - Link to [AC Socket Document](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
-- Beamng.drive - Link to [Protocols](https://documentation.beamng.com/modding/protocols/) (official release)
-- **Older F1 games.txt** - Web Archive link to [F1 2016 D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information)
-- **Older F1 games.txt** - Web Archive link to [F1 2017 D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/)
-- **Older F1 games.txt** - Web Archive link to [F1 2018 UDP Specification](https://web.archive.org/web/20230208110311/https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/)
-- **Older F1 games.txt** - Web Archive link to [F1 2019 UDP Specification](https://web.archive.org/web/20220930165800/https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/)
-- **Older F1 games.txt** - Web Archive link to [F1 2020 UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/)
-- **Older F1 games.txt** - Web Archive link to [F1 2021 UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/) (dead download link)
-- **F1 2020 Telemetry Packet Specification.mhtml** - Downloaded web page of [F1 2020 Telemetry Packet Specification](https://f1-2020-telemetry.readthedocs.io/en/stable/telemetry-specification.html)
-- **Data Output from F1 2021 Link.txt** - Link to [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)
-- **Data Output from F1 22 v16.docx** - Packet structures and data output for F1 2022 version 16 (official release)
-- **Data Output from F1 23 v29x3.docx** - Packet structures and data output for F1 2023 version 29x3 (official release)
-- **Data Output from F1 24 v27.2x.docx** - Packet structures and data output for F1 2024 version 27.2x (official release)
-- **Data Output from F1 25 v3.docx** - Packet structures and data output for F1 2025 version 3 (official release)
+<!-- - **Data Output from F1 22 v16.docx** - Packet structures and data output for F1 2022 version 16 (official release) -->
+- [Data Output from F1 22 v16.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2022%20v16.docx) - Packet structures and data output for F1 2022 version 16 (official release)
+- [Data Output from F1 23 v29x3.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2023%20v29x3.docx) - Packet structures and data output for F1 2023 version 29x3 (official release)
+- [Data Output from F1 24 v27.2x.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx) - Packet structures and data output for F1 2024 version 27.2x (official release)
+- [Data Output from F1 25 v3.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf) - Packet structures and data output for F1 2025 version 3 (official release)
+- [ACCSharedMemoryDocumentationV1.8.12.pdf](./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf) - Assetto Corsa Competizione shared memory documentation for version 1.8.1₂ (official release)
+- [ACE_SharedFileOut_Documentation_V1.pdf](./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
 
 Debugging guides available in the `Supporting Docs/` folder:
 
-- **forza debug.txt** - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
+- [forza debug.txt](./Supporting%20Docs/forza%20debug.txt) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
+
+### Links
+
+Documentation and links to packet structures in the [`Supporting Docs/`](./Supporting%20Docs/) folder:
+
+- Assetto Corsa - Link to [AC Socket Document](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
+- Beamng.drive - Link to [Protocols](https://documentation.beamng.com/modding/protocols/) (official release)
+- F1 2016 - Web Archive link to [F1 2016 D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information)
+- F1 2017 - Web Archive link to [F1 2017 D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/)
+- F1 2018 - Web Archive link to [F1 2018 UDP Specification](https://web.archive.org/web/20230208110311/https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/)
+- F1 2019 - Web Archive link to [F1 2019 UDP Specification](https://web.archive.org/web/20220930165800/https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/)
+- F1 2020 - Web Archive link to [F1 2020 UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/)
+- F1 2021 - Web Archive link to [F1 2021 UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/) (dead download link)
+- F1 2021 - Link to [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)
+- ETS2 - Link to [truckermudgen github](https://github.com/truckermudgeon/scs-sdk-plugin) for scs-sdk-plugin, including instructions for installation
+

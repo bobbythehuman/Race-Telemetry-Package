@@ -3,7 +3,7 @@ if hosting on xbox:
 
 if hosting from microsoft store/ xbox pc:
     set ip to 127.0.0.1 in game
-    in cmd add exception; 'CheckNetIsolation.exe LoopbackExempt -a'
+    in command prompt add exception, following by game in use; 'CheckNetIsolation.exe LoopbackExempt -a'
     FH5 - '-n=microsoft.624F8B84B80_8wekyb3d8bbwe'
     FH4 - '-n=Microsoft.SunriseBaseGame_8wekyb3d8bbwe'
 
