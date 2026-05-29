@@ -42,27 +42,35 @@ def newChrToString(value, extra=True):
 
 def dynamic_ingest(packet):
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
+    # attrs = {}
+    # for field in packet._fields_:
+    #     attrName = field[0]
+    #     attrValue = getattr(packet, attrName)
+    #     attrs.update({attrName: attrValue})
 
     packetName = packet.__class__.__name__
-
     newPacket = type(packetName, (), {})
 
     for source_attr, value in attrs.items():
 
-        if isinstance(value, bytes):
+        if isinstance(value, int):
+            pass
+        elif isinstance(value, str):
+            pass
+        elif isinstance(value, bool):
+            pass
+        
+        elif isinstance(value, bytes):
             value = newChrToString(value)
 
         elif isinstance(value, float):
             value = round(value, 5)
 
-        elif isinstance(value, bool):
-            pass
-
         elif isinstance(value, ctypes.Array):
             value = list(value)
 
             for key, item in enumerate(value):
-                if type(item) in [int, str]:
+                if type(item) in [int, str, bool]:
                     pass
 
                 elif isinstance(item, float):
@@ -75,7 +83,8 @@ def dynamic_ingest(packet):
                     # assume it is a class
                     value[key] = dynamic_ingest(item)
 
-        elif type(value) not in [int, str]:
+        # elif type(value) not in [int, str]:
+        else:
             # print("Unrecognised type or assuming it is a class")
             value = dynamic_ingest(value)
             # continue
