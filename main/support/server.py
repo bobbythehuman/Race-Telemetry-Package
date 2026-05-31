@@ -31,7 +31,7 @@ class CentralStorage:
 
         packetNames = MetaData.packetInfo.items()
         for packetID, packetInfo in packetNames:
-            for packetBufferSize, packetStruct in packetInfo:
+            for packetStruct in packetInfo:
                 packetName = packetStruct.__name__
                 if packetName not in self.allData:
                     self.allData[packetName] = []
@@ -171,7 +171,7 @@ class telemetryManager:
         Helper function to unpack metadata attributes into class attributes for easy access
         '''
         self.mainPort = self.__metaDataCheck("port")
-        self.fullBufferSize = self.__metaDataCheck("fullBufferSize")
+        # self.fullBufferSize = self.__metaDataCheck("fullBufferSize")
 
         self.heartBeatPort = self.__metaDataCheck("heartBeatPort")
         self.heartBeatFunc = self.__metaDataCheck("heartBeatFunc")
@@ -185,11 +185,26 @@ class telemetryManager:
         self.headerPacketStruct = self.__metaDataCheck("headerInfo")[1]
         self.packetIDAttr = self.__metaDataCheck("packetIDAttribute")
         
-        self.sharedMemoryName = self.__metaDataCheck("sharedMemoryName")
-        self.sharedMemorySize = self.__metaDataCheck("sharedMemorySize")
+        self.allSharedMemoryNames = self.__metaDataCheck("allSharedMemoryNames")
+        # self.sharedMemorySize = self.__metaDataCheck("sharedMemorySize")
 
         self.packetInfo = self.__metaDataCheck("packetInfo", [])
 
+    def __getPacketSize(self, packet):
+        '''Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction.'''
+        size = ctypes.sizeof(packet)
+        return size
+    
+    def __getMaxPacketSize(self):
+        '''Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata.'''
+        maxSize = 0
+        for packetID, packetInfo in self.packetInfo.items():
+            for packetStruct in packetInfo:
+                packetSize = self.__getPacketSize(packetStruct)
+                if packetSize > maxSize:
+                    maxSize = packetSize
+        return maxSize
+    
     # Misc thread function
 
     def __wait(self, time: float):
@@ -300,7 +315,8 @@ class telemetryManager:
         packet = None
         packetSizes = []
         dataLength = len(data)
-        for packetBufferSize, packetStruct in possiblePacketStruct:
+        for packetStruct in possiblePacketStruct:
+            packetBufferSize = self.__getPacketSize(packetStruct)
             if packetBufferSize != dataLength:
                 packetSizes.append(packetBufferSize)
             else:
@@ -312,7 +328,7 @@ class telemetryManager:
                     packet = dynamic_ingest(rawPacket)
                     break
         if len(possiblePacketStruct) == len(packetSizes):
-            print(f"[Warning]\tNo matching packet buffer size [{packetSizes}] for data length {dataLength}")
+            print(f"[Warning]\tNo matching packet size [{packetSizes}] for received data length {dataLength}")
             packet = None
         return packet
 
@@ -323,7 +339,8 @@ class telemetryManager:
         packet and headerPacket may be None if no matching packet structure is found or if no header is defined in the metadata.
         '''
         if self.headerPacketStruct:
-            rawHeaderPacket = self.headerPacketStruct.from_buffer_copy(data[0 : self.headerBufferSize])
+            headerBufferSize = self.__getPacketSize(self.headerPacketStruct)
+            rawHeaderPacket = self.headerPacketStruct.from_buffer_copy(data[0 : headerBufferSize])
             headerPacket = dynamic_ingest(rawHeaderPacket)
 
             packetID = int(getattr(headerPacket, self.packetIDAttr))
@@ -352,6 +369,7 @@ class telemetryManager:
         packetID = 0
         headerPacket = None
         heartBeatDestination = (self.destinationIP, self.heartBeatPort)
+        fullBufferSize = self.__getMaxPacketSize()
 
         if self.heartBeatFunc:
             if PACKET_COUNTER % HEARTBEAT_INTERVAL == 0:
@@ -361,7 +379,7 @@ class telemetryManager:
                 PACKET_COUNTER = 0
 
         try:
-            data, _ = sock.recvfrom(self.fullBufferSize)
+            data, _ = sock.recvfrom(fullBufferSize)
         except TimeoutError:
             if self.heartBeatFunc:
                 self.heartBeatFunc(sock, heartBeatDestination)
@@ -419,23 +437,37 @@ class telemetryManager:
     # Main shared memory packet function
     
     def get_shared_packets(self):
-        SHARED_MEMORY_NAME = self.sharedMemoryName
-        SHARED_MEMORY_SIZE = self.sharedMemorySize
+        allSharedMemoryNames = self.allSharedMemoryNames
 
-        if not SHARED_MEMORY_NAME:
+        if not allSharedMemoryNames:
             raise ValueError("[NTWK] [Error]\tShared memory name is not set.")
 
-        if not SHARED_MEMORY_SIZE:
-            raise ValueError("[NTWK] [Error]\tShared memory size is not set.")
+        sharedMemoryInfo = {}
 
-        shm = mmap.mmap(-1, SHARED_MEMORY_SIZE, tagname=SHARED_MEMORY_NAME, access=mmap.ACCESS_READ)
-        print(f"[NTWK] [Info]\tServer started on {SHARED_MEMORY_NAME} with size {SHARED_MEMORY_SIZE} bytes")
+        if isinstance(allSharedMemoryNames, str):
+            SMSize = self.__getMaxPacketSize()
+            SMMap = mmap.mmap(-1, SMSize, tagname=allSharedMemoryNames, access=mmap.ACCESS_READ)
+            sharedMemoryInfo.update({SMMap: SMSize})
+            print(f"[NTWK] [Info]\tServer started on {allSharedMemoryNames} with size {SMSize} bytes")
+        elif isinstance(allSharedMemoryNames, dict):
+            SMNames = []
+            for packetID, packetInfo in self.packetInfo.items():
+                for packetStruct in packetInfo:
+                    SMName = allSharedMemoryNames.get(packetStruct.__name__)
+                    SMSize = self.__getPacketSize(packetStruct)
+                    if SMName:
+                        SMNames.append(SMName)
+                        SMMap = mmap.mmap(-1, SMSize, tagname=SMName, access=mmap.ACCESS_READ)
+                        sharedMemoryInfo.update({SMMap: SMSize})
+            print(f"[NTWK] [Info]\tServer started for {SMNames} with sizes {[size for size in sharedMemoryInfo.values()]} bytes")
         
-        # print("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
         while not self.__isStillActive():
             try:
-                shm.seek(0)
-                raw = shm.read(self.fullBufferSize)
+                SMRawData = []
+                for SMMap, SMSize in sharedMemoryInfo.items():
+                    SMMap.seek(0)
+                    raw = SMMap.read(SMSize)
+                    SMRawData.append(raw)
             except TimeoutError:
                 pass
             except KeyboardInterrupt:
@@ -447,14 +479,16 @@ class telemetryManager:
                 self.__triggerStop()
                 # continue
             else:
-                non_zeros = set(raw).difference(b'\x00')
-                if not non_zeros:
-                    continue
-                packet, packetID, headerPacket = self.__retrieve_packet(raw)
-            
-            yield packet, packetID, headerPacket
+                for SMData in SMRawData:
+                    non_zeros = set(SMData).difference(b'\x00')
+                    if not non_zeros:
+                        continue
+                    packet, packetID, headerPacket = self.__retrieve_packet(SMData)
+                
+                    yield packet, packetID, headerPacket
         
-        shm.close()
+        for SMMap in sharedMemoryInfo.keys():
+            SMMap.close()
         print("[NTWK] [Info]\tServer shutting down.")
 
     # Main thread functions

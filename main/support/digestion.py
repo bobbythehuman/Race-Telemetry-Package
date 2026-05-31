@@ -40,13 +40,36 @@ def newChrToString(value, extra=True):
         return bytes(value).decode("utf-8").strip("\0")
 
 
+def unpackArray(packet):
+    if isinstance(packet[0], bytes):
+        value = newChrToString(packet)
+        return value
+    
+    value = list(packet)
+
+    for key, item in enumerate(value):
+        if type(item) in [int, str, bool]:
+            pass
+
+        elif isinstance(item, float):
+            value[key] = round(item, 5)
+
+        elif isinstance(item, ctypes.Array):
+            value[key] = unpackArray(item)
+            # value[key] = newChrToString(item)
+
+        elif isinstance(item, bytes):
+            value[key] = newChrToString(item)
+        
+        else:
+            # assume it is a class
+            value[key] = dynamic_ingest(item)
+            
+    return value
+
+
 def dynamic_ingest(packet):
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
-    # attrs = {}
-    # for field in packet._fields_:
-    #     attrName = field[0]
-    #     attrValue = getattr(packet, attrName)
-    #     attrs.update({attrName: attrValue})
 
     packetName = packet.__class__.__name__
     newPacket = type(packetName, (), {})
@@ -60,30 +83,15 @@ def dynamic_ingest(packet):
         elif isinstance(value, bool):
             pass
         
+        elif isinstance(value, float):
+            value = round(value, 5)
+        
         elif isinstance(value, bytes):
             value = newChrToString(value)
 
-        elif isinstance(value, float):
-            value = round(value, 5)
-
         elif isinstance(value, ctypes.Array):
-            value = list(value)
+            value = unpackArray(value)
 
-            for key, item in enumerate(value):
-                if type(item) in [int, str, bool]:
-                    pass
-
-                elif isinstance(item, float):
-                    value[key] = round(item, 5)
-
-                elif isinstance(item, ctypes.Array):
-                    value[key] = newChrToString(item)
-
-                else:
-                    # assume it is a class
-                    value[key] = dynamic_ingest(item)
-
-        # elif type(value) not in [int, str]:
         else:
             # print("Unrecognised type or assuming it is a class")
             value = dynamic_ingest(value)
