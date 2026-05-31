@@ -313,18 +313,19 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 ## Supported Games
 
 ### UDP
-- Assetto Corsa
-- BeamNG Drive
-- F1 2016 (untested)
-- F1 2017
-- F1 2018
-- F1 2019
-- F1 2020
-- F1 2021
-- F1 2022
-- F1 2023
-- F1 2024
-- F1 2025 (untested)
+- Assetto Corsa <!-- has link -->
+- BeamNG Drive <!-- has link -->
+- F1 2016 (untested) <!-- has link -->
+- F1 2017 <!-- has link -->
+- F1 2018 <!-- has link -->
+- F1 2019 <!-- has link -->
+- F1 2020 <!-- has link -->
+- F1 2021 <!-- has link -->
+- F1 2022 <!-- has link / has document -->
+- F1 2023 <!-- has link / has document -->
+- F1 2024 <!-- has link / has document -->
+- F1 2025 (untested) <!-- has link / has document -->
+- F1 2025 (2026 dlc)(untested) <!-- has link / has document -->
 - Forza Horizon 4
 - Forza Horizon 5
 - Forza Horizon 6
@@ -358,7 +359,9 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - [Data Output from F1 23 v29x3.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2023%20v29x3.docx) - Packet structures and data output for F1 2023 version 29x3 (official release)
 - [Data Output from F1 24 v27.2x.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx) - Packet structures and data output for F1 2024 version 27.2x (official release)
 - [Data Output from F1 25 v3.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf) - Packet structures and data output for F1 2025 version 3 (official release)
-- [ACCSharedMemoryDocumentationV1.8.12.pdf](./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf) - Assetto Corsa Competizione shared memory documentation for version 1.8.1₂ (official release)
+- [Data Output from F1 25 2026 Season Pack.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf) - Packet structures and data output for F1 2026 (official release)
+- [ACSharedMemoryDocumentation.pdf](./Supporting%20Docs/ACSharedMemoryDocumentation.pdf) - Assetto Corsa shared memory documentation(official release)
+- [ACCSharedMemoryDocumentationV1.8.12.pdf](./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
 - [ACE_SharedFileOut_Documentation_V1.pdf](./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
 
 Debugging guides available in the `Supporting Docs/` folder:
@@ -378,5 +381,15 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - F1 2020 - Web Archive link to [F1 2020 UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/)
 - F1 2021 - Web Archive link to [F1 2021 UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/) (dead download link)
 - F1 2021 - Link to [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)
+- F1 2022 - Link to [F1 22 UDP Specification](https://forums.ea.com/discussions/f1-games-franchise-discussion-en/f1-22-udp-specification/8418392)
+- F1 2023 - Link to [F1 23 UDP Specification](https://forums.ea.com/discussions/f1-23-en/f1-23-udp-specification/8390745)
+- F1 2024 - Link to [F1 24 UDP Specification](https://forums.ea.com/discussions/f1-24-general-discussion-en/f1-24-udp-specification/8369125)
+- F1 2025 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
+- F1 2026 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
 - ETS2 - Link to [truckermudgen github](https://github.com/truckermudgeon/scs-sdk-plugin) for scs-sdk-plugin, including instructions for installation
 
+### Other Links
+
+- Project cars - Link to [Companion App - UDP Streaming](https://web.archive.org/web/20160826185519/http://forum.projectcarsgame.com/showthread.php?40113-HowTo-Companion-App-UDP-Streaming&s=0147744ec824a4eb44be2e778d278c49)
+- Project cars - Link to [Shared Memory (API) App](https://web.archive.org/web/20180111115813/http://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&highlight=shared+memory+api)
+- Project cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) - Project Cars 2 UDP
