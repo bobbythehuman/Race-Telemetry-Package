@@ -459,35 +459,37 @@ class PacketLobbyInfoData(DataTypes.STRUCTURE.value):
 
 class MetaData:
     # standard network info
-    port: int = 20777
-    fullBufferSize: int = 1464
+    port: int | None = 20777
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type] = (27, PacketHeader)
-    packetIDAttribute: str = "m_packetId"
+    headerInfo: tuple[int, type | None] = (27, PacketHeader)
+    packetIDAttribute: str | None = "m_packetId"
+    
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = None
     
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((1464, PacketMotionData),),                 # Contains all motion data for player’s car – only sent while player is in control
-        1: ((251, PacketSessionData),),                 # Data about the session – track, time left
-        2: ((1190, PacketLapData),),                     # Data about all the lap times of cars in the session
-        3: ((35, PacketEventData),),                    # Various notable events that happen during a session
-        4: ((1213, PacketParticipantsData),),           # List of participants in the session, mostly relevant for multiplayer
-        5: ((1102, PacketCarSetupData),),               # Packet detailing car setups for cars in the race
-        6: ((1307, PacketCarTelemetryData),),           # Telemetry data for all cars
-        7: ((1344, PacketCarStatusData),),              # Status data for all cars
-        8: ((839, PacketFinalClassificationData),),     # Final classification confirmation at the end of a race
-        9: ((1169, PacketLobbyInfoData),),              # Information about players in a multiplayer lobby
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (PacketMotionData,),                 # Contains all motion data for player’s car – only sent while player is in control
+        1: (PacketSessionData,),                # Data about the session – track, time left
+        2: (PacketLapData,),                    # Data about all the lap times of cars in the session
+        3: (PacketEventData,),                  # Various notable events that happen during a session
+        4: (PacketParticipantsData,),           # List of participants in the session, mostly relevant for multiplayer
+        5: (PacketCarSetupData,),               # Packet detailing car setups for cars in the race
+        6: (PacketCarTelemetryData,),           # Telemetry data for all cars
+        7: (PacketCarStatusData,),              # Status data for all cars
+        8: (PacketFinalClassificationData,),    # Final classification confirmation at the end of a race
+        9: (PacketLobbyInfoData,),              # Information about players in a multiplayer lobby
     }
 

@@ -20,13 +20,14 @@ class DataTypes(Enum):
     DOUBLE = ctypes.c_double
 
 
-### Packet Header -- 27 bytes
+### Packet Header -- 32 bytes
 
 
 class PacketHeader(DataTypes.STRUCTURE.value):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),    # 2022
+        ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),    # 2026
+        ("m_gameYear",                  DataTypes.UNSIGNED_INT8.value),     # Game year - last two digits e.g. 25
         ("m_gameMajorVersion",          DataTypes.UNSIGNED_INT8.value),     # Game major version - "X.00"
         ("m_gameMinorVersion",          DataTypes.UNSIGNED_INT8.value),     # Game minor version - "1.XX"
         ("m_packetVersion",             DataTypes.UNSIGNED_INT8.value),     # Version of this packet type, all start from 1
@@ -34,21 +35,22 @@ class PacketHeader(DataTypes.STRUCTURE.value):
         ("m_sessionUID",                DataTypes.UNSIGNED_INT64.value),    # Unique identifier for the session
         ("m_sessionTime",               DataTypes.FLOAT.value),             # Session timestamp
         ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32.value),    # Identifier for the frame the data was retrieved on
+        ("m_overallFrameIdentifier",    DataTypes.UNSIGNED_INT32.value),    # Overall identifier for the frame the data was retrieved on, doesn't go back after flashbacks
         ("m_playerCarIndex",            DataTypes.UNSIGNED_INT8.value),     # Index of player's car in the array
         ("m_secondaryPlayerCarIndex",   DataTypes.UNSIGNED_INT8.value),     # Index of secondary player's car in the array (splitscreen), 255 if no second player
     ]
 
 
-### Motion Packet -- Rate as specified in menus -- 1464 bytes
+### Motion Packet -- Rate as specified in menus -- 1325 bytes
 
 
 class CarMotionData(DataTypes.STRUCTURE.value):
     # _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_worldPositionX",        DataTypes.FLOAT.value),         # World space X position
+        ("m_worldPositionX",        DataTypes.FLOAT.value),         # World space X position - metres
         ("m_worldPositionY",        DataTypes.FLOAT.value),         # World space Y position
         ("m_worldPositionZ",        DataTypes.FLOAT.value),         # World space Z position
-        ("m_worldVelocityX",        DataTypes.FLOAT.value),         # Velocity in world space X
+        ("m_worldVelocityX",        DataTypes.FLOAT.value),         # Velocity in world space X – metres/s
         ("m_worldVelocityY",        DataTypes.FLOAT.value),         # Velocity in world space Y
         ("m_worldVelocityZ",        DataTypes.FLOAT.value),         # Velocity in world space Z
         ("m_worldForwardDirX",      DataTypes.SIGNED_INT16.value),  # World space forward X direction (normalised)
@@ -70,41 +72,38 @@ class PacketMotionData(DataTypes.STRUCTURE.value):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",        PacketHeader),          # Header
-        ("m_carMotionData", CarMotionData * 22),    # Data for all cars on track
-        # Extra player car ONLY data
-        ("m_suspensionPosition",        DataTypes.FLOAT.value * 4),     # Note: All wheel arrays have the following order:
-        ("m_suspensionVelocity",        DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
-        ("m_suspensionAcceleration",    DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
-        ("m_wheelSpeed",                DataTypes.FLOAT.value * 4),     # Speed of each wheel
-        ("m_wheelSlip",                 DataTypes.FLOAT.value * 4),     # Slip ratio for each wheel
-        ("m_localVelocityX",            DataTypes.FLOAT.value),         # Velocity in local space
-        ("m_localVelocityY",            DataTypes.FLOAT.value),         # Velocity in local space
-        ("m_localVelocityZ",            DataTypes.FLOAT.value),         # Velocity in local space
-        ("m_angularVelocityX",          DataTypes.FLOAT.value),         # Angular velocity x-component
-        ("m_angularVelocityY",          DataTypes.FLOAT.value),         # Angular velocity y-component
-        ("m_angularVelocityZ",          DataTypes.FLOAT.value),         # Angular velocity z-component
-        ("m_angularAccelerationX",      DataTypes.FLOAT.value),         # Angular acceleration x-component
-        ("m_angularAccelerationY",      DataTypes.FLOAT.value),         # Angular acceleration y-component
-        ("m_angularAccelerationZ",      DataTypes.FLOAT.value),         # Angular acceleration z-component
-        ("m_frontWheelsAngle",          DataTypes.FLOAT.value),         # Current front wheels angle in radians
+        ("m_carMotionData", CarMotionData * 24),    # Data for all cars on track
     ]
 
 
-### Session Packet -- 2 per second -- 632 bytes
+### Session Packet -- 2 per second -- 926 bytes
 
 
 class MarshalZone(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs
     _fields_ = [
         ("m_zoneStart", DataTypes.FLOAT.value),         # Fraction (0..1) of way through the lap the marshal zone starts
-        ("m_zoneFlag",  DataTypes.SIGNED_INT8.value),   # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow, 4 = red
+        ("m_zoneFlag",  DataTypes.SIGNED_INT8.value),   # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow
     ]
 
+class ActiveAeroZone(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs
+    _fields_ = [
+        ("m_zoneStart", DataTypes.FLOAT.value), # Fraction (0..1) of way through the lap the Active Aero zone starts
+        ("m_zoneEnd",   DataTypes.FLOAT.value), # Fraction (0..1) of way through the lap the Active Aero zone ends
+    ]
+
+class DRSZone(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs
+    _fields_ = [
+        ("m_zoneStart", DataTypes.FLOAT.value), # Fraction (0..1) of way through the lap the DRS zone starts
+        ("m_zoneEnd",   DataTypes.FLOAT.value), # Fraction (0..1) of way through the lap the DRS zone ends
+    ]
 
 class WeatherForecastSample(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs
     _fields_ = [
-        ("m_sessionType",               DataTypes.UNSIGNED_INT8.value), # 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = R3, 13 = Time Trial
+        ("m_sessionType",               DataTypes.UNSIGNED_INT8.value), # 0 = unknown, see appendix
         ("m_timeOffset",                DataTypes.UNSIGNED_INT8.value), # Time in minutes the forecast is for
         ("m_weather",                   DataTypes.UNSIGNED_INT8.value), # Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
         ("m_trackTemperature",          DataTypes.SIGNED_INT8.value),   # Track temp. in degrees Celsius
@@ -116,7 +115,7 @@ class WeatherForecastSample(DataTypes.STRUCTURE.value):
 
 
 class PacketSessionData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs
     _fields_ = [
         ("m_header",                            PacketHeader),                          # Header
         ("m_weather",                           DataTypes.UNSIGNED_INT8.value),         # Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
@@ -124,13 +123,13 @@ class PacketSessionData(DataTypes.STRUCTURE.value):
         ("m_airTemperature",                    DataTypes.SIGNED_INT8.value),           # Air temp. in degrees celsius
         ("m_totalLaps",                         DataTypes.UNSIGNED_INT8.value),         # Total number of laps in this race
         ("m_trackLength",                       DataTypes.UNSIGNED_INT16.value),        # Track length in metres
-        ("m_sessionType",                       DataTypes.UNSIGNED_INT8.value),         # 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = R3, 13 = Time Trial
+        ("m_sessionType",                       DataTypes.UNSIGNED_INT8.value),         # 0 = unknown, see appendix
         ("m_trackId",                           DataTypes.SIGNED_INT8.value),           # -1 for unknown, see appendix
-        ("m_formula",                           DataTypes.UNSIGNED_INT8.value),         # Formula, 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic, 4 = Beta, 5 = Supercars, 6 = Esports, 7 = F2 2021
+        ("m_formula",                           DataTypes.UNSIGNED_INT8.value),         # Formula, 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic, 4 = Beta, 6 = Esports, 8 = F1 World, 9 = F1 Elimination
         ("m_sessionTimeLeft",                   DataTypes.UNSIGNED_INT16.value),        # Time left in session in seconds
         ("m_sessionDuration",                   DataTypes.UNSIGNED_INT16.value),        # Session duration in seconds
         ("m_pitSpeedLimit",                     DataTypes.UNSIGNED_INT8.value),         # Pit speed limit in kilometres per hour
-        ("m_gamePaused",                        DataTypes.UNSIGNED_INT8.value),         # Whether the game is paused – network game only
+        ("m_gamePaused",                        DataTypes.UNSIGNED_INT8.value),         # Whether the game is paused
         ("m_isSpectating",                      DataTypes.UNSIGNED_INT8.value),         # Whether the player is spectating
         ("m_spectatorCarIndex",                 DataTypes.UNSIGNED_INT8.value),         # Index of the car being spectated
         ("m_sliProNativeSupport",               DataTypes.UNSIGNED_INT8.value),         # SLI Pro support, 0 = inactive, 1 = active
@@ -161,30 +160,89 @@ class PacketSessionData(DataTypes.STRUCTURE.value):
         ("m_ruleSet",                           DataTypes.UNSIGNED_INT8.value),         # Ruleset - see appendix
         ("m_timeOfDay",                         DataTypes.UNSIGNED_INT32.value),        # Local time of day - minutes since midnight
         ("m_sessionLength",                     DataTypes.UNSIGNED_INT8.value),         # 0 = None, 2 = Very Short, 3 = Short, 4 = Medium, 5 = Medium Long, 6 = Long, 7 = Full
+        
+        ("m_speedUnitsLeadPlayer",              DataTypes.UNSIGNED_INT8.value),         # 0 = MPH, 1 = KPH
+        ("m_temperatureUnitsLeadPlayer",        DataTypes.UNSIGNED_INT8.value),         # 0 = Celsius, 1 = Fahrenheit
+        ("m_speedUnitsSecondaryPlayer",         DataTypes.UNSIGNED_INT8.value),         # 0 = MPH, 1 = KPH
+        ("m_temperatureUnitsSecondaryPlayer",   DataTypes.UNSIGNED_INT8.value),         # 0 = Celsius, 1 = Fahrenheit
+        ("m_numSafetyCarPeriods",               DataTypes.UNSIGNED_INT8.value),         # Number of safety cars called during session
+        ("m_numVirtualSafetyCarPeriods",        DataTypes.UNSIGNED_INT8.value),         # Number of virtual safety cars called
+        ("m_numRedFlagPeriods",                 DataTypes.UNSIGNED_INT8.value),         # Number of red flags called during session
+        ("m_equalCarPerformance",               DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = On
+        ("m_recoveryMode",                      DataTypes.UNSIGNED_INT8.value),         # 0 = None, 1 = Flashbacks, 2 = Auto-recovery
+        ("m_flashbackLimit",                    DataTypes.UNSIGNED_INT8.value),         # 0 = Low, 1 = Medium, 2 = High, 3 = Unlimited
+        ("m_surfaceType",                       DataTypes.UNSIGNED_INT8.value),         # 0 = Simplified, 1 = Realistic
+        ("m_lowFuelMode",                       DataTypes.UNSIGNED_INT8.value),         # 0 = Easy, 1 = Hard
+        ("m_raceStarts",                        DataTypes.UNSIGNED_INT8.value),         # 0 = Manual, 1 = Assisted
+        ("m_tyreTemperature",                   DataTypes.UNSIGNED_INT8.value),         # 0 = Surface only, 1 = Surface & Carcass
+        ("m_pitLaneTyreSim",                    DataTypes.UNSIGNED_INT8.value),         # 0 = On, 1 = Off
+        ("m_carDamage",                         DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = Reduced, 2 = Standard, 3 = Simulation
+        ("m_carDamageRate",                     DataTypes.UNSIGNED_INT8.value),         # 0 = Reduced, 1 = Standard, 2 = Simulation
+        ("m_collisions",                        DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = Player-to-Player Off, 2 = On
+        ("m_collisionsOffForFirstLapOnly",      DataTypes.UNSIGNED_INT8.value),         # 0 = Disabled, 1 = Enabled
+        ("m_mpUnsafePitRelease",                DataTypes.UNSIGNED_INT8.value),         # 0 = On, 1 = Off (Multiplayer)
+        ("m_mpOffForGriefing",                  DataTypes.UNSIGNED_INT8.value),         # 0 = Disabled, 1 = Enabled (Multiplayer)
+        ("m_cornerCuttingStringency",           DataTypes.UNSIGNED_INT8.value),         # 0 = Regular, 1 = Strict
+        ("m_parcFermeRules",                    DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = On
+        ("m_pitStopExperience",                 DataTypes.UNSIGNED_INT8.value),         # 0 = Automatic, 1 = Broadcast, 2 = Immersive
+        ("m_safetyCar",                         DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = Reduced, 2 = Standard, 3 = Increased
+        ("m_safetyCarExperience",               DataTypes.UNSIGNED_INT8.value),         # 0 = Broadcast, 1 = Immersive
+        ("m_formationLap",                      DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = On
+        ("m_formationLapExperience",            DataTypes.UNSIGNED_INT8.value),         # 0 = Broadcast, 1 = Immersive
+        ("m_redFlags",                          DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = Reduced, 2 = Standard, 3 = Increased
+        ("m_affectsLicenceLevelSolo",           DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = On
+        ("m_affectsLicenceLevelMP",             DataTypes.UNSIGNED_INT8.value),         # 0 = Off, 1 = On
+        ("m_numSessionsInWeekend",              DataTypes.UNSIGNED_INT8.value),         # Number of session in following array
+        ("m_weekendStructure",                  DataTypes.UNSIGNED_INT8.value * 12),    # List of session types to show weekend structure
+
+        ("m_sector2LapDistanceStart",           DataTypes.FLOAT.value),                 # Distance in m around track where sector 2 starts
+        ("m_sector3LapDistanceStart",           DataTypes.FLOAT.value),                 # Distance in m around track where sector 3 starts
+        
+        # Aero and DRS zones
+        ("m_activeAeroTrackStatus",         DataTypes.UNSIGNED_INT8.value), # 0 = Full, 1 = Partial
+        ("m_numActiveAeroZonesFull",        DataTypes.UNSIGNED_INT8.value), # Number of Active Aero zones to follow
+        ("m_activeAeroZonesFull",           ActiveAeroZone * 8),            # List of Active Aero zones -max 8
+        ("m_numActiveAeroZonesPartial",     DataTypes.UNSIGNED_INT8.value), # Number of Active Aero zones to follow
+        ("m_activeAeroZonesPartial",        ActiveAeroZone * 8),            # List of Active Aero zones -max 8
+        ("m_numDRSZones",                   DataTypes.UNSIGNED_INT8.value), # Number of DRS zones to follow
+        ("m_drsZones",                      DRSZone * 4),                   # List of DRS zones -max 4
+        ("m_startReactionTime",             DataTypes.FLOAT.value),         # Driver start reaction time in seconds 0.0f if assisted starts
+        ("m_antiLockBrakesAssist",          DataTypes.UNSIGNED_INT8.value), # 0 = Off, 1 = On
+        ("m_tractionControlAssist",         DataTypes.UNSIGNED_INT8.value), # 0 = Off, 1 = Medium, 2 = Full
+        ("m_dynamicRacingLineHiVis",        DataTypes.UNSIGNED_INT8.value), # 0 = Off, 1 = On
+        ("m_dynamicRacingLineColourBlind",  DataTypes.UNSIGNED_INT8.value), # 0 = Off, 1 = Protanopia, 2 = Deuteranopia, 3 = Tritanopia
+        ("m_recurringRewindPrompt",         DataTypes.UNSIGNED_INT8.value), # 0 = Off, 1 = On
     ]
 
 
-### Lap Data Packet -- Rate as specified in menus -- 972 bytes
+### Lap Data Packet -- Rate as specified in menus -- 1399 bytes
 
 
 class LapData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (101 instead of at least 113 bytes)
     _fields_ = [
         ("m_lastLapTimeInMs",               DataTypes.UNSIGNED_INT32.value),    # Last lap time in milliseconds
         ("m_currentLapTimeInMs",            DataTypes.UNSIGNED_INT32.value),    # Current time around the lap in milliseconds
         ("m_sector1TimeInMs",               DataTypes.UNSIGNED_INT16.value),    # Sector 1 time in milliseconds
+        ("m_sector1TimeInMinutes",          DataTypes.UNSIGNED_INT8.value),     # Sector 1 whole minute part
         ("m_sector2TimeInMs",               DataTypes.UNSIGNED_INT16.value),    # Sector 2 time in milliseconds
+        ("m_sector2TimeInMinutes",          DataTypes.UNSIGNED_INT8.value),     # Sector 2 whole minute part
+        ("m_deltaToCarInFrontMSPart",       DataTypes.UNSIGNED_INT16.value),    # Time delta to car in front milliseconds part
+        ("m_deltaToCarInFrontMinutesPart",  DataTypes.UNSIGNED_INT8.value),     # Time delta to car in front whole minute part
+        ("m_deltaToRaceLeaderMSPart",       DataTypes.UNSIGNED_INT16.value),    # Time delta to race leader milliseconds part
+        ("m_deltaToRaceLeaderMinutesPart",  DataTypes.UNSIGNED_INT8.value),     # Time delta to race leader whole minute part
         ("m_lapDistance",                   DataTypes.FLOAT.value),             # Distance vehicle is around current lap in metres - can, be negative if line not crossed yet
         ("m_totalDistance",                 DataTypes.FLOAT.value),             # Total distance travelled in session in metres - can, be negative if line not crossed yet
         ("m_safetyCarDelta",                DataTypes.FLOAT.value),             # Delta in seconds for safety car
-        ("m_carPosition",                   DataTypes.UNSIGNED_INT8.value),     # Car race position
+        ("m_car_position",                  DataTypes.UNSIGNED_INT8.value),     # Car race position
         ("m_currentLapNum",                 DataTypes.UNSIGNED_INT8.value),     # Current lap number
         ("m_pitStatus",                     DataTypes.UNSIGNED_INT8.value),     # 0 = none, 1 = pitting, 2 = in pit area
         ("m_numPitStops",                   DataTypes.UNSIGNED_INT8.value),     # Number of pit stops taken in this race
         ("m_sector",                        DataTypes.UNSIGNED_INT8.value),     # 0 = sector1, 1 = sector2, 2 = sector3
         ("m_currentLapInvalid",             DataTypes.UNSIGNED_INT8.value),     # Current lap invalid - 0 = valid, 1 = invalid
         ("m_penalties",                     DataTypes.UNSIGNED_INT8.value),     # Accumulated time penalties in seconds to be added
-        ("m_warnings",                      DataTypes.UNSIGNED_INT8.value),     # Accumulated number of warnings issued
+        ("m_totalWarnings",                 DataTypes.UNSIGNED_INT8.value),     # Accumulated number of warnings issued
+        ("m_cornerCuttingWarnings",         DataTypes.UNSIGNED_INT8.value),     # Accumulated number of corners cutting warnings issued
         ("m_numUnservedDriveThroughPens",   DataTypes.UNSIGNED_INT8.value),     # Num drive through pens left to serve
         ("m_numUnservedStopGoPens",         DataTypes.UNSIGNED_INT8.value),     # Num stop go pens left to serve
         ("m_gridPosition",                  DataTypes.UNSIGNED_INT8.value),     # Grid position the vehicle started the race in
@@ -194,20 +252,22 @@ class LapData(DataTypes.STRUCTURE.value):
         ("m_pitLaneTimeInLaneInMs",         DataTypes.UNSIGNED_INT16.value),    # If active, the current time spent in the pit lane in ms
         ("m_pitStopTimerInMs",              DataTypes.UNSIGNED_INT16.value),    # Time of the actual pit stop in ms
         ("m_pitStopShouldServePen",         DataTypes.UNSIGNED_INT8.value),     # Whether the car should serve a penalty at this stop
+        ("m_speedTrapFastestSpeed",         DataTypes.FLOAT.value),             # Fastest speed through speed trap for this car in kmph
+        ("m_speedTrapFastestLap",           DataTypes.UNSIGNED_INT8.value),     # Lap no the fastest speed was achieved, 255 = not set
     ]
 
 
 class PacketLapData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (101 instead of at least 113 bytes)
     _fields_ = [
         ("m_header",                PacketHeader),                      # Header
-        ("m_lapData",               LapData * 22),                      # Lap data for all cars on track
+        ("m_lapData",               LapData * 24),                      # Lap data for all cars on track
         ("m_timeTrialPBCarIdx",     DataTypes.UNSIGNED_INT8.value),     # Index of Personal Best car in time trial (255 if invalid)
         ("m_timeTrialRivalCarIdx",  DataTypes.UNSIGNED_INT8.value),     # Index of Rival car in time trial (255 if invalid)
     ]
 
 
-### Event Packet -- When the event occurs -- 40 bytes
+### Event Packet -- When the event occurs -- 45 bytes
 
 
 class FastestLap(DataTypes.STRUCTURE.value):
@@ -216,24 +276,26 @@ class FastestLap(DataTypes.STRUCTURE.value):
         ("lapTime",     DataTypes.FLOAT.value),         # Lap time is in seconds
     ]
 
-
 class Retirement(DataTypes.STRUCTURE.value):
     _fields_ = [
-        ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value)  # Vehicle index of car retiring
-    ]  
+        ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value),     # Vehicle index of car retiring
+        ("reason",      DataTypes.UNSIGNED_INT8.value)      # Reason - 0 = invalid, 1 = retired, 2 = finished, 3 = terminal damage, 4 = inactive, 5 = not enough laps completed, 6 = black flagged, 7 = red flagged, 8 = mechanical failure, 9 = session skipped, 10 = session simulated
+    ]
 
+class DRSDisabled(DataTypes.STRUCTURE.value):
+    _fields_ = [
+        ("reason",  DataTypes.UNSIGNED_INT8.value)  # 0 = Wet track, 1 = Safety car deployed, 2 = Red flag, 3 = Min lap not reached
+    ]
 
 class TeamMateInPits(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value)  # Vehicle index of team mate
     ]  
 
-
 class RaceWinner(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value)  # Vehicle index of the race winner
     ]  
-
 
 class Penalty(DataTypes.STRUCTURE.value):
     _fields_ = [
@@ -246,9 +308,8 @@ class Penalty(DataTypes.STRUCTURE.value):
         ("placesGained",        DataTypes.UNSIGNED_INT8.value), # Number of places gained by this
     ]
 
-
 class SpeedTrap(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (45 instead of at least 52 bytes)
     _fields_ = [
         ("vehicleIdx",                  DataTypes.UNSIGNED_INT8.value),     # Vehicle index of the vehicle triggering speed trap
         ("speed",                       DataTypes.FLOAT.value),             # Top speed achieved in kilometres per hour
@@ -258,24 +319,21 @@ class SpeedTrap(DataTypes.STRUCTURE.value):
         ("fastestSpeedInSession",       DataTypes.FLOAT.value),             # Speed of the vehicle that is the fastest in this session
     ]
 
-
 class StartLIghts(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("numLights",   DataTypes.UNSIGNED_INT8.value)  # Number of lights showing
     ]
-
 
 class DriveThroughPenaltyServed(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value)  # Vehicle index of the vehicle serving drive through
     ]
 
-
 class StopGoPenaltyServed(DataTypes.STRUCTURE.value):
     _fields_ = [
-        ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value)  # Vehicle index of the vehicle serving stop go
+        ("vehicleIdx",  DataTypes.UNSIGNED_INT8.value),     # Vehicle index of the vehicle serving stop go
+        ("stopTime",  DataTypes.FLOAT.value)                # Time spent serving stop go in seconds
     ]
-
 
 class Flashback(DataTypes.STRUCTURE.value):
     _fields_ = [
@@ -283,17 +341,35 @@ class Flashback(DataTypes.STRUCTURE.value):
         ("flashbackSessionTime",        DataTypes.FLOAT.value),             # Session time flashed back to
     ]
 
-
 class Buttons(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("m_buttonStatus",  DataTypes.UNSIGNED_INT32.value),    # Bit flags specifying which buttons are being pressed currently - see appendices
     ]
 
+class Overtake(DataTypes.STRUCTURE.value):
+    _fields_ = [
+        ("overtakingVehicleIdx",        DataTypes.UNSIGNED_INT8.value), # Vehicle index of the vehicle overtaking
+        ("beingOvertakenVehicleIdx",    DataTypes.UNSIGNED_INT8.value), # Vehicle index of the vehicle being overtaken
+    ]
+
+class SafetyCar(DataTypes.STRUCTURE.value):
+    _fields_ = [
+        ("safetyCarType",   DataTypes.UNSIGNED_INT8.value), # 0 = No Safety Car, 1 = Full Safety Car, 2 = Virtual Safety Car, 3 = Formation Lap Safety Car
+        ("eventType",       DataTypes.UNSIGNED_INT8.value), # 0 = Deployed, 1 = Returning, 2 = Returned, 3 = Resume Race
+    ]
+
+class Collision(DataTypes.STRUCTURE.value):
+    _fields_ = [
+        ("vehicle1Idx", DataTypes.UNSIGNED_INT8.value), # Vehicle index of the first vehicle involved in the collision
+        ("vehicle2Idx", DataTypes.UNSIGNED_INT8.value), # Vehicle index of the second vehicle involved in the collision
+        ("severity",    DataTypes.UNSIGNED_INT8.value), # Severity of the collision -0 = low, 1 = medium, 2 = high
+    ]
 
 class EventDataDetails(DataTypes.UNION.value):
     _fields_ = [
         ("m_fastestLap",                FastestLap),
         ("m_retirement",                Retirement),
+        ("m_DRSDisabled",               DRSDisabled),
         ("m_teamMateInPits",            TeamMateInPits),
         ("m_raceWinner",                RaceWinner),
         ("m_penalty",                   Penalty),
@@ -303,11 +379,14 @@ class EventDataDetails(DataTypes.UNION.value):
         ("m_stopGoPenaltyServed",       StopGoPenaltyServed),
         ("m_flashback",                 Flashback),
         ("m_buttons",                   Buttons),
+        ("m_overtake",                  Overtake),
+        ("m_safetyCar",                 SafetyCar),
+        ("m_collision",                 Collision),
     ]
 
 
 class PacketEventData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (45 instead of at least 52 bytes)
     _fields_ = [
         ("m_header",            PacketHeader),                      # Header
         ("m_eventStringCode",   DataTypes.UNSIGNED_INT8.value * 4), # Event string code
@@ -315,11 +394,18 @@ class PacketEventData(DataTypes.STRUCTURE.value):
     ]
 
 
-### Participants Packet -- Every 5 seconds -- 1257 bytes
+### Participants Packet -- Every 5 seconds -- 1470 bytes
 
+class LiveryColour(DataTypes.STRUCTURE.value):
+    _pack_ = 1
+    _fields_ = [
+        ("red",     DataTypes.UNSIGNED_INT8.value),
+        ("green",   DataTypes.UNSIGNED_INT8.value),
+        ("blue",    DataTypes.UNSIGNED_INT8.value),
+    ]
 
 class ParticipantData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1350 instead of at least 1394 bytes)
     _fields_ = [
         ("m_aiControlled",      DataTypes.UNSIGNED_INT8.value),     # Whether the vehicle is AI (1) or Human (0) controlled
         ("m_driverId",          DataTypes.UNSIGNED_INT8.value),     # Driver id - see appendix, 255 if network human
@@ -328,25 +414,29 @@ class ParticipantData(DataTypes.STRUCTURE.value):
         ("m_myTeam",            DataTypes.UNSIGNED_INT8.value),     # My team flag – 1 = My Team, 0 = otherwise
         ("m_raceNumber",        DataTypes.UNSIGNED_INT8.value),     # Race number of the car
         ("m_nationality",       DataTypes.UNSIGNED_INT8.value),     # Nationality of the driver
-        ("m_name",              DataTypes.CHAR.value * 48),         # Name of participant in UTF-8 format – null terminated, Will be truncated with … (U+2026) if too long
+        ("m_name",              DataTypes.CHAR.value * 32),         # Name of participant in UTF-8 format – null terminated, Will be truncated with … (U+2026) if too long
         ("m_yourTelemetry",     DataTypes.UNSIGNED_INT8.value),     # The player's UDP setting, 0 = restricted, 1 = public
+        ("m_showOnlineNames",   DataTypes.UNSIGNED_INT8.value),     # The player's show online names setting, 0 = off, 1 = on
+        ("m_techLevel",         DataTypes.UNSIGNED_INT16.value),    # F1 World tech level
+        ("m_platform",          DataTypes.UNSIGNED_INT8.value),     # 1 = Steam, 3 = PlayStation, 4 = Xbox, 6 = Origin, 255 = unknown
+        ("m_numColours",        DataTypes.UNSIGNED_INT8.value),     # Number of colours valid for this car
+        ("m_liveryColours",     LiveryColour * 4),                  # Colours for the car
     ]
 
-
 class PacketParticipantsData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1350 instead of at least 1394 bytes)
     _fields_ = [
         ("m_header",            PacketHeader),                      # Header
         ("m_numActiveCars",     DataTypes.UNSIGNED_INT8.value),     # Number of active cars in the data – should match number of cars on HUD
-        ("m_participants",      ParticipantData * 22),
+        ("m_participants",      ParticipantData * 24),
     ]
 
 
-### Car Setups Packet -- 2 per second -- 1102 bytes
+### Car Setups Packet -- 2 per second -- 1233 bytes
 
 
 class CarSetupData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1133 instead of at least 1268 bytes)
     _fields_ = [
         ("m_frontWing",                 DataTypes.UNSIGNED_INT8.value),     # Front wing aero
         ("m_rearWing",                  DataTypes.UNSIGNED_INT8.value),     # Rear wing aero
@@ -364,6 +454,7 @@ class CarSetupData(DataTypes.STRUCTURE.value):
         ("m_rearSuspensionHeight",      DataTypes.UNSIGNED_INT8.value),     # Rear ride height
         ("m_brakePressure",             DataTypes.UNSIGNED_INT8.value),     # Brake pressure (percentage)
         ("m_brakeBias",                 DataTypes.UNSIGNED_INT8.value),     # Brake bias (percentage)
+        ("m_engineBraking",             DataTypes.UNSIGNED_INT8.value),     # Engine braking (percentage)
         ("m_rearLeftTyrePressure",      DataTypes.FLOAT.value),             # Rear left tyre pressure (PSI)
         ("m_rearRightTyrePressure",     DataTypes.FLOAT.value),             # Rear right tyre pressure (PSI)
         ("m_frontLeftTyrePressure",     DataTypes.FLOAT.value),             # Front left tyre pressure (PSI)
@@ -372,20 +463,20 @@ class CarSetupData(DataTypes.STRUCTURE.value):
         ("m_fuelLoad",                  DataTypes.FLOAT.value),             # Fuel load
     ]
 
-
 class PacketCarSetupData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1133 instead of at least 1268 bytes)
     _fields_ = [
         ("m_header",                PacketHeader),              # Header
-        ("m_car_setups",            CarSetupData * 22),
+        ("m_car_setups",            CarSetupData * 24),
+        ("m_nextFrontWingValue",    DataTypes.FLOAT.value),     # Value of front wing after next pit stop - player only
     ]
 
 
-### Car Telemetry Packet -- Rate as specified in menus -- 1347 bytes
+### Car Telemetry Packet -- Rate as specified in menus -- 1448 bytes
 
 
 class CarTelemetryData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1352 instead of at least 1444 bytes)
     _fields_ = [
         ("m_speed",                     DataTypes.UNSIGNED_INT16.value),        # Speed of car in kilometres per hour
         ("m_throttle",                  DataTypes.FLOAT.value),                 # Amount of throttle applied (0.0 to 1.0)
@@ -405,23 +496,22 @@ class CarTelemetryData(DataTypes.STRUCTURE.value):
         ("m_surfaceType",               DataTypes.UNSIGNED_INT8.value * 4),     # Driving surface, see appendices
     ]
 
-
 class PacketCarTelemetryData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1352 instead of at least 1444 bytes)
     _fields_ = [
         ("m_header",                        PacketHeader),                      # Header
-        ("m_carTelemetryData",              CarTelemetryData * 22),
+        ("m_carTelemetryData",              CarTelemetryData * 24),
         ("m_mfdPanelIndex",                 DataTypes.UNSIGNED_INT8.value),     # Index of MFD panel open - 255 = MFD closed, Single player, race – 0 = Car setup, 1 = Pits, 2 = Damage, 3 =  Engine, 4 = Temperatures - May vary depending on game mode
         ("m_mfdPanelIndexSecondaryPlayer",  DataTypes.UNSIGNED_INT8.value),     # See above
         ("m_suggestedGear",                 DataTypes.SIGNED_INT8.value),       # Suggested gear for the player (1-8), 0 if no gear suggested
     ]
 
 
-### Car Status Packet -- Rate as specified in menus -- 1058 bytes
+### Car Status Packet -- Rate as specified in menus -- 1445 bytes
 
 
 class CarStatusData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1239 instead of at least 1440 bytes)
     _fields_ = [
         ("m_tractionControl",           DataTypes.UNSIGNED_INT8.value),     # Traction control - 0 = off, 1 = medium, 2 = full
         ("m_antiLockBrakes",            DataTypes.UNSIGNED_INT8.value),     # 0 (off) - 1 (on)
@@ -436,36 +526,38 @@ class CarStatusData(DataTypes.STRUCTURE.value):
         ("m_maxGears",                  DataTypes.UNSIGNED_INT8.value),     # Maximum number of gears
         ("m_drsAllowed",                DataTypes.UNSIGNED_INT8.value),     # 0 = not allowed, 1 = allowed
         ("m_drsActivationDistance",     DataTypes.UNSIGNED_INT16.value),    # 0 = DRS not available, non-zero - DRS will be available in [X] metres
-        ("m_actualTyreCompound",        DataTypes.UNSIGNED_INT8.value),     # F1 Modern - 16 = C5, 17 = C4, 18 = C3, 19 = C2, 20 = C1, 21 = C0, 7 = inter, 8 = wet
+        ("m_actualTyreCompound",        DataTypes.UNSIGNED_INT8.value),     # F1 Modern - 16 = C5, 17 = C4, 18 = C3, 19 = C2, 20 = C1, 21 = C0, 22 = C6, 7 = inter, 8 = wet
                                                                             # F1 Classic - 9 = dry, 10 = wet
                                                                             # F2 – 11 = super soft, 12 = soft, 13 = medium, 14 = hard, 15 = wet
         ("m_visualTyreCompound",        DataTypes.UNSIGNED_INT8.value),     # F1 visual (can be different from actual compound) - 16 = soft, 17 = medium, 18 = hard, 7 = inter, 8 = wet
                                                                             # F1 Classic – same as above
-                                                                            # F2 ‘19, 15 = wet, 19 – super soft, 20 = soft, 21 = medium , 22 = hard
+                                                                            # F2 ‘20, 15 = wet, 19 – super soft, 20 = soft, 21 = medium, 22 = hard
         ("m_tyresAgeLaps",              DataTypes.UNSIGNED_INT8.value),     # Age in laps of the current set of tyres
         ("m_vehicleFiaFlags",           DataTypes.SIGNED_INT8.value),       # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow
+        ("m_enginePowerICE",            DataTypes.FLOAT.value),             # Engine power output of ICE (W)
+        ("m_enginePowerMGUK",           DataTypes.FLOAT.value),             # Engine power output of MGU-K (W)
         ("m_ersStoreEnergy",            DataTypes.FLOAT.value),             # ERS energy store in Joules
         ("m_ersDeployMode",             DataTypes.UNSIGNED_INT8.value),     # ERS deployment mode, 0 = none, 1 = medium, 2 = hotlap, 3 = overtake
         ("m_ersHarvestedThisLapMguk",   DataTypes.FLOAT.value),             # ERS energy harvested this lap by MGU-K
         ("m_ersHarvestedThisLapMguh",   DataTypes.FLOAT.value),             # ERS energy harvested this lap by MGU-H
+        ("m_ersHarvestedLimitPerLap",   DataTypes.FLOAT.value),             # ERS energy harvestlimit for this lap
         ("m_ersDeployedThisLap",        DataTypes.FLOAT.value),             # ERS energy deployed this lap
         ("m_networkPaused",             DataTypes.UNSIGNED_INT8.value),     # Whether the car is paused in a network game
     ]
 
-
 class PacketCarStatusData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1239 instead of at least 1440 bytes)
     _fields_ = [
         ("m_header",        PacketHeader),          # Header
-        ("m_carStatusData", CarStatusData * 22),
+        ("m_carStatusData", CarStatusData * 24),
     ]
 
 
-### Final Classification Packet -- Once at the end of a race -- 1015 bytes
+### Final Classification Packet -- Once at the end of a race -- 1134 bytes
 
 
 class FinalClassificationData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1020 instead of at least 1264 bytes)
     _fields_ = [
         ("m_position",          DataTypes.UNSIGNED_INT8.value),         # Finishing position
         ("m_numLaps",           DataTypes.UNSIGNED_INT8.value),         # Number of laps completed
@@ -473,6 +565,7 @@ class FinalClassificationData(DataTypes.STRUCTURE.value):
         ("m_points",            DataTypes.UNSIGNED_INT8.value),         # Number of points scored
         ("m_numPitStops",       DataTypes.UNSIGNED_INT8.value),         # Number of pit stops made
         ("m_resultStatus",      DataTypes.UNSIGNED_INT8.value),         # Result status - 0 = invalid, 1 = inactive, 2 = active, 3 = finished, 4 = didnotfinish, 5 = disqualified, 6 = not classified, 7 = retired
+        ("m_resultReason",      DataTypes.UNSIGNED_INT8.value),         # Result reason - 0 = invalid, 1 = retired, 2 = finished, 3 = terminal damage, 4 = inactive, 5 = not enough laps completed, 6 = black flagged, 7 = red flagged, 8 = mechanical failure, 9 = session skipped, 10 = session simulated
         ("m_bestLapTimeInMs",   DataTypes.UNSIGNED_INT32.value),        # Best lap time of the session in milliseconds
         ("m_totalRaceTime",     DataTypes.DOUBLE.value),                # Total race time in seconds without penalties
         ("m_penaltiesTime",     DataTypes.UNSIGNED_INT8.value),         # Total penalties accumulated in seconds
@@ -483,17 +576,16 @@ class FinalClassificationData(DataTypes.STRUCTURE.value):
         ("tyreStintsEndLaps",   DataTypes.UNSIGNED_INT8.value * 8),     # The lap number stints end on
     ]
 
-
 class PacketFinalClassificationData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1020 instead of at least 1264 bytes)
     _fields_ = [
         ("m_header",                PacketHeader),                      # Header
         ("m_numCars",               DataTypes.UNSIGNED_INT8.value),     # Number of cars in the final classification
-        ("m_classificationData",    FinalClassificationData * 22),
+        ("m_classificationData",    FinalClassificationData * 24),
     ]
 
 
-### Lobby Info Packet -- Two every second when in the lobby -- 1191 bytes
+### Lobby Info Packet -- Two every second when in the lobby -- 1062 bytes
 
 
 class LobbyInfoData(DataTypes.STRUCTURE.value):
@@ -501,29 +593,33 @@ class LobbyInfoData(DataTypes.STRUCTURE.value):
         ("m_aiControlled",      DataTypes.UNSIGNED_INT8.value),     # Whether the vehicle is AI (1) or Human (0) controlled
         ("m_teamId",            DataTypes.UNSIGNED_INT8.value),     # Team id - see appendix (255 if no team currently selected)
         ("m_nationality",       DataTypes.UNSIGNED_INT8.value),     # Nationality of the driver
-        ("m_name",              DataTypes.CHAR.value * 48),         # Name of participant in UTF-8 format – null terminated Will be truncated with ... (U+2026) if too long
+        ("m_platform",          DataTypes.UNSIGNED_INT8.value),     # 1 = Steam, 3 = PlayStation, 4 = Xbox, 6 = Origin, 255 = unknown
+        ("m_name",              DataTypes.CHAR.value * 32),         # Name of participant in UTF-8 format – null terminated Will be truncated with ... (U+2026) if too long
         ("m_carNumber",         DataTypes.UNSIGNED_INT8.value),     # Car number of the player
+        ("m_yourTelemetry",     DataTypes.UNSIGNED_INT8.value),     # The player's UDP setting, 0 = restricted, 1 = public
+        ("m_showOnlineNames",   DataTypes.UNSIGNED_INT8.value),     # The player's show online names setting, 0 = off, 1 = on
+        ("m_techLevel",         DataTypes.UNSIGNED_INT16.value),    # F1 World tech level
         ("m_readyStatus",       DataTypes.UNSIGNED_INT8.value),     # 0 = not ready, 1 = ready, 2 = spectating
     ]
-
 
 class PacketLobbyInfoData(DataTypes.STRUCTURE.value):
     _fields_ = [
         ("m_header",        PacketHeader),                      # Header Packet specific data
         ("m_numPlayers",    DataTypes.UNSIGNED_INT8.value),     # Number of players in the lobby data
-        ("m_lobbyPlayers",  LobbyInfoData * 22),
+        ("m_lobbyPlayers",  LobbyInfoData * 24),
     ]
 
 
-### Car Damage Packet -- 10 per second -- 948 bytes
+### Car Damage Packet -- 10 per second -- 1133 bytes
 
 
 class CarDamageData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (953 instead of at least 1000 bytes)
     _fields_ = [
         ("m_tyresWear",             DataTypes.FLOAT.value * 4),             # Tyre wear (percentage)
         ("m_tyresDamage",           DataTypes.UNSIGNED_INT8.value * 4),     # Tyre damage (percentage)
         ("m_brakesDamage",          DataTypes.UNSIGNED_INT8.value * 4),     # Brakes damage (percentage)
+        ("m_tyreBlisters",          DataTypes.UNSIGNED_INT8.value * 4),     # Tyre blisters value (percentage)
         ("m_frontLeftWingDamage",   DataTypes.UNSIGNED_INT8.value),         # Front left wing damage (percentage)
         ("m_frontRightWingDamage",  DataTypes.UNSIGNED_INT8.value),         # Front right wing damage (percentage)
         ("m_rearWingDamage",        DataTypes.UNSIGNED_INT8.value),         # Rear wing damage (percentage)
@@ -534,50 +630,50 @@ class CarDamageData(DataTypes.STRUCTURE.value):
         ("m_ersFault",              DataTypes.UNSIGNED_INT8.value),         # Indicator for ERS fault, 0 = OK, 1 = fault
         ("m_gearBoxDamage",         DataTypes.UNSIGNED_INT8.value),         # Gear box damage (percentage)
         ("m_engineDamage",          DataTypes.UNSIGNED_INT8.value),         # Engine damage (percentage)
-        ("m_engineMGUHWear",        DataTypes.UNSIGNED_INT8.value),         # Engine wear MGU-H (percentage)
-        ("m_engineESWear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear ES (percentage)
-        ("m_engineCEWear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear CE (percentage)
-        ("m_engineICEWear",         DataTypes.UNSIGNED_INT8.value),         # Engine wear ICE (percentage)
-        ("m_engineMGUKWear",        DataTypes.UNSIGNED_INT8.value),         # Engine wear MGU-K (percentage)
-        ("m_engineTCWear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear TC (percentage)
+        ("m_engineMguhwear",        DataTypes.UNSIGNED_INT8.value),         # Engine wear MGU-H (percentage)
+        ("m_engineEswear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear ES (percentage)
+        ("m_engineCewear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear CE (percentage)
+        ("m_engineIcewear",         DataTypes.UNSIGNED_INT8.value),         # Engine wear ICE (percentage)
+        ("m_engineMgukwear",        DataTypes.UNSIGNED_INT8.value),         # Engine wear MGU-K (percentage)
+        ("m_engineTcwear",          DataTypes.UNSIGNED_INT8.value),         # Engine wear TC (percentage)
         ("m_engineBlown",           DataTypes.UNSIGNED_INT8.value),         # Engine blown, 0 = OK, 1 = fault
         ("m_engineSeized",          DataTypes.UNSIGNED_INT8.value),         # Engine seized, 0 = OK, 1 = fault
     ]
 
-
 class PacketCarDamageData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (953 instead of at least 1000 bytes)
     _fields_ = [
         ("m_header",            PacketHeader),          # Header
-        ("m_carDamageData",     CarDamageData * 22),
+        ("m_carDamageData",     CarDamageData * 24),
     ]
 
 
-### Session History Packet -- 20 per second but cycling through cars -- 1155 bytes
+### Session History Packet -- 20 per second but cycling through cars -- 1460 bytes
 
 
 class LapHistoryData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1460 instead of at least 1660 bytes)
     _fields_ = [
         ("m_lapTimeInMs",           DataTypes.UNSIGNED_INT32.value),    # Lap time in milliseconds
         ("m_sector1TimeInMs",       DataTypes.UNSIGNED_INT16.value),    # Sector 1 time in milliseconds
+        ("m_sector1TimeMinutes",    DataTypes.UNSIGNED_INT8.value),     # Sector 1 whole minute part
         ("m_sector2TimeInMs",       DataTypes.UNSIGNED_INT16.value),    # Sector 2 time in millisecond
+        ("m_sector2TimeMinutes",    DataTypes.UNSIGNED_INT8.value),     # Sector 2 whole minute part
         ("m_sector3TimeInMs",       DataTypes.UNSIGNED_INT16.value),    # Sector 3 time in milliseconds
+        ("m_sector3TimeMinutes",    DataTypes.UNSIGNED_INT8.value),     # Sector 3 whole minute part
         ("m_lapValidBitFlags",      DataTypes.UNSIGNED_INT8.value),     # 0x01 bit set-lap valid, 0x02 bit set-sector 1 valid, 0x04 bit set-sector 2 valid, 0x08 bit set-sector 3 valid
     ]
 
-
 class TyreStintHistoryData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1460 instead of at least 1660 bytes)
     _fields_ = [
         ("m_endLap",                DataTypes.UNSIGNED_INT8.value),     # Lap the tyre usage ends on (255 of current tyre)
         ("m_tyreActualCompound",    DataTypes.UNSIGNED_INT8.value),     # Actual tyres used by this driver
         ("m_tyreVisualCompound",    DataTypes.UNSIGNED_INT8.value),     # Visual tyres used by this driver
     ]
 
-
 class PacketSessionHistoryData(DataTypes.STRUCTURE.value):
-    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1460 instead of at least 1660 bytes)
     _fields_ = [
         ("m_header",                    PacketHeader),                      # Header
         ("m_carIdx",                    DataTypes.UNSIGNED_INT8.value),     # Index of the car this lap data relates to
@@ -589,6 +685,141 @@ class PacketSessionHistoryData(DataTypes.STRUCTURE.value):
         ("m_bestSector3LapNum",         DataTypes.UNSIGNED_INT8.value),     # Lap the best Sector 3 time was achieved on
         ("m_lapHistoryData",            LapHistoryData * 100),              # 100 laps of data max
         ("m_tyreStintsHistoryData",     TyreStintHistoryData * 8),
+    ]
+
+
+### Tyre Set Packet -- 20 per second but cycling through cars -- 231 bytes
+
+
+class TyreSetData(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (231 instead of at least 272 bytes)
+    _fields_ = [
+        ("m_actualTyreCompound",    DataTypes.UNSIGNED_INT8.value),     # Actual tyre compound used
+        ("m_visualTyreCompound",    DataTypes.UNSIGNED_INT8.value),     # Visual tyre compound used
+        ("m_wear",                  DataTypes.UNSIGNED_INT8.value),     # Tyre wear (percentage)
+        ("m_available",             DataTypes.UNSIGNED_INT8.value),     # Whether this set is currently available
+        ("m_recommendedSession",    DataTypes.UNSIGNED_INT8.value),     # Recommended session for tyre set
+        ("m_lifeSpan",              DataTypes.UNSIGNED_INT8.value),     # Laps left in this tyre set
+        ("m_usableLife",            DataTypes.UNSIGNED_INT8.value),     # Max number of laps recommended for this compound
+        ("m_lapDeltaTime",          DataTypes.SIGNED_INT16.value),      # Lap delta time in milliseconds compared to fitted set
+        ("m_fitted",                DataTypes.UNSIGNED_INT8.value),     # Whether the set is fitted or not
+    ]
+
+
+class PacketTyreSetsData(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (231 instead of at least 272 bytes)
+    _fields_ = [
+        ("m_header",        PacketHeader),                      # Header
+        ("m_carIdx",        DataTypes.UNSIGNED_INT8.value),     # Index of the car this data relates to
+        ("m_tyreSetData",   TyreSetData * 20),                  # 13 (dry) + 7 (wet)
+        ("m_fittedIdx",     DataTypes.UNSIGNED_INT8.value),     # Index into array of fitted tyre
+    ]
+
+
+### Motion Ex Packet -- Rate as specified in menus -- 273 bytes
+
+
+class PacketMotionExData(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _fields_ = [
+        ("m_header",    PacketHeader),  # Header
+        # Extra player car ONLY data
+        ("m_suspensionPosition",        DataTypes.FLOAT.value * 4),     # Note: All wheel arrays have the following order:
+        ("m_suspensionVelocity",        DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
+        ("m_suspensionAcceleration",    DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
+        ("m_wheelSpeed",                DataTypes.FLOAT.value * 4),     # Speed of each wheel
+        ("m_wheelSlipRatio",            DataTypes.FLOAT.value * 4),     # Slip ratio for each wheel
+        ("m_wheelSlipAngle",            DataTypes.FLOAT.value * 4),     # Slip angles for each wheel
+        ("m_wheelLatForce",             DataTypes.FLOAT.value * 4),     # Lateral forces for each wheel
+        ("m_wheelLongForce",            DataTypes.FLOAT.value * 4),     # Longitudinal forces for each wheel
+        ("m_heightOfCOGAboveGround",    DataTypes.FLOAT.value),         # Height of centre of gravity above ground
+        ("m_localVelocityX",            DataTypes.FLOAT.value),         # Velocity in local space – metres/s
+        ("m_localVelocityY",            DataTypes.FLOAT.value),         # Velocity in local space
+        ("m_localVelocityZ",            DataTypes.FLOAT.value),         # Velocity in local space
+        ("m_angularVelocityX",          DataTypes.FLOAT.value),         # Angular velocity x-component – metres/s
+        ("m_angularVelocityY",          DataTypes.FLOAT.value),         # Angular velocity y-component
+        ("m_angularVelocityZ",          DataTypes.FLOAT.value),         # Angular velocity z-component
+        ("m_angularAccelerationX",      DataTypes.FLOAT.value),         # Angular acceleration x-component – metres/s
+        ("m_angularAccelerationY",      DataTypes.FLOAT.value),         # Angular acceleration y-component
+        ("m_angularAccelerationZ",      DataTypes.FLOAT.value),         # Angular acceleration z-component
+        ("m_frontWheelsAngle",          DataTypes.FLOAT.value),         # Current front wheels angle in radians
+        ("m_wheelVertForce",            DataTypes.FLOAT.value * 4),     # Vertical forces for each wheel
+        ("m_frontAeroHeight",           DataTypes.FLOAT.value),         # Front plank edge height above road surface
+        ("m_rearAeroHeight",            DataTypes.FLOAT.value),         # Rear plank edge height above road surface
+        ("m_frontRollAngle",            DataTypes.FLOAT.value),         # Roll angle of the front suspension
+        ("m_rearRollAngle",             DataTypes.FLOAT.value),         # Roll angle of the rear suspension
+        ("m_chassisYaw",                DataTypes.FLOAT.value),         # Yaw angle of the chassis relative to the direction of motion - radians
+        ("m_chassisPitch",              DataTypes.FLOAT.value),         # Pitch angle of the chassis relative to the direction of motion – radians
+        ("m_wheelCamber",               DataTypes.FLOAT.value * 4),     # Camber of each wheel in radians
+        ("m_wheelCamberGain",           DataTypes.FLOAT.value * 4),     # Camber gain for each wheel in radians, difference between active camber and dynamic camber
+    ]
+
+
+### Time Trial Packet -- 1 per second, only in time trial -- 104 bytes
+
+
+class TimeTrialDataSet(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (101 instead of at least 116 bytes)
+    _fields_ = [
+        ("m_carIdx",                DataTypes.UNSIGNED_INT8.value),     # Index of the car this data relates to
+        ("m_teamId",                DataTypes.UNSIGNED_INT16.value),     # Team id - see appendix
+        ("m_lapTimeInMS",           DataTypes.UNSIGNED_INT32.value),    # Lap time in milliseconds
+        ("m_sector1TimeInMS",       DataTypes.UNSIGNED_INT32.value),    # Sector 1 time in milliseconds
+        ("m_sector2TimeInMS",       DataTypes.UNSIGNED_INT32.value),    # Sector 2 time in milliseconds
+        ("m_sector3TimeInMS",       DataTypes.UNSIGNED_INT32.value),    # Sector 3 time in milliseconds
+        ("m_tractionControl",       DataTypes.UNSIGNED_INT8.value),     # 0 = off, 1 = medium, 2 = full
+        ("m_gearboxAssist",         DataTypes.UNSIGNED_INT8.value),     # 1 = manual, 2 = manual & suggested gear, 3 = auto
+        ("m_antiLockBrakes",        DataTypes.UNSIGNED_INT8.value),     # 0 (off) - 1 (on)
+        ("m_equalCarPerformance",   DataTypes.UNSIGNED_INT8.value),     # 0 = Realistic, 1 = Equal
+        ("m_customSetup",           DataTypes.UNSIGNED_INT8.value),     # 0 = No, 1 = Yes
+        ("m_valid",                 DataTypes.UNSIGNED_INT8.value),     # 0 = invalid, 1 = valid
+    ]
+
+
+class PacketTimeTrialData(DataTypes.STRUCTURE.value):
+    _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (101 instead of at least 116 bytes)
+    _fields_ = [
+        ("m_header",                    PacketHeader),      # Header
+        ("m_playerSessionBestDataSet",  TimeTrialDataSet),  # Player session best data set
+        ("m_personalBestDataSet",       TimeTrialDataSet),  # Personal best data set
+        ("m_rivalDataSet",              TimeTrialDataSet),  # Rival data set
+    ]
+
+
+### Lap Positions Packet -- 1 per second -- 1231 bytes
+
+
+class PacketLapPositionsData(DataTypes.STRUCTURE.value):
+    _pack_ = 1
+    _fields_ = [
+        ("m_header",                    PacketHeader),                              # Header
+        ("m_numLaps",                   DataTypes.UNSIGNED_INT8.value),             # Number of laps in the data
+        ("m_lapStart",                  DataTypes.UNSIGNED_INT8.value),             # Index of the lap where the data starts, 0 indexed
+        ("m_positionForVehicleIdx",     DataTypes.UNSIGNED_INT8.value * 50 * 24),   # Array holding the position of the car in a given lap, 0 if no record
+    ]
+
+
+### Car Telemetry 2 Packet -- Rate as specified in menus -- 269 bytes
+
+
+class CarTelemetry2Data(DataTypes.STRUCTURE.value):
+    _pack_ = 1
+    _fields_ = [
+        ("m_activeAeroMode",                DataTypes.UNSIGNED_INT8.value),     # 0 = Corner mode, 1 = Straight mode
+        ("m_activeAeroAvailable",           DataTypes.UNSIGNED_INT8.value),     # 0 = not available, 1 = available
+        ("m_activeAeroActivationDistance",  DataTypes.UNSIGNED_INT16.value),    # 0 = Active aero not available, non-zero – Active aero will be available in [X] metres
+        ("m_overtakeAvailable",             DataTypes.UNSIGNED_INT8.value),     # 0 = not available, 1 = available
+        ("m_overtakeActive",                DataTypes.UNSIGNED_INT8.value),     # 0 = not active, 1 = active
+        ("m_overtakeActivationDistance",    DataTypes.UNSIGNED_INT16.value),    # 0 = Overtake Mode not available, non-zero – Overtake Mode will be available in [X] metres
+        ("m_2026Regulations",               DataTypes.UNSIGNED_INT8.value),     # 0 = vehicle conforms to pre-2026, 1 = 2026 regulations applicable
+        ("m_drivingWrongWay",               DataTypes.UNSIGNED_INT8.value),     # Whether the car is driving the wrong way
+    ]
+
+class PacketCarTelemetry2Data(DataTypes.STRUCTURE.value):
+    _pack_ = 1
+    _fields_ = [
+        ("m_header",            PacketHeader),              # Header
+        ("m_carTelemetry2Data", CarTelemetry2Data * 24),
     ]
 
 
@@ -610,7 +841,7 @@ class MetaData:
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (27, PacketHeader)
+    headerInfo: tuple[int, type | None] = (32, PacketHeader)
     packetIDAttribute: str | None = "m_packetId"
     
     # use for shared memory
@@ -619,16 +850,21 @@ class MetaData:
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (PacketMotionData,),                 # Contains all motion data for player’s car – only sent while player is in control
-        1: (PacketSessionData,),                 # Data about the session – track, time left
-        2: (PacketLapData,),                     # Data about all the lap times of cars in the session
-        3: (PacketEventData,),                    # Various notable events that happen during a session
+        1: (PacketSessionData,),                # Data about the session – track, time left
+        2: (PacketLapData,),                    # Data about all the lap times of cars in the session
+        3: (PacketEventData,),                  # Various notable events that happen during a session
         4: (PacketParticipantsData,),           # List of participants in the session, mostly relevant for multiplayer
         5: (PacketCarSetupData,),               # Packet detailing car setups for cars in the race
         6: (PacketCarTelemetryData,),           # Telemetry data for all cars
         7: (PacketCarStatusData,),              # Status data for all cars
         8: (PacketFinalClassificationData,),    # Final classification confirmation at the end of a race
         9: (PacketLobbyInfoData,),              # Information about players in a multiplayer lobby
-        10: (PacketCarDamageData,),              # Damage status for all cars
+        10: (PacketCarDamageData,),             # Damage status for all cars
         11: (PacketSessionHistoryData,),        # Lap and tyre data for session
+        12: (PacketTyreSetsData,),              # Extended tyre set data
+        13: (PacketMotionExData,),              # Extended motion data for player car
+        14: (PacketTimeTrialData,),             # Time Trial specific data
+        15: (PacketLapPositionsData,),          # Lap positions on each lap so a chart can be constructed
+        16: (PacketCarTelemetry2Data,),         # Additional telemetry data for all cars
     }
 

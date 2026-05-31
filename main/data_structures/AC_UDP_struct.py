@@ -149,16 +149,15 @@ def endHandShake(socket, destination: tuple[int, int]):
 
 class MetaData:
     # standard network info
-    port: int = 9997
-    fullBufferSize: int = 1500
+    port: int | None = 9997
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = 9996
-    handShakeFunc = (startHandShake, endHandShake)
+    handShakePort: int | None = 9996
+    handShakeFunc: tuple | None = (startHandShake, endHandShake)
     
     # use if the data needs decrypting
     decrytionFunc = None
@@ -167,7 +166,10 @@ class MetaData:
     headerInfo: tuple[int, type | None] = (0, None)
     packetIDAttribute: str | None = None
     
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = None
+    
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((328, RTCarData), (212, RTLapData), (408, handshackerResponse), ),
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (RTCarData, RTLapData, handshackerResponse, ),
     }

@@ -337,16 +337,15 @@ def decrypt_data(raw: bytes) -> bytes:
 
 class MetaData:
     # standard network info
-    port: int = 33740
-    fullBufferSize: int = 368
+    port: int | None = 33740
     
     # use if a heartbeat is needed
-    heartBeatPort = 33739
+    heartBeatPort: int | None = 33739
     heartBeatFunc = heartBeat
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = decrypt_data
@@ -355,7 +354,10 @@ class MetaData:
     headerInfo: tuple[int, type | None] = (0, None)
     packetIDAttribute: str | None = None
     
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = None
+    
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((296, PacketAData), (316, PacketBData), (344, PacketTildaData), (368, PacketCData)),
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (PacketAData, PacketBData, PacketTildaData, PacketCData,),
     }

@@ -24,6 +24,7 @@ class DataTypes(Enum):
 
     FLOAT = ctypes.c_float
     CHAR = ctypes.c_char
+    SHORT = ctypes.c_short
 
 
 ### Packet Header
@@ -251,6 +252,7 @@ class GameStateData(DataTypes.STRUCTURE.value):
         ("sWindSpeed",              DataTypes.SIGNED_BYTE.value),
         ("sWindDirectionX",         DataTypes.SIGNED_BYTE.value),
         ("sWindDirectionY",         DataTypes.SIGNED_BYTE.value),
+        ("paddingD",                DataTypes.SHORT.value),
     ]
 
 
@@ -334,33 +336,35 @@ class VehicleClassNamesData(DataTypes.STRUCTURE.value):
 
 class MetaData:
     # standard network info
-    port: int = 5606
-    fullBufferSize: int = 1452
+    port: int | None = 5606
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type] = (12, PacketHeader)
-    packetIDAttribute: str = 'mPacketType'
+    headerInfo: tuple[int, type | None] = (12, PacketHeader)
+    packetIDAttribute: str | None = 'mPacketType'
+    
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = "$pcars2$"
     
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((559, TelemetryData),),
-        1: ((308, RaceData),),
-        2: ((1136, ParticipantsData),),
-        3: ((1063, TimingsData),),
-        4: ((24, GameStateData),),
-        7: ((1040, TimeStatsData),),
-        8: ((1452, VehicleClassNamesData), (1164, ParticipantVehicleNamesData),),
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (TelemetryData,),
+        1: (RaceData,),
+        2: (ParticipantsData,),
+        3: (TimingsData,),
+        4: (GameStateData,),
+        7: (TimeStatsData,),
+        8: (VehicleClassNamesData, ParticipantVehicleNamesData),
     }
 
 

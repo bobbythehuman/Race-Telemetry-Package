@@ -796,41 +796,43 @@ class PacketLapPositionsData(DataTypes.STRUCTURE.value):
 
 class MetaData:
     # standard network info
-    port: int = 20777
-    fullBufferSize: int = 1460
+    port: int | None = 20777
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type] = (32, PacketHeader)
-    packetIDAttribute: str = "m_packetId"
+    headerInfo: tuple[int, type | None] = (32, PacketHeader)
+    packetIDAttribute: str | None = "m_packetId"
+    
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = None
     
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((1349, PacketMotionData),),                 # Contains all motion data for player’s car – only sent while player is in control
-        1: ((753, PacketSessionData),),                 # Data about the session – track, time left
-        2: ((1285, PacketLapData),),                    # Data about all the lap times of cars in the session
-        3: ((45, PacketEventData),),                    # Various notable events that happen during a session
-        4: ((1284, PacketParticipantsData),),           # List of participants in the session, mostly relevant for multiplayer
-        5: ((1133, PacketCarSetupData),),               # Packet detailing car setups for cars in the race
-        6: ((1352, PacketCarTelemetryData),),           # Telemetry data for all cars
-        7: ((1239, PacketCarStatusData),),              # Status data for all cars
-        8: ((1042, PacketFinalClassificationData),),    # Final classification confirmation at the end of a race
-        9: ((954, PacketLobbyInfoData),),               # Information about players in a multiplayer lobby
-        10: ((1041, PacketCarDamageData),),              # Damage status for all cars
-        11: ((1460, PacketSessionHistoryData),),        # Lap and tyre data for session
-        12: ((231, PacketTyreSetsData),),               # Extended tyre set data
-        13: ((273, PacketMotionExData),),               # Extended motion data for player car
-        14: ((101, PacketTimeTrialData),),              # Time Trial specific data
-        15: ((1131, PacketLapPositionsData),),          # Lap positions on each lap so a chart can be constructed
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (PacketMotionData,),                 # Contains all motion data for player’s car – only sent while player is in control
+        1: (PacketSessionData,),                # Data about the session – track, time left
+        2: (PacketLapData,),                    # Data about all the lap times of cars in the session
+        3: (PacketEventData,),                  # Various notable events that happen during a session
+        4: (PacketParticipantsData,),           # List of participants in the session, mostly relevant for multiplayer
+        5: (PacketCarSetupData,),               # Packet detailing car setups for cars in the race
+        6: (PacketCarTelemetryData,),           # Telemetry data for all cars
+        7: (PacketCarStatusData,),              # Status data for all cars
+        8: (PacketFinalClassificationData,),    # Final classification confirmation at the end of a race
+        9: (PacketLobbyInfoData,),              # Information about players in a multiplayer lobby
+        10: (PacketCarDamageData,),             # Damage status for all cars
+        11: (PacketSessionHistoryData,),        # Lap and tyre data for session
+        12: (PacketTyreSetsData,),              # Extended tyre set data
+        13: (PacketMotionExData,),              # Extended motion data for player car
+        14: (PacketTimeTrialData,),             # Time Trial specific data
+        15: (PacketLapPositionsData,),          # Lap positions on each lap so a chart can be constructed
     }
 

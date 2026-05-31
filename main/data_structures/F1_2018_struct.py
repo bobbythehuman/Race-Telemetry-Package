@@ -312,33 +312,35 @@ class PacketCarStatusData(DataTypes.STRUCTURE.value):
 
 class MetaData:
     # standard network info
-    port: int = 20777
-    fullBufferSize: int = 1341
+    port: int | None = 20777
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type] = (24, PacketHeader)
-    packetIDAttribute: str = "m_packetId"
+    headerInfo: tuple[int, type | None] = (24, PacketHeader)
+    packetIDAttribute: str | None = "m_packetId"
+    
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = None
     
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((1341, PacketMotionData),),                 # Contains all motion data for player’s car – only sent while player is in control
-        1: ((147, PacketSessionData),),                 # Data about the session – track, time left
-        2: ((841, PacketLapData),),                     # Data about all the lap times of cars in the session
-        3: ((25, PacketEventData),),                    # Various notable events that happen during a session
-        4: ((1082, PacketParticipantsData),),           # List of participants in the session, mostly relevant for multiplayer
-        5: ((841, PacketCarSetupData),),                # Packet detailing car setups for cars in the race
-        6: ((1085, PacketCarTelemetryData),),           # Telemetry data for all cars
-        7: ((1061, PacketCarStatusData),),              # Status data for all cars
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (PacketMotionData,),         # Contains all motion data for player’s car – only sent while player is in control
+        1: (PacketSessionData,),        # Data about the session – track, time left
+        2: (PacketLapData,),            # Data about all the lap times of cars in the session
+        3: (PacketEventData,),          # Various notable events that happen during a session
+        4: (PacketParticipantsData,),   # List of participants in the session, mostly relevant for multiplayer
+        5: (PacketCarSetupData,),       # Packet detailing car setups for cars in the race
+        6: (PacketCarTelemetryData,),   # Telemetry data for all cars
+        7: (PacketCarStatusData,),      # Status data for all cars
     }
 

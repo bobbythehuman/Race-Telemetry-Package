@@ -136,16 +136,15 @@ class DashData(DataTypes.STRUCTURE.value):
 
 class MetaData:
     # standard network info
-    port: int = 5300
-    fullBufferSize: int = 324
+    port: int | None = 5300
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = None
@@ -154,7 +153,10 @@ class MetaData:
     headerInfo: tuple[int, type | None] = (0, None)
     packetIDAttribute: str | None = None
     
+    # use for shared memory
+    allSharedMemoryNames: str | None | dict[str, str] = None
+    
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((324, DashData),),
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (DashData,),
     }

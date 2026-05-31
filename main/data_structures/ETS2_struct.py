@@ -383,15 +383,14 @@ class scsTelemetryMapData(DataTypes.STRUCTURE.value):
 class MetaData:
     # standard network info
     port: int | None = None
-    fullBufferSize: int = 21644
     
     # use if a heartbeat is needed
-    heartBeatPort = None
+    heartBeatPort: int | None = None
     heartBeatFunc = None
     
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
     decrytionFunc = None
@@ -401,10 +400,9 @@ class MetaData:
     packetIDAttribute: str | None = None
     
     # use for shared memory
-    sharedMemoryName: str = "Local\\SCSTelemetry"
-    sharedMemorySize: int = 32 * 1024
+    allSharedMemoryNames: str | None | dict[str, str] = "Local\\SCSTelemetry"
     
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((21644, scsTelemetryMapData), ),
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (scsTelemetryMapData, ),
     }
