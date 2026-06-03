@@ -193,34 +193,32 @@ class PacketMotionData(DataTypes.STRUCTURE.value):
 
 In your main script, import the new metadata:
 
-| Syntax            | Type                                   | Description                                                                          |
-| ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------ |
-| port              | Integer                                | UDP port data is received on                                                         |
-| fullBufferSize    | Integer                                | Maximum packet size                                                                  |
-| heartBeatPort     | Integer                                | UDP port to send a heart beat to                                                     |
-| heartBeatFunc     | Function                               | Heart beat function                                                                  |
-| handShakePort     | Integer                                | UDP port to send a hand shake to                                                     |
-| handShakeFunc     | Tuple [Function, Function]             | Tuple containing start and stop hand shake functions                                 |
-| decrytionFunc     | Function                               | Data decryption function                                                             |
-| headerInfo        | Tuple [int, type]                      | Tuple containing, the packet size and header struct class (if protocol uses header). |
-| packetIDAttribute | String                                 | An attribute in the header packet defining the packet ID                             |
-| sharedMemoryName  | String                                 | Name of the shared memory segment used for data exchange                             |
-| sharedMemorySize  | Integer                                | Size of the shared memory segment used for data exchange                             |
-| packetInfo        | Dict [int, List [Same as headerInfo] ] | Game packet mapping - See more below                                                 |
+| Syntax            | Type                              | Description                                                   |
+| ----------------- | --------------------------------- | ------------------------------------------------------------- |
+| port              | Integer                           | UDP port data is received on                                  |
+| heartBeatPort     | Integer                           | UDP port to send a heart beat to                              |
+| heartBeatFunc     | Function                          | Heart beat function                                           |
+| handShakePort     | Integer                           | UDP port to send a hand shake to                              |
+| handShakeFunc     | Tuple [Function, Function]        | Tuple containing start and stop hand shake functions          |
+| decrytionFunc     | Function                          | Data decryption function                                      |
+| headerInfo        | Type                              | The header struct class (if protocol uses header).            |
+| packetIDAttribute | String                            | An attribute in the header packet defining the packet ID      |
+| sharedMemoryName  | String | None | dict[String, String]    | Name of the shared memory segment used for data exchange      |
+| packetInfo        | Dict [Int, List [Type] ]          | Game packet mapping - See more below                          |
 
 #### PacketInfo
 
 A Dictionary containing
 
 - key: Packet ID or 0 if no ID
-- value: Tuple of (packetSize, packetStructClass) variants.
+- value: Tuple of packetStructClass variants.
 
 #### PacketInfo - Standard
 
 ```python
 packetInfo = {
-    0: ((1349, PacketMotionData),),
-    1: ((753, PacketSessionData),),
+    0: (PacketMotionData,),
+    1: (PacketSessionData,),
     # ...
 }
 ```
@@ -229,9 +227,9 @@ packetInfo = {
 
 ```python
 packetInfo = {
-    0: ((559, TelemetryData),),
-    7: ((1040, TimeStatsData),),
-    8: ((1452, VehicleClassNamesData), (1164, ParticipantVehicleNamesData),),
+    0: (TelemetryData,),
+    7: (TimeStatsData,),
+    8: (VehicleClassNamesData, ParticipantVehicleNamesData),
     # ...
 }
 ```
@@ -240,7 +238,7 @@ packetInfo = {
 
 ```python
 packetInfo = {
-    0: ((296, PacketAData), (316, PacketBData), (344, PacketTildaData), (368, PacketCData)),
+    0: (PacketAData, PacketBData, PacketTildaData, PacketCData),
     # ...
 }
 ```
@@ -252,7 +250,6 @@ packetInfo = {
 class MetaData:
     # standard network info
     port: int| None = 20777  # UDP port for your game
-    fullBufferSize: int = 1464  # Maximum packet size
 
     # use if a heartbeat is needed
     heartBeatPort = 33739
@@ -270,12 +267,11 @@ class MetaData:
     packetIDAttribute: str = "m_packetId"  # Attribute name for packet ID
     
     # use for shared memory
-    sharedMemoryName: str = "Local\\SCSTelemetry" # Name of the shared memory segment
-    sharedMemorySize: int = 32 * 1024 # Size of the shared memory segment in bytes
+    sharedMemoryName: str | None | dict[str, str] = "Local\\SCSTelemetry" # Names of the shared memory segment
 
     # standard packet info
     packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: ((1349, PacketMotionData),),  # Packet ID: ((size, packet_class),)
+        0: (PacketMotionData,),  # Packet ID: ((size, packet_class),)
         # Add more packet types as needed
     }
 ```
@@ -313,7 +309,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 ## Supported Games
 
 ### UDP
-- Assetto Corsa <!-- has link -->
+- Assetto Corsa <!-- has link / has document -->
 - BeamNG Drive <!-- has link -->
 - F1 2016 (untested) <!-- has link -->
 - F1 2017 <!-- has link -->
@@ -335,6 +331,9 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - Project Cars 2
 
 ### Shared Memory
+- Assetto Corsa
+- Assetto Corsa Competizione (untested) <!-- has link / has document -->
+- Assetto Corsa Evo (untested) <!-- has link / has document -->
 - Euro Truck Simulator 2
 
 ## Troubleshooting
