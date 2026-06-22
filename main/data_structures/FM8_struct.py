@@ -4,7 +4,7 @@ from enum import Enum
 # source
 # https://support.forzamotorsport.net/hc/en-us/articles/21742934024211-Forza-Motorsport-Data-Out-Documentation
 
-class DataTypes(Enum):
+class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
     
     SIGNED_INT = ctypes.c_int
@@ -19,195 +19,195 @@ class DataTypes(Enum):
     FLOAT = ctypes.c_float
 
 
-class SledData(DataTypes.STRUCTURE.value):
+class SledData(DataTypes.STRUCTURE):
     _fields_ = [
-        ("IsRaceOn",            DataTypes.SIGNED_INT32.value),  # 1 when race is on. = 0 when in menus/race stopped
+        ("IsRaceOn",            DataTypes.SIGNED_INT32),  # 1 when race is on. = 0 when in menus/race stopped
         # Can overflow to 0 eventually      
-        ("TimestampMS",         DataTypes.UNSIGNED_INT32.value),          
-        ("EngineMaxRpm",        DataTypes.FLOAT.value),
-        ("EngineIdleRpm",       DataTypes.FLOAT.value),
-        ("CurrentEngineRpm",    DataTypes.FLOAT.value),
+        ("TimestampMS",         DataTypes.UNSIGNED_INT32),          
+        ("EngineMaxRpm",        DataTypes.FLOAT),
+        ("EngineIdleRpm",       DataTypes.FLOAT),
+        ("CurrentEngineRpm",    DataTypes.FLOAT),
         # In the car's local space; X = right, Y = up, Z = forward
-        ("AccelerationX",       DataTypes.FLOAT.value),
-        ("AccelerationY",       DataTypes.FLOAT.value),
-        ("AccelerationZ",       DataTypes.FLOAT.value),
+        ("AccelerationX",       DataTypes.FLOAT),
+        ("AccelerationY",       DataTypes.FLOAT),
+        ("AccelerationZ",       DataTypes.FLOAT),
         # In the car's local space; X = right, Y = up, Z = forward
-        ("VelocityX",           DataTypes.FLOAT.value),
-        ("VelocityY",           DataTypes.FLOAT.value),
-        ("VelocityZ",           DataTypes.FLOAT.value),
+        ("VelocityX",           DataTypes.FLOAT),
+        ("VelocityY",           DataTypes.FLOAT),
+        ("VelocityZ",           DataTypes.FLOAT),
         # In the car's local space; X = pitch, Y = yaw, Z = roll
-        ("AngularVelocityX",    DataTypes.FLOAT.value),
-        ("AngularVelocityY",    DataTypes.FLOAT.value),
-        ("AngularVelocityZ",    DataTypes.FLOAT.value),
+        ("AngularVelocityX",    DataTypes.FLOAT),
+        ("AngularVelocityY",    DataTypes.FLOAT),
+        ("AngularVelocityZ",    DataTypes.FLOAT),
         
-        ("Yaw",                 DataTypes.FLOAT.value),
-        ("Pitch",               DataTypes.FLOAT.value),
-        ("Roll",                DataTypes.FLOAT.value),
+        ("Yaw",                 DataTypes.FLOAT),
+        ("Pitch",               DataTypes.FLOAT),
+        ("Roll",                DataTypes.FLOAT),
         # Suspension travel normalized: 0.0f = max stretch; 1.0 = max compression
-        ("NormalizedSuspensionTravelFrontLeft",     DataTypes.FLOAT.value),
-        ("NormalizedSuspensionTravelFrontRight",    DataTypes.FLOAT.value),
-        ("NormalizedSuspensionTravelRearLeft",      DataTypes.FLOAT.value),
-        ("NormalizedSuspensionTravelRearRight",     DataTypes.FLOAT.value),
+        ("NormalizedSuspensionTravelFrontLeft",     DataTypes.FLOAT),
+        ("NormalizedSuspensionTravelFrontRight",    DataTypes.FLOAT),
+        ("NormalizedSuspensionTravelRearLeft",      DataTypes.FLOAT),
+        ("NormalizedSuspensionTravelRearRight",     DataTypes.FLOAT),
         # Tire normalized slip ratio, = 0 means 100% grip and |ratio| > 1.0 means loss of grip.
-        ("TireSlipRatioFrontLeft",          DataTypes.FLOAT.value),
-        ("TireSlipRatioFrontRight",         DataTypes.FLOAT.value),
-        ("TireSlipRatioRearLeft",           DataTypes.FLOAT.value),
-        ("TireSlipRatioRearRight",          DataTypes.FLOAT.value),
+        ("TireSlipRatioFrontLeft",          DataTypes.FLOAT),
+        ("TireSlipRatioFrontRight",         DataTypes.FLOAT),
+        ("TireSlipRatioRearLeft",           DataTypes.FLOAT),
+        ("TireSlipRatioRearRight",          DataTypes.FLOAT),
         # Wheels rotation speed radians/sec. 
-        ("WheelRotationSpeedFrontLeft",     DataTypes.FLOAT.value),
-        ("WheelRotationSpeedFrontRight",    DataTypes.FLOAT.value),
-        ("WheelRotationSpeedRearLeft",      DataTypes.FLOAT.value),
-        ("WheelRotationSpeedRearRight",     DataTypes.FLOAT.value),
+        ("WheelRotationSpeedFrontLeft",     DataTypes.FLOAT),
+        ("WheelRotationSpeedFrontRight",    DataTypes.FLOAT),
+        ("WheelRotationSpeedRearLeft",      DataTypes.FLOAT),
+        ("WheelRotationSpeedRearRight",     DataTypes.FLOAT),
         # 1 when wheel is on rumble strip, = 0 when off.
-        ("WheelOnRumbleStripFrontLeft",     DataTypes.SIGNED_INT32.value),
-        ("WheelOnRumbleStripFrontRight",    DataTypes.SIGNED_INT32.value),
-        ("WheelOnRumbleStripRearLeft",      DataTypes.SIGNED_INT32.value),
-        ("WheelOnRumbleStripRearRight",     DataTypes.SIGNED_INT32.value),
+        ("WheelOnRumbleStripFrontLeft",     DataTypes.SIGNED_INT32),
+        ("WheelOnRumbleStripFrontRight",    DataTypes.SIGNED_INT32),
+        ("WheelOnRumbleStripRearLeft",      DataTypes.SIGNED_INT32),
+        ("WheelOnRumbleStripRearRight",     DataTypes.SIGNED_INT32),
         # from 0 to 1, where 1 is the deepest puddle
-        ("WheelInPuddleDepthFrontLeft",     DataTypes.FLOAT.value),
-        ("WheelInPuddleDepthFrontRight",    DataTypes.FLOAT.value),
-        ("WheelInPuddleDepthRearLeft",      DataTypes.FLOAT.value),
-        ("WheelInPuddleDepthRearRight",     DataTypes.FLOAT.value),
+        ("WheelInPuddleDepthFrontLeft",     DataTypes.FLOAT),
+        ("WheelInPuddleDepthFrontRight",    DataTypes.FLOAT),
+        ("WheelInPuddleDepthRearLeft",      DataTypes.FLOAT),
+        ("WheelInPuddleDepthRearRight",     DataTypes.FLOAT),
         # Non-dimensional surface rumble values passed to controller force feedback
-        ("SurfaceRumbleFrontLeft",          DataTypes.FLOAT.value),
-        ("SurfaceRumbleFrontRight",         DataTypes.FLOAT.value),
-        ("SurfaceRumbleRearLeft",           DataTypes.FLOAT.value),
-        ("SurfaceRumbleRearRight",          DataTypes.FLOAT.value),
+        ("SurfaceRumbleFrontLeft",          DataTypes.FLOAT),
+        ("SurfaceRumbleFrontRight",         DataTypes.FLOAT),
+        ("SurfaceRumbleRearLeft",           DataTypes.FLOAT),
+        ("SurfaceRumbleRearRight",          DataTypes.FLOAT),
         # Tire normalized slip angle, = 0 means 100% grip and |angle| > 1.0 means loss of grip.
-        ("TireSlipAngleFrontLeft",          DataTypes.FLOAT.value),
-        ("TireSlipAngleFrontRight",         DataTypes.FLOAT.value),
-        ("TireSlipAngleRearLeft",           DataTypes.FLOAT.value),
-        ("TireSlipAngleRearRight",          DataTypes.FLOAT.value),
+        ("TireSlipAngleFrontLeft",          DataTypes.FLOAT),
+        ("TireSlipAngleFrontRight",         DataTypes.FLOAT),
+        ("TireSlipAngleRearLeft",           DataTypes.FLOAT),
+        ("TireSlipAngleRearRight",          DataTypes.FLOAT),
         # Tire normalized combined slip, = 0 means 100% grip and |slip| > 1.0 means loss of grip.
-        ("TireCombinedSlipFrontLeft",       DataTypes.FLOAT.value),
-        ("TireCombinedSlipFrontRight",      DataTypes.FLOAT.value),
-        ("TireCombinedSlipRearLeft",        DataTypes.FLOAT.value),
-        ("TireCombinedSlipRearRight",       DataTypes.FLOAT.value),
+        ("TireCombinedSlipFrontLeft",       DataTypes.FLOAT),
+        ("TireCombinedSlipFrontRight",      DataTypes.FLOAT),
+        ("TireCombinedSlipRearLeft",        DataTypes.FLOAT),
+        ("TireCombinedSlipRearRight",       DataTypes.FLOAT),
         # Actual suspension travel in meters
-        ("SuspensionTravelMetersFrontLeft",     DataTypes.FLOAT.value),
-        ("SuspensionTravelMetersFrontRight",    DataTypes.FLOAT.value),
-        ("SuspensionTravelMetersRearLeft",      DataTypes.FLOAT.value),
-        ("SuspensionTravelMetersRearRight",     DataTypes.FLOAT.value),
+        ("SuspensionTravelMetersFrontLeft",     DataTypes.FLOAT),
+        ("SuspensionTravelMetersFrontRight",    DataTypes.FLOAT),
+        ("SuspensionTravelMetersRearLeft",      DataTypes.FLOAT),
+        ("SuspensionTravelMetersRearRight",     DataTypes.FLOAT),
         
-        ("CarOrdinal",              DataTypes.SIGNED_INT32.value),  # Unique ID of the car make/model
-        ("CarClass",                DataTypes.SIGNED_INT32.value),  # Between 0 (D -- worst cars) and 7 (X class -- best cars) inclusive      
-        ("CarPerformanceIndex",     DataTypes.SIGNED_INT32.value),  # Between 100 (worst car) and 999 (best car) inclusive
-        ("DrivetrainType",          DataTypes.SIGNED_INT32.value),  # 0 = FWD, 1 = RWD, 2 = AWD
-        ("NumCylinders",            DataTypes.SIGNED_INT32.value),  # Number of cylinders in the engine
+        ("CarOrdinal",              DataTypes.SIGNED_INT32),  # Unique ID of the car make/model
+        ("CarClass",                DataTypes.SIGNED_INT32),  # Between 0 (D -- worst cars) and 7 (X class -- best cars) inclusive      
+        ("CarPerformanceIndex",     DataTypes.SIGNED_INT32),  # Between 100 (worst car) and 999 (best car) inclusive
+        ("DrivetrainType",          DataTypes.SIGNED_INT32),  # 0 = FWD, 1 = RWD, 2 = AWD
+        ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
     ]
 
 
-class DashData(DataTypes.STRUCTURE.value):
+class DashData(DataTypes.STRUCTURE):
     _pack_ = 1
     _fields_ = [
-        ("IsRaceOn",            DataTypes.SIGNED_INT32.value),  # 1 when race is on. = 0 when in menus/race stopped
+        ("IsRaceOn",            DataTypes.SIGNED_INT32),  # 1 when race is on. = 0 when in menus/race stopped
         # Can overflow to 0 eventually      
-        ("TimestampMS",         DataTypes.UNSIGNED_INT32.value),          
-        ("EngineMaxRpm",        DataTypes.FLOAT.value),
-        ("EngineIdleRpm",       DataTypes.FLOAT.value),
-        ("CurrentEngineRpm",    DataTypes.FLOAT.value),
+        ("TimestampMS",         DataTypes.UNSIGNED_INT32),          
+        ("EngineMaxRpm",        DataTypes.FLOAT),
+        ("EngineIdleRpm",       DataTypes.FLOAT),
+        ("CurrentEngineRpm",    DataTypes.FLOAT),
         # In the car's local space; X = right, Y = up, Z = forward
-        ("AccelerationX",       DataTypes.FLOAT.value),
-        ("AccelerationY",       DataTypes.FLOAT.value),
-        ("AccelerationZ",       DataTypes.FLOAT.value),
+        ("AccelerationX",       DataTypes.FLOAT),
+        ("AccelerationY",       DataTypes.FLOAT),
+        ("AccelerationZ",       DataTypes.FLOAT),
         # In the car's local space; X = right, Y = up, Z = forward
-        ("VelocityX",           DataTypes.FLOAT.value),
-        ("VelocityY",           DataTypes.FLOAT.value),
-        ("VelocityZ",           DataTypes.FLOAT.value),
+        ("VelocityX",           DataTypes.FLOAT),
+        ("VelocityY",           DataTypes.FLOAT),
+        ("VelocityZ",           DataTypes.FLOAT),
         # In the car's local space; X = pitch, Y = yaw, Z = roll
-        ("AngularVelocityX",    DataTypes.FLOAT.value),
-        ("AngularVelocityY",    DataTypes.FLOAT.value),
-        ("AngularVelocityZ",    DataTypes.FLOAT.value),
+        ("AngularVelocityX",    DataTypes.FLOAT),
+        ("AngularVelocityY",    DataTypes.FLOAT),
+        ("AngularVelocityZ",    DataTypes.FLOAT),
         
-        ("Yaw",                 DataTypes.FLOAT.value),
-        ("Pitch",               DataTypes.FLOAT.value),
-        ("Roll",                DataTypes.FLOAT.value),
+        ("Yaw",                 DataTypes.FLOAT),
+        ("Pitch",               DataTypes.FLOAT),
+        ("Roll",                DataTypes.FLOAT),
         # Suspension travel normalized: 0.0f = max stretch; 1.0 = max compression
-        ("NormalizedSuspensionTravelFrontLeft",     DataTypes.FLOAT.value),
-        ("NormalizedSuspensionTravelFrontRight",    DataTypes.FLOAT.value),
-        ("NormalizedSuspensionTravelRearLeft",      DataTypes.FLOAT.value),
-        ("NormalizedSuspensionTravelRearRight",     DataTypes.FLOAT.value),
+        ("NormalizedSuspensionTravelFrontLeft",     DataTypes.FLOAT),
+        ("NormalizedSuspensionTravelFrontRight",    DataTypes.FLOAT),
+        ("NormalizedSuspensionTravelRearLeft",      DataTypes.FLOAT),
+        ("NormalizedSuspensionTravelRearRight",     DataTypes.FLOAT),
         # Tire normalized slip ratio, = 0 means 100% grip and |ratio| > 1.0 means loss of grip.
-        ("TireSlipRatioFrontLeft",          DataTypes.FLOAT.value),
-        ("TireSlipRatioFrontRight",         DataTypes.FLOAT.value),
-        ("TireSlipRatioRearLeft",           DataTypes.FLOAT.value),
-        ("TireSlipRatioRearRight",          DataTypes.FLOAT.value),
+        ("TireSlipRatioFrontLeft",          DataTypes.FLOAT),
+        ("TireSlipRatioFrontRight",         DataTypes.FLOAT),
+        ("TireSlipRatioRearLeft",           DataTypes.FLOAT),
+        ("TireSlipRatioRearRight",          DataTypes.FLOAT),
         # Wheels rotation speed radians/sec. 
-        ("WheelRotationSpeedFrontLeft",     DataTypes.FLOAT.value),
-        ("WheelRotationSpeedFrontRight",    DataTypes.FLOAT.value),
-        ("WheelRotationSpeedRearLeft",      DataTypes.FLOAT.value),
-        ("WheelRotationSpeedRearRight",     DataTypes.FLOAT.value),
+        ("WheelRotationSpeedFrontLeft",     DataTypes.FLOAT),
+        ("WheelRotationSpeedFrontRight",    DataTypes.FLOAT),
+        ("WheelRotationSpeedRearLeft",      DataTypes.FLOAT),
+        ("WheelRotationSpeedRearRight",     DataTypes.FLOAT),
         # 1 when wheel is on rumble strip, = 0 when off.
-        ("WheelOnRumbleStripFrontLeft",     DataTypes.SIGNED_INT32.value),
-        ("WheelOnRumbleStripFrontRight",    DataTypes.SIGNED_INT32.value),
-        ("WheelOnRumbleStripRearLeft",      DataTypes.SIGNED_INT32.value),
-        ("WheelOnRumbleStripRearRight",     DataTypes.SIGNED_INT32.value),
+        ("WheelOnRumbleStripFrontLeft",     DataTypes.SIGNED_INT32),
+        ("WheelOnRumbleStripFrontRight",    DataTypes.SIGNED_INT32),
+        ("WheelOnRumbleStripRearLeft",      DataTypes.SIGNED_INT32),
+        ("WheelOnRumbleStripRearRight",     DataTypes.SIGNED_INT32),
         # from 0 to 1, where 1 is the deepest puddle
-        ("WheelInPuddleDepthFrontLeft",     DataTypes.FLOAT.value),
-        ("WheelInPuddleDepthFrontRight",    DataTypes.FLOAT.value),
-        ("WheelInPuddleDepthRearLeft",      DataTypes.FLOAT.value),
-        ("WheelInPuddleDepthRearRight",     DataTypes.FLOAT.value),
+        ("WheelInPuddleDepthFrontLeft",     DataTypes.FLOAT),
+        ("WheelInPuddleDepthFrontRight",    DataTypes.FLOAT),
+        ("WheelInPuddleDepthRearLeft",      DataTypes.FLOAT),
+        ("WheelInPuddleDepthRearRight",     DataTypes.FLOAT),
         # Non-dimensional surface rumble values passed to controller force feedback
-        ("SurfaceRumbleFrontLeft",          DataTypes.FLOAT.value),
-        ("SurfaceRumbleFrontRight",         DataTypes.FLOAT.value),
-        ("SurfaceRumbleRearLeft",           DataTypes.FLOAT.value),
-        ("SurfaceRumbleRearRight",          DataTypes.FLOAT.value),
+        ("SurfaceRumbleFrontLeft",          DataTypes.FLOAT),
+        ("SurfaceRumbleFrontRight",         DataTypes.FLOAT),
+        ("SurfaceRumbleRearLeft",           DataTypes.FLOAT),
+        ("SurfaceRumbleRearRight",          DataTypes.FLOAT),
         # Tire normalized slip angle, = 0 means 100% grip and |angle| > 1.0 means loss of grip.
-        ("TireSlipAngleFrontLeft",          DataTypes.FLOAT.value),
-        ("TireSlipAngleFrontRight",         DataTypes.FLOAT.value),
-        ("TireSlipAngleRearLeft",           DataTypes.FLOAT.value),
-        ("TireSlipAngleRearRight",          DataTypes.FLOAT.value),
+        ("TireSlipAngleFrontLeft",          DataTypes.FLOAT),
+        ("TireSlipAngleFrontRight",         DataTypes.FLOAT),
+        ("TireSlipAngleRearLeft",           DataTypes.FLOAT),
+        ("TireSlipAngleRearRight",          DataTypes.FLOAT),
         # Tire normalized combined slip, = 0 means 100% grip and |slip| > 1.0 means loss of grip.
-        ("TireCombinedSlipFrontLeft",       DataTypes.FLOAT.value),
-        ("TireCombinedSlipFrontRight",      DataTypes.FLOAT.value),
-        ("TireCombinedSlipRearLeft",        DataTypes.FLOAT.value),
-        ("TireCombinedSlipRearRight",       DataTypes.FLOAT.value),
+        ("TireCombinedSlipFrontLeft",       DataTypes.FLOAT),
+        ("TireCombinedSlipFrontRight",      DataTypes.FLOAT),
+        ("TireCombinedSlipRearLeft",        DataTypes.FLOAT),
+        ("TireCombinedSlipRearRight",       DataTypes.FLOAT),
         # Actual suspension travel in meters
-        ("SuspensionTravelMetersFrontLeft",     DataTypes.FLOAT.value),
-        ("SuspensionTravelMetersFrontRight",    DataTypes.FLOAT.value),
-        ("SuspensionTravelMetersRearLeft",      DataTypes.FLOAT.value),
-        ("SuspensionTravelMetersRearRight",     DataTypes.FLOAT.value),
+        ("SuspensionTravelMetersFrontLeft",     DataTypes.FLOAT),
+        ("SuspensionTravelMetersFrontRight",    DataTypes.FLOAT),
+        ("SuspensionTravelMetersRearLeft",      DataTypes.FLOAT),
+        ("SuspensionTravelMetersRearRight",     DataTypes.FLOAT),
         
-        ("CarOrdinal",              DataTypes.SIGNED_INT32.value),  # Unique ID of the car make/model
-        ("CarClass",                DataTypes.SIGNED_INT32.value),  # Between 0 (D -- worst cars) and 7 (X class -- best cars) inclusive      
-        ("CarPerformanceIndex",     DataTypes.SIGNED_INT32.value),  # Between 100 (worst car) and 999 (best car) inclusive
-        ("DrivetrainType",          DataTypes.SIGNED_INT32.value),  # 0 = FWD, 1 = RWD, 2 = AWD
-        ("NumCylinders",            DataTypes.SIGNED_INT32.value),  # Number of cylinders in the engine
+        ("CarOrdinal",              DataTypes.SIGNED_INT32),  # Unique ID of the car make/model
+        ("CarClass",                DataTypes.SIGNED_INT32),  # Between 0 (D -- worst cars) and 7 (X class -- best cars) inclusive      
+        ("CarPerformanceIndex",     DataTypes.SIGNED_INT32),  # Between 100 (worst car) and 999 (best car) inclusive
+        ("DrivetrainType",          DataTypes.SIGNED_INT32),  # 0 = FWD, 1 = RWD, 2 = AWD
+        ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
         
-        ("PositionX",           DataTypes.FLOAT.value),
-        ("PositionY",           DataTypes.FLOAT.value),
-        ("PositionZ",           DataTypes.FLOAT.value),
-        ("Speed",               DataTypes.FLOAT.value),
-        ("Power",               DataTypes.FLOAT.value),
-        ("Torque",              DataTypes.FLOAT.value),
-        ("TireTempFrontLeft",   DataTypes.FLOAT.value),
-        ("TireTempFrontRight",  DataTypes.FLOAT.value),
-        ("TireTempRearLeft",    DataTypes.FLOAT.value),
-        ("TireTempRearRight",   DataTypes.FLOAT.value),
-        ("Boost",               DataTypes.FLOAT.value),
-        ("Fuel",                DataTypes.FLOAT.value),
-        ("DistanceTraveled",    DataTypes.FLOAT.value),
-        ("BestLap",             DataTypes.FLOAT.value),
-        ("LastLap",             DataTypes.FLOAT.value),
-        ("CurrentLap",          DataTypes.FLOAT.value),
-        ("CurrentRaceTime",     DataTypes.FLOAT.value),
+        ("PositionX",           DataTypes.FLOAT),
+        ("PositionY",           DataTypes.FLOAT),
+        ("PositionZ",           DataTypes.FLOAT),
+        ("Speed",               DataTypes.FLOAT),
+        ("Power",               DataTypes.FLOAT),
+        ("Torque",              DataTypes.FLOAT),
+        ("TireTempFrontLeft",   DataTypes.FLOAT),
+        ("TireTempFrontRight",  DataTypes.FLOAT),
+        ("TireTempRearLeft",    DataTypes.FLOAT),
+        ("TireTempRearRight",   DataTypes.FLOAT),
+        ("Boost",               DataTypes.FLOAT),
+        ("Fuel",                DataTypes.FLOAT),
+        ("DistanceTraveled",    DataTypes.FLOAT),
+        ("BestLap",             DataTypes.FLOAT),
+        ("LastLap",             DataTypes.FLOAT),
+        ("CurrentLap",          DataTypes.FLOAT),
+        ("CurrentRaceTime",     DataTypes.FLOAT),
         
-        ("LapNumber",       DataTypes.UNSIGNED_INT16.value),
-        ("RacePosition",    DataTypes.UNSIGNED_INT8.value),
-        ("Accel",           DataTypes.UNSIGNED_INT8.value),
-        ("Brake",           DataTypes.UNSIGNED_INT8.value),
-        ("Clutch",          DataTypes.UNSIGNED_INT8.value),
-        ("HandBrake",       DataTypes.UNSIGNED_INT8.value),
-        ("Gear",            DataTypes.UNSIGNED_INT8.value),
-        ("Steer",           DataTypes.SIGNED_INT8.value),
-        ("NormalizedDrivingLine",           DataTypes.SIGNED_INT8.value),
-        ("NormalizedAIBrakeDifference",     DataTypes.SIGNED_INT8.value),
+        ("LapNumber",       DataTypes.UNSIGNED_INT16),
+        ("RacePosition",    DataTypes.UNSIGNED_INT8),
+        ("Accel",           DataTypes.UNSIGNED_INT8),
+        ("Brake",           DataTypes.UNSIGNED_INT8),
+        ("Clutch",          DataTypes.UNSIGNED_INT8),
+        ("HandBrake",       DataTypes.UNSIGNED_INT8),
+        ("Gear",            DataTypes.UNSIGNED_INT8),
+        ("Steer",           DataTypes.SIGNED_INT8),
+        ("NormalizedDrivingLine",           DataTypes.SIGNED_INT8),
+        ("NormalizedAIBrakeDifference",     DataTypes.SIGNED_INT8),
         
-        ("TireWearFrontLeft",   DataTypes.FLOAT.value),
-        ("TireWearFrontRight",  DataTypes.FLOAT.value),
-        ("TireWearRearLeft",    DataTypes.FLOAT.value),
-        ("TireWearRearRight",   DataTypes.FLOAT.value),
-        ("TrackOrdinal",        DataTypes.SIGNED_INT32.value),
+        ("TireWearFrontLeft",   DataTypes.FLOAT),
+        ("TireWearFrontRight",  DataTypes.FLOAT),
+        ("TireWearRearLeft",    DataTypes.FLOAT),
+        ("TireWearRearRight",   DataTypes.FLOAT),
+        ("TrackOrdinal",        DataTypes.SIGNED_INT32),
             
         
     ]
@@ -230,7 +230,7 @@ class MetaData:
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (0, None)
+    headerInfo: type | None = None
     packetIDAttribute: str | None = None
     
     # use for shared memory

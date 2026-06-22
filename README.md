@@ -138,7 +138,7 @@ from enum import Enum
 # Swap depending on what data types you want to use
 import ctypes 
 
-class DataTypes(Enum):
+class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
     UNION = ctypes.Union
   
@@ -155,32 +155,32 @@ class DataTypes(Enum):
     DOUBLE = ctypes.c_double
 
 # Define your header packet, if required
-class PacketHeader(DataTypes.STRUCTURE.value):
+class PacketHeader(DataTypes.STRUCTURE):
     _pack_ = 1 # This may be required depening on the game
     _fields_ = [
-        ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),
-        ("m_gameYear",                  DataTypes.UNSIGNED_INT8.value),
-        ("m_packetId",                  DataTypes.UNSIGNED_INT8.value),
-        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32.value),
-        ("m_sessionUID",                DataTypes.UNSIGNED_INT64.value),
-        ("m_sessionTime",               DataTypes.FLOAT.value),
+        ("m_packetFormat",              DataTypes.UNSIGNED_INT16),
+        ("m_gameYear",                  DataTypes.UNSIGNED_INT8),
+        ("m_packetId",                  DataTypes.UNSIGNED_INT8),
+        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32),
+        ("m_sessionUID",                DataTypes.UNSIGNED_INT64),
+        ("m_sessionTime",               DataTypes.FLOAT),
         # ...
     ]
 
 # Define any sub-packet
-class CarMotionData(DataTypes.STRUCTURE.value):
+class CarMotionData(DataTypes.STRUCTURE):
     # _pack_ = 1 # This may be required depening on the game
     _fields_ = [
-        ("m_worldPositionX",        DataTypes.FLOAT.value),
-        ("m_worldVelocityX",        DataTypes.FLOAT.value),
-        ("m_worldForwardDirX",      DataTypes.SIGNED_INT16.value),
-        ("m_worldRightDirX",        DataTypes.SIGNED_INT16.value),
-        ("m_gForceLateral",         DataTypes.FLOAT.value),
+        ("m_worldPositionX",        DataTypes.FLOAT),
+        ("m_worldVelocityX",        DataTypes.FLOAT),
+        ("m_worldForwardDirX",      DataTypes.SIGNED_INT16),
+        ("m_worldRightDirX",        DataTypes.SIGNED_INT16),
+        ("m_gForceLateral",         DataTypes.FLOAT),
         # ...
     ]
 
 # Define a main packet
-class PacketMotionData(DataTypes.STRUCTURE.value):
+class PacketMotionData(DataTypes.STRUCTURE):
     _pack_ = 1 # This may be required depening on the game
     _fields_ = [
         ("m_header",        PacketHeader),          # Header
@@ -252,26 +252,26 @@ class MetaData:
     port: int| None = 20777  # UDP port for your game
 
     # use if a heartbeat is needed
-    heartBeatPort = 33739
+    heartBeatPort: int | None = 33739
     heartBeatFunc = heartBeat
 
     # use for itinial hand shake
-    handShakePort = None
-    handShakeFunc = None # tuple (startHandShakeFunc, stopHandShakeFunc)
+    handShakePort: int | None = None
+    handShakeFunc: tuple | None = None # tuple (startHandShakeFunc, stopHandShakeFunc)
 
     # use if the data needs decrypting
     decrytionFunc = decrypt_data
 
     # use if there is a header packet
-    headerInfo: tuple[int, type] = (32, PacketHeader)  # Header size and type
+    headerInfo: type | None = PacketHeader  # Header type
     packetIDAttribute: str = "m_packetId"  # Attribute name for packet ID
     
     # use for shared memory
     sharedMemoryName: str | None | dict[str, str] = "Local\\SCSTelemetry" # Names of the shared memory segment
 
     # standard packet info
-    packetInfo: dict[int, tuple[tuple[int, type], ...]] = {
-        0: (PacketMotionData,),  # Packet ID: ((size, packet_class),)
+    packetInfo: dict[int, tuple[type, ...]] = {
+        0: (PacketMotionData,),  # Packet ID: (packet_class,)
         # Add more packet types as needed
     }
 ```

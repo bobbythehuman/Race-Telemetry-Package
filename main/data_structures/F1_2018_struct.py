@@ -2,7 +2,7 @@ import ctypes
 from enum import Enum
 
 
-class DataTypes(Enum):
+class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
     UNION = ctypes.Union
     
@@ -23,134 +23,134 @@ class DataTypes(Enum):
 ### Packet Header -- 24 bytes
 
 
-class PacketHeader(DataTypes.STRUCTURE.value):
+class PacketHeader(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_packetFormat",              DataTypes.UNSIGNED_INT16.value),    # 2018
-        ("m_packetVersion",             DataTypes.UNSIGNED_INT8.value),     # Version of this packet type, all start from 1
-        ("m_packetId",                  DataTypes.UNSIGNED_INT8.value),     # Identifier for the packet type, see below
-        ("m_sessionUID",                DataTypes.UNSIGNED_INT64.value),    # Unique identifier for the session
-        ("m_sessionTime",               DataTypes.FLOAT.value),             # Session timestamp
-        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32.value),    # Identifier for the frame the data was retrieved on
-        ("m_playerCarIndex",            DataTypes.UNSIGNED_INT8.value),     # Index of player's car in the array
+        ("m_packetFormat",              DataTypes.UNSIGNED_INT16),    # 2018
+        ("m_packetVersion",             DataTypes.UNSIGNED_INT8),     # Version of this packet type, all start from 1
+        ("m_packetId",                  DataTypes.UNSIGNED_INT8),     # Identifier for the packet type, see below
+        ("m_sessionUID",                DataTypes.UNSIGNED_INT64),    # Unique identifier for the session
+        ("m_sessionTime",               DataTypes.FLOAT),             # Session timestamp
+        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32),    # Identifier for the frame the data was retrieved on
+        ("m_playerCarIndex",            DataTypes.UNSIGNED_INT8),     # Index of player's car in the array
     ]
 
 
 ### Motion Packet -- Rate as specified in menus -- 1341 bytes
 
 
-class CarMotionData(DataTypes.STRUCTURE.value):
+class CarMotionData(DataTypes.STRUCTURE):
     # _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_worldPositionX",        DataTypes.FLOAT.value),         # World space X position
-        ("m_worldPositionY",        DataTypes.FLOAT.value),         # World space Y position
-        ("m_worldPositionZ",        DataTypes.FLOAT.value),         # World space Z position
-        ("m_worldVelocityX",        DataTypes.FLOAT.value),         # Velocity in world space X
-        ("m_worldVelocityY",        DataTypes.FLOAT.value),         # Velocity in world space Y
-        ("m_worldVelocityZ",        DataTypes.FLOAT.value),         # Velocity in world space Z
-        ("m_worldForwardDirX",      DataTypes.SIGNED_INT16.value),  # World space forward X direction (normalised)
-        ("m_worldForwardDirY",      DataTypes.SIGNED_INT16.value),  # World space forward Y direction (normalised)
-        ("m_worldForwardDirZ",      DataTypes.SIGNED_INT16.value),  # World space forward Z direction (normalised)
-        ("m_worldRightDirX",        DataTypes.SIGNED_INT16.value),  # World space right X direction (normalised)
-        ("m_worldRightDirY",        DataTypes.SIGNED_INT16.value),  # World space right Y direction (normalised)
-        ("m_worldRightDirZ",        DataTypes.SIGNED_INT16.value),  # World space right Z direction (normalised)
-        ("m_gForceLateral",         DataTypes.FLOAT.value),         # Lateral G-Force component
-        ("m_gForceLongitudinal",    DataTypes.FLOAT.value),         # Longitudinal G-Force component
-        ("m_gForceVertical",        DataTypes.FLOAT.value),         # Vertical G-Force component
-        ("m_yaw",                   DataTypes.FLOAT.value),         # Yaw angle in radians
-        ("m_pitch",                 DataTypes.FLOAT.value),         # Pitch angle in radians
-        ("m_roll",                  DataTypes.FLOAT.value),         # Roll angle in radians
+        ("m_worldPositionX",        DataTypes.FLOAT),         # World space X position
+        ("m_worldPositionY",        DataTypes.FLOAT),         # World space Y position
+        ("m_worldPositionZ",        DataTypes.FLOAT),         # World space Z position
+        ("m_worldVelocityX",        DataTypes.FLOAT),         # Velocity in world space X
+        ("m_worldVelocityY",        DataTypes.FLOAT),         # Velocity in world space Y
+        ("m_worldVelocityZ",        DataTypes.FLOAT),         # Velocity in world space Z
+        ("m_worldForwardDirX",      DataTypes.SIGNED_INT16),  # World space forward X direction (normalised)
+        ("m_worldForwardDirY",      DataTypes.SIGNED_INT16),  # World space forward Y direction (normalised)
+        ("m_worldForwardDirZ",      DataTypes.SIGNED_INT16),  # World space forward Z direction (normalised)
+        ("m_worldRightDirX",        DataTypes.SIGNED_INT16),  # World space right X direction (normalised)
+        ("m_worldRightDirY",        DataTypes.SIGNED_INT16),  # World space right Y direction (normalised)
+        ("m_worldRightDirZ",        DataTypes.SIGNED_INT16),  # World space right Z direction (normalised)
+        ("m_gForceLateral",         DataTypes.FLOAT),         # Lateral G-Force component
+        ("m_gForceLongitudinal",    DataTypes.FLOAT),         # Longitudinal G-Force component
+        ("m_gForceVertical",        DataTypes.FLOAT),         # Vertical G-Force component
+        ("m_yaw",                   DataTypes.FLOAT),         # Yaw angle in radians
+        ("m_pitch",                 DataTypes.FLOAT),         # Pitch angle in radians
+        ("m_roll",                  DataTypes.FLOAT),         # Roll angle in radians
     ]
 
 
-class PacketMotionData(DataTypes.STRUCTURE.value):
+class PacketMotionData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",        PacketHeader),          # Header
         ("m_carMotionData", CarMotionData * 20),    # Data for all cars on track
         # Extra player car ONLY data
-        ("m_suspensionPosition",        DataTypes.FLOAT.value * 4),     # Note: All wheel arrays have the following order:
-        ("m_suspensionVelocity",        DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
-        ("m_suspensionAcceleration",    DataTypes.FLOAT.value * 4),     # RL, RR, FL, FR
-        ("m_wheelSpeed",                DataTypes.FLOAT.value * 4),     # Speed of each wheel
-        ("m_wheelSlip",                 DataTypes.FLOAT.value * 4),     # Slip ratio for each wheel
-        ("m_localVelocityX",            DataTypes.FLOAT.value),         # Velocity in local space
-        ("m_localVelocityY",            DataTypes.FLOAT.value),         # Velocity in local space
-        ("m_localVelocityZ",            DataTypes.FLOAT.value),         # Velocity in local space
-        ("m_angularVelocityX",          DataTypes.FLOAT.value),         # Angular velocity x-component
-        ("m_angularVelocityY",          DataTypes.FLOAT.value),         # Angular velocity y-component
-        ("m_angularVelocityZ",          DataTypes.FLOAT.value),         # Angular velocity z-component
-        ("m_angularAccelerationX",      DataTypes.FLOAT.value),         # Angular acceleration x-component
-        ("m_angularAccelerationY",      DataTypes.FLOAT.value),         # Angular acceleration y-component
-        ("m_angularAccelerationZ",      DataTypes.FLOAT.value),         # Angular acceleration z-component
-        ("m_frontWheelsAngle",          DataTypes.FLOAT.value),         # Current front wheels angle in radians
+        ("m_suspensionPosition",        DataTypes.FLOAT * 4),     # Note: All wheel arrays have the following order:
+        ("m_suspensionVelocity",        DataTypes.FLOAT * 4),     # RL, RR, FL, FR
+        ("m_suspensionAcceleration",    DataTypes.FLOAT * 4),     # RL, RR, FL, FR
+        ("m_wheelSpeed",                DataTypes.FLOAT * 4),     # Speed of each wheel
+        ("m_wheelSlip",                 DataTypes.FLOAT * 4),     # Slip ratio for each wheel
+        ("m_localVelocityX",            DataTypes.FLOAT),         # Velocity in local space
+        ("m_localVelocityY",            DataTypes.FLOAT),         # Velocity in local space
+        ("m_localVelocityZ",            DataTypes.FLOAT),         # Velocity in local space
+        ("m_angularVelocityX",          DataTypes.FLOAT),         # Angular velocity x-component
+        ("m_angularVelocityY",          DataTypes.FLOAT),         # Angular velocity y-component
+        ("m_angularVelocityZ",          DataTypes.FLOAT),         # Angular velocity z-component
+        ("m_angularAccelerationX",      DataTypes.FLOAT),         # Angular acceleration x-component
+        ("m_angularAccelerationY",      DataTypes.FLOAT),         # Angular acceleration y-component
+        ("m_angularAccelerationZ",      DataTypes.FLOAT),         # Angular acceleration z-component
+        ("m_frontWheelsAngle",          DataTypes.FLOAT),         # Current front wheels angle in radians
     ]
 
 
 ### Session Packet -- 2 per second -- 147 bytes
 
 
-class MarshalZone(DataTypes.STRUCTURE.value):
+class MarshalZone(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_zoneStart", DataTypes.FLOAT.value),         # Fraction (0..1) of way through the lap the marshal zone starts
-        ("m_zoneFlag",  DataTypes.SIGNED_INT8.value),   # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow, 4 = red
+        ("m_zoneStart", DataTypes.FLOAT),         # Fraction (0..1) of way through the lap the marshal zone starts
+        ("m_zoneFlag",  DataTypes.SIGNED_INT8),   # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow, 4 = red
     ]
 
 
-class PacketSessionData(DataTypes.STRUCTURE.value):
+class PacketSessionData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",                            PacketHeader),                          # Header
-        ("m_weather",                           DataTypes.UNSIGNED_INT8.value),         # Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
-        ("m_trackTemperature",                  DataTypes.SIGNED_INT8.value),           # Track temp. in degrees celsius
-        ("m_airTemperature",                    DataTypes.SIGNED_INT8.value),           # Air temp. in degrees celsius
-        ("m_totalLaps",                         DataTypes.UNSIGNED_INT8.value),         # Total number of laps in this race
-        ("m_trackLength",                       DataTypes.UNSIGNED_INT16.value),        # Track length in metres
-        ("m_sessionType",                       DataTypes.UNSIGNED_INT8.value),         # 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = R3, 13 = Time Trial
-        ("m_trackId",                           DataTypes.SIGNED_INT8.value),           # -1 for unknown, 0-21 for tracks, see appendix
-        ("m_era",                               DataTypes.UNSIGNED_INT8.value),         # Era, 0 = modern, 1 = classic
-        ("m_sessionTimeLeft",                   DataTypes.UNSIGNED_INT16.value),        # Time left in session in seconds
-        ("m_sessionDuration",                   DataTypes.UNSIGNED_INT16.value),        # Session duration in seconds
-        ("m_pitSpeedLimit",                     DataTypes.UNSIGNED_INT8.value),         # Pit speed limit in kilometres per hour
-        ("m_gamePaused",                        DataTypes.UNSIGNED_INT8.value),         # Whether the game is paused – network game only
-        ("m_isSpectating",                      DataTypes.UNSIGNED_INT8.value),         # Whether the player is spectating
-        ("m_spectatorCarIndex",                 DataTypes.UNSIGNED_INT8.value),         # Index of the car being spectated
-        ("m_sliProNativeSupport",               DataTypes.UNSIGNED_INT8.value),         # SLI Pro support, 0 = inactive, 1 = active
-        ("m_numMarshalZones",                   DataTypes.UNSIGNED_INT8.value),         # Number of marshal zones to follow
+        ("m_weather",                           DataTypes.UNSIGNED_INT8),         # Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
+        ("m_trackTemperature",                  DataTypes.SIGNED_INT8),           # Track temp. in degrees celsius
+        ("m_airTemperature",                    DataTypes.SIGNED_INT8),           # Air temp. in degrees celsius
+        ("m_totalLaps",                         DataTypes.UNSIGNED_INT8),         # Total number of laps in this race
+        ("m_trackLength",                       DataTypes.UNSIGNED_INT16),        # Track length in metres
+        ("m_sessionType",                       DataTypes.UNSIGNED_INT8),         # 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = R3, 13 = Time Trial
+        ("m_trackId",                           DataTypes.SIGNED_INT8),           # -1 for unknown, 0-21 for tracks, see appendix
+        ("m_era",                               DataTypes.UNSIGNED_INT8),         # Era, 0 = modern, 1 = classic
+        ("m_sessionTimeLeft",                   DataTypes.UNSIGNED_INT16),        # Time left in session in seconds
+        ("m_sessionDuration",                   DataTypes.UNSIGNED_INT16),        # Session duration in seconds
+        ("m_pitSpeedLimit",                     DataTypes.UNSIGNED_INT8),         # Pit speed limit in kilometres per hour
+        ("m_gamePaused",                        DataTypes.UNSIGNED_INT8),         # Whether the game is paused – network game only
+        ("m_isSpectating",                      DataTypes.UNSIGNED_INT8),         # Whether the player is spectating
+        ("m_spectatorCarIndex",                 DataTypes.UNSIGNED_INT8),         # Index of the car being spectated
+        ("m_sliProNativeSupport",               DataTypes.UNSIGNED_INT8),         # SLI Pro support, 0 = inactive, 1 = active
+        ("m_numMarshalZones",                   DataTypes.UNSIGNED_INT8),         # Number of marshal zones to follow
         ("m_marshalZones",                      MarshalZone * 21),                      # List of marshal zones – max 21
-        ("m_safetyCarStatus",                   DataTypes.UNSIGNED_INT8.value),         # 0 = no safety car, 1 = full, 2 = virtual, 3 = formation lap
-        ("m_networkGame",                       DataTypes.UNSIGNED_INT8.value),         # 0 = offline, 1 = online
+        ("m_safetyCarStatus",                   DataTypes.UNSIGNED_INT8),         # 0 = no safety car, 1 = full, 2 = virtual, 3 = formation lap
+        ("m_networkGame",                       DataTypes.UNSIGNED_INT8),         # 0 = offline, 1 = online
     ]
 
 
 ### Lap Data Packet -- Rate as specified in menus -- 841 bytes
 
 
-class LapData(DataTypes.STRUCTURE.value):
+class LapData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_lastLapTime",           DataTypes.FLOAT.value),             # Last lap time in seconds
-        ("m_currentLapTime",        DataTypes.FLOAT.value),             # Current time around the lap in seconds
-        ("m_bestLapTime",           DataTypes.FLOAT.value),             # Best lap time of the session in seconds
-        ("m_sector1Time",           DataTypes.FLOAT.value),             # Best overall sector 3 time of the session in milliseconds
-        ("m_sector2Time",           DataTypes.FLOAT.value),             # Lap number best overall sector 3 time achieved on
-        ("m_lapDistance",           DataTypes.FLOAT.value),             # Distance vehicle is around current lap in metres - can, be negative if line not crossed yet
-        ("m_totalDistance",         DataTypes.FLOAT.value),             # Total distance travelled in session in metres - can, be negative if line not crossed yet
-        ("m_safetyCarDelta",        DataTypes.FLOAT.value),             # Delta in seconds for safety car
-        ("m_carPosition",           DataTypes.UNSIGNED_INT8.value),     # Car race position
-        ("m_currentLapNum",         DataTypes.UNSIGNED_INT8.value),     # Current lap number
-        ("m_pitStatus",             DataTypes.UNSIGNED_INT8.value),     # 0 = none, 1 = pitting, 2 = in pit area
-        ("m_sector",                DataTypes.UNSIGNED_INT8.value),     # 0 = sector1, 1 = sector2, 2 = sector3
-        ("m_currentLapInvalid",     DataTypes.UNSIGNED_INT8.value),     # Current lap invalid - 0 = valid, 1 = invalid
-        ("m_penalties",             DataTypes.UNSIGNED_INT8.value),     # Accumulated time penalties in seconds to be added
-        ("m_gridPosition",          DataTypes.UNSIGNED_INT8.value),     # Grid position the vehicle started the race in
-        ("m_driverStatus",          DataTypes.UNSIGNED_INT8.value),     # Status of driver - 0 = in garage, 1 = flying lap, 2 = in lap, 3 = out lap, 4 = on track
-        ("m_resultStatus",          DataTypes.UNSIGNED_INT8.value),     # Result status - 0 = invalid, 1 = inactive, 2 = active, 3 = finished, 4 = didnotfinish, 5 = disqualified, 6 = not classified, 7 = retired
+        ("m_lastLapTime",           DataTypes.FLOAT),             # Last lap time in seconds
+        ("m_currentLapTime",        DataTypes.FLOAT),             # Current time around the lap in seconds
+        ("m_bestLapTime",           DataTypes.FLOAT),             # Best lap time of the session in seconds
+        ("m_sector1Time",           DataTypes.FLOAT),             # Best overall sector 3 time of the session in milliseconds
+        ("m_sector2Time",           DataTypes.FLOAT),             # Lap number best overall sector 3 time achieved on
+        ("m_lapDistance",           DataTypes.FLOAT),             # Distance vehicle is around current lap in metres - can, be negative if line not crossed yet
+        ("m_totalDistance",         DataTypes.FLOAT),             # Total distance travelled in session in metres - can, be negative if line not crossed yet
+        ("m_safetyCarDelta",        DataTypes.FLOAT),             # Delta in seconds for safety car
+        ("m_carPosition",           DataTypes.UNSIGNED_INT8),     # Car race position
+        ("m_currentLapNum",         DataTypes.UNSIGNED_INT8),     # Current lap number
+        ("m_pitStatus",             DataTypes.UNSIGNED_INT8),     # 0 = none, 1 = pitting, 2 = in pit area
+        ("m_sector",                DataTypes.UNSIGNED_INT8),     # 0 = sector1, 1 = sector2, 2 = sector3
+        ("m_currentLapInvalid",     DataTypes.UNSIGNED_INT8),     # Current lap invalid - 0 = valid, 1 = invalid
+        ("m_penalties",             DataTypes.UNSIGNED_INT8),     # Accumulated time penalties in seconds to be added
+        ("m_gridPosition",          DataTypes.UNSIGNED_INT8),     # Grid position the vehicle started the race in
+        ("m_driverStatus",          DataTypes.UNSIGNED_INT8),     # Status of driver - 0 = in garage, 1 = flying lap, 2 = in lap, 3 = out lap, 4 = on track
+        ("m_resultStatus",          DataTypes.UNSIGNED_INT8),     # Result status - 0 = invalid, 1 = inactive, 2 = active, 3 = finished, 4 = didnotfinish, 5 = disqualified, 6 = not classified, 7 = retired
     ]
 
 
-class PacketLapData(DataTypes.STRUCTURE.value):
+class PacketLapData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",                PacketHeader),                      # Header
@@ -161,34 +161,34 @@ class PacketLapData(DataTypes.STRUCTURE.value):
 ### Event Packet -- When the event occurs -- 25 bytes
 
 
-class PacketEventData(DataTypes.STRUCTURE.value):
+class PacketEventData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",            PacketHeader),                      # Header
-        ("m_eventStringCode",   DataTypes.UNSIGNED_INT8.value * 4), # Event string code
+        ("m_eventStringCode",   DataTypes.UNSIGNED_INT8 * 4), # Event string code
     ]
 
 
 ### Participants Packet -- Every 5 seconds -- 1082 bytes
 
 
-class ParticipantData(DataTypes.STRUCTURE.value):
+class ParticipantData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_aiControlled",      DataTypes.UNSIGNED_INT8.value),     # Whether the vehicle is AI (1) or Human (0) controlled
-        ("m_driverId",          DataTypes.UNSIGNED_INT8.value),     # Driver id - see appendix, 255 if network human
-        ("m_teamId",            DataTypes.UNSIGNED_INT8.value),     # Team id - see appendix
-        ("m_raceNumber",        DataTypes.UNSIGNED_INT8.value),     # Race number of the car
-        ("m_nationality",       DataTypes.UNSIGNED_INT8.value),     # Nationality of the driver
-        ("m_name",              DataTypes.CHAR.value * 48),         # Name of participant in UTF-8 format – null terminated, Will be truncated with … (U+2026) if too long
+        ("m_aiControlled",      DataTypes.UNSIGNED_INT8),     # Whether the vehicle is AI (1) or Human (0) controlled
+        ("m_driverId",          DataTypes.UNSIGNED_INT8),     # Driver id - see appendix, 255 if network human
+        ("m_teamId",            DataTypes.UNSIGNED_INT8),     # Team id - see appendix
+        ("m_raceNumber",        DataTypes.UNSIGNED_INT8),     # Race number of the car
+        ("m_nationality",       DataTypes.UNSIGNED_INT8),     # Nationality of the driver
+        ("m_name",              DataTypes.CHAR * 48),         # Name of participant in UTF-8 format – null terminated, Will be truncated with … (U+2026) if too long
     ]
 
 
-class PacketParticipantsData(DataTypes.STRUCTURE.value):
+class PacketParticipantsData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",            PacketHeader),                      # Header
-        ("m_numActiveCars",     DataTypes.UNSIGNED_INT8.value),     # Number of active cars in the data – should match number of cars on HUD
+        ("m_numActiveCars",     DataTypes.UNSIGNED_INT8),     # Number of active cars in the data – should match number of cars on HUD
         ("m_participants",      ParticipantData * 20),
     ]
 
@@ -196,33 +196,33 @@ class PacketParticipantsData(DataTypes.STRUCTURE.value):
 ### Car Setups Packet -- 2 per second -- 841 bytes
 
 
-class CarSetupData(DataTypes.STRUCTURE.value):
+class CarSetupData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_frontWing",                 DataTypes.UNSIGNED_INT8.value),     # Front wing aero
-        ("m_rearWing",                  DataTypes.UNSIGNED_INT8.value),     # Rear wing aero
-        ("m_onThrottle",                DataTypes.UNSIGNED_INT8.value),     # Differential adjustment on throttle (percentage)
-        ("m_offThrottle",               DataTypes.UNSIGNED_INT8.value),     # Differential adjustment off throttle (percentage)
-        ("m_frontCamber",               DataTypes.FLOAT.value),             # Front camber angle (suspension geometry)
-        ("m_rearCamber",                DataTypes.FLOAT.value),             # Rear camber angle (suspension geometry)
-        ("m_frontToe",                  DataTypes.FLOAT.value),             # Front toe angle (suspension geometry)
-        ("m_rearToe",                   DataTypes.FLOAT.value),             # Rear toe angle (suspension geometry)
-        ("m_frontSuspension",           DataTypes.UNSIGNED_INT8.value),     # Front suspension
-        ("m_rearSuspension",            DataTypes.UNSIGNED_INT8.value),     # Rear suspension
-        ("m_frontAntiRollBar",          DataTypes.UNSIGNED_INT8.value),     # Front anti-roll bar
-        ("m_rearAntiRollBar",           DataTypes.UNSIGNED_INT8.value),     # Front anti-roll bar
-        ("m_frontSuspensionHeight",     DataTypes.UNSIGNED_INT8.value),     # Front ride height
-        ("m_rearSuspensionHeight",      DataTypes.UNSIGNED_INT8.value),     # Rear ride height
-        ("m_brakePressure",             DataTypes.UNSIGNED_INT8.value),     # Brake pressure (percentage)
-        ("m_brakeBias",                 DataTypes.UNSIGNED_INT8.value),     # Brake bias (percentage)
-        ("m_frontTyrePressure",      DataTypes.FLOAT.value),             # Front tyre pressure (PSI)
-        ("m_rearTyrePressure",     DataTypes.FLOAT.value),             # Rear tyre pressure (PSI)
-        ("m_ballast",                   DataTypes.UNSIGNED_INT8.value),     # Ballast
-        ("m_fuelLoad",                  DataTypes.FLOAT.value),             # Fuel load
+        ("m_frontWing",                 DataTypes.UNSIGNED_INT8),     # Front wing aero
+        ("m_rearWing",                  DataTypes.UNSIGNED_INT8),     # Rear wing aero
+        ("m_onThrottle",                DataTypes.UNSIGNED_INT8),     # Differential adjustment on throttle (percentage)
+        ("m_offThrottle",               DataTypes.UNSIGNED_INT8),     # Differential adjustment off throttle (percentage)
+        ("m_frontCamber",               DataTypes.FLOAT),             # Front camber angle (suspension geometry)
+        ("m_rearCamber",                DataTypes.FLOAT),             # Rear camber angle (suspension geometry)
+        ("m_frontToe",                  DataTypes.FLOAT),             # Front toe angle (suspension geometry)
+        ("m_rearToe",                   DataTypes.FLOAT),             # Rear toe angle (suspension geometry)
+        ("m_frontSuspension",           DataTypes.UNSIGNED_INT8),     # Front suspension
+        ("m_rearSuspension",            DataTypes.UNSIGNED_INT8),     # Rear suspension
+        ("m_frontAntiRollBar",          DataTypes.UNSIGNED_INT8),     # Front anti-roll bar
+        ("m_rearAntiRollBar",           DataTypes.UNSIGNED_INT8),     # Front anti-roll bar
+        ("m_frontSuspensionHeight",     DataTypes.UNSIGNED_INT8),     # Front ride height
+        ("m_rearSuspensionHeight",      DataTypes.UNSIGNED_INT8),     # Rear ride height
+        ("m_brakePressure",             DataTypes.UNSIGNED_INT8),     # Brake pressure (percentage)
+        ("m_brakeBias",                 DataTypes.UNSIGNED_INT8),     # Brake bias (percentage)
+        ("m_frontTyrePressure",      DataTypes.FLOAT),             # Front tyre pressure (PSI)
+        ("m_rearTyrePressure",     DataTypes.FLOAT),             # Rear tyre pressure (PSI)
+        ("m_ballast",                   DataTypes.UNSIGNED_INT8),     # Ballast
+        ("m_fuelLoad",                  DataTypes.FLOAT),             # Fuel load
     ]
 
 
-class PacketCarSetupData(DataTypes.STRUCTURE.value):
+class PacketCarSetupData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",                PacketHeader),              # Header
@@ -233,74 +233,74 @@ class PacketCarSetupData(DataTypes.STRUCTURE.value):
 ### Car Telemetry Packet -- Rate as specified in menus -- 1085 bytes
 
 
-class CarTelemetryData(DataTypes.STRUCTURE.value):
+class CarTelemetryData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_speed",                     DataTypes.UNSIGNED_INT16.value),        # Speed of car in kilometres per hour
-        ("m_throttle",                  DataTypes.UNSIGNED_INT8.value),                 # Amount of throttle applied (0.0 to 1.0)
-        ("m_steer",                     DataTypes.SIGNED_INT8.value),                 # Steering (-1.0 (full lock left) to 1.0 (full lock right))
-        ("m_brake",                     DataTypes.UNSIGNED_INT8.value),                 # Amount of brake applied (0.0 to 1.0)
-        ("m_clutch",                    DataTypes.UNSIGNED_INT8.value),         # Amount of clutch applied (0 to 100)
-        ("m_gear",                      DataTypes.SIGNED_INT8.value),           # Gear selected (1-8, N=0, R=-1)
-        ("m_engineRpm",                 DataTypes.UNSIGNED_INT16.value),        # Engine RPM
-        ("m_drs",                       DataTypes.UNSIGNED_INT8.value),         # 0 = off, 1 = on
-        ("m_revLightsPercent",          DataTypes.UNSIGNED_INT8.value),         # Rev lights indicator (percentage)
-        ("m_brakesTemperature",         DataTypes.UNSIGNED_INT16.value * 4),    # Brakes temperature (celsius)
-        ("m_tyresSurfaceTemperature",   DataTypes.UNSIGNED_INT16.value * 4),     # Tyres surface temperature (celsius)
-        ("m_tyresInnerTemperature",     DataTypes.UNSIGNED_INT16.value * 4),     # Tyres inner temperature (celsius)
-        ("m_engineTemperature",         DataTypes.UNSIGNED_INT16.value),        # Engine temperature (celsius)
-        ("m_tyresPressure",             DataTypes.FLOAT.value * 4),             # Tyres pressure (PSI)
+        ("m_speed",                     DataTypes.UNSIGNED_INT16),        # Speed of car in kilometres per hour
+        ("m_throttle",                  DataTypes.UNSIGNED_INT8),                 # Amount of throttle applied (0.0 to 1.0)
+        ("m_steer",                     DataTypes.SIGNED_INT8),                 # Steering (-1.0 (full lock left) to 1.0 (full lock right))
+        ("m_brake",                     DataTypes.UNSIGNED_INT8),                 # Amount of brake applied (0.0 to 1.0)
+        ("m_clutch",                    DataTypes.UNSIGNED_INT8),         # Amount of clutch applied (0 to 100)
+        ("m_gear",                      DataTypes.SIGNED_INT8),           # Gear selected (1-8, N=0, R=-1)
+        ("m_engineRpm",                 DataTypes.UNSIGNED_INT16),        # Engine RPM
+        ("m_drs",                       DataTypes.UNSIGNED_INT8),         # 0 = off, 1 = on
+        ("m_revLightsPercent",          DataTypes.UNSIGNED_INT8),         # Rev lights indicator (percentage)
+        ("m_brakesTemperature",         DataTypes.UNSIGNED_INT16 * 4),    # Brakes temperature (celsius)
+        ("m_tyresSurfaceTemperature",   DataTypes.UNSIGNED_INT16 * 4),     # Tyres surface temperature (celsius)
+        ("m_tyresInnerTemperature",     DataTypes.UNSIGNED_INT16 * 4),     # Tyres inner temperature (celsius)
+        ("m_engineTemperature",         DataTypes.UNSIGNED_INT16),        # Engine temperature (celsius)
+        ("m_tyresPressure",             DataTypes.FLOAT * 4),             # Tyres pressure (PSI)
     ]
 
 
-class PacketCarTelemetryData(DataTypes.STRUCTURE.value):
+class PacketCarTelemetryData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",                        PacketHeader),                      # Header
         ("m_carTelemetryData",              CarTelemetryData * 20),
-        ("m_buttonStatus",                  DataTypes.UNSIGNED_INT32.value),    # Bit flags specifying which buttons are being pressed currently - see appendices
+        ("m_buttonStatus",                  DataTypes.UNSIGNED_INT32),    # Bit flags specifying which buttons are being pressed currently - see appendices
     ]
 
 
 ### Car Status Packet -- Rate as specified in menus -- 1061 bytes
 
 
-class CarStatusData(DataTypes.STRUCTURE.value):
+class CarStatusData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
-        ("m_tractionControl",           DataTypes.UNSIGNED_INT8.value),     # 0 (off) - 2 (high)
-        ("m_antiLockBrakes",            DataTypes.UNSIGNED_INT8.value),     # 0 (off) - 1 (on)
-        ("m_fuelMix",                   DataTypes.UNSIGNED_INT8.value),     # Fuel mix - 0 = lean, 1 = standard, 2 = rich, 3 = max
-        ("m_frontBrakeBias",            DataTypes.UNSIGNED_INT8.value),     # Front brake bias (percentage)
-        ("m_pitLimiterStatus",          DataTypes.UNSIGNED_INT8.value),     # Pit limiter status - 0 = off, 1 = on
-        ("m_fuelInTank",                DataTypes.FLOAT.value),             # Current fuel mass
-        ("m_fuelCapacity",              DataTypes.FLOAT.value),             # Fuel capacity
-        # ("m_fuelRemainingLaps",         DataTypes.FLOAT.value),             # Fuel remaining in terms of laps (value on MFD)
-        ("m_maxRpm",                    DataTypes.UNSIGNED_INT16.value),    # Cars max RPM, point of rev limiter
-        ("m_idleRpm",                   DataTypes.UNSIGNED_INT16.value),    # Cars idle RPM
-        ("m_maxGears",                  DataTypes.UNSIGNED_INT8.value),     # Maximum number of gears
-        ("m_drsAllowed",                DataTypes.UNSIGNED_INT8.value),     # 0 = not allowed, 1 = allowed
-        ("m_tyresWear",                 DataTypes.UNSIGNED_INT8.value * 4), # Tyre wear percentage
-        ("m_tyreCompound",              DataTypes.UNSIGNED_INT8.value),     # F1 Modern - 16 = C5, 17 = C4, 18 = C3, 19 = C2, 20 = C1, 21 = C0, 7 = inter, 8 = wet
+        ("m_tractionControl",           DataTypes.UNSIGNED_INT8),     # 0 (off) - 2 (high)
+        ("m_antiLockBrakes",            DataTypes.UNSIGNED_INT8),     # 0 (off) - 1 (on)
+        ("m_fuelMix",                   DataTypes.UNSIGNED_INT8),     # Fuel mix - 0 = lean, 1 = standard, 2 = rich, 3 = max
+        ("m_frontBrakeBias",            DataTypes.UNSIGNED_INT8),     # Front brake bias (percentage)
+        ("m_pitLimiterStatus",          DataTypes.UNSIGNED_INT8),     # Pit limiter status - 0 = off, 1 = on
+        ("m_fuelInTank",                DataTypes.FLOAT),             # Current fuel mass
+        ("m_fuelCapacity",              DataTypes.FLOAT),             # Fuel capacity
+        # ("m_fuelRemainingLaps",         DataTypes.FLOAT),             # Fuel remaining in terms of laps (value on MFD)
+        ("m_maxRpm",                    DataTypes.UNSIGNED_INT16),    # Cars max RPM, point of rev limiter
+        ("m_idleRpm",                   DataTypes.UNSIGNED_INT16),    # Cars idle RPM
+        ("m_maxGears",                  DataTypes.UNSIGNED_INT8),     # Maximum number of gears
+        ("m_drsAllowed",                DataTypes.UNSIGNED_INT8),     # 0 = not allowed, 1 = allowed
+        ("m_tyresWear",                 DataTypes.UNSIGNED_INT8 * 4), # Tyre wear percentage
+        ("m_tyreCompound",              DataTypes.UNSIGNED_INT8),     # F1 Modern - 16 = C5, 17 = C4, 18 = C3, 19 = C2, 20 = C1, 21 = C0, 7 = inter, 8 = wet
                                                                             # F1 Classic - 9 = dry, 10 = wet
                                                                             # F2 – 11 = super soft, 12 = soft, 13 = medium, 14 = hard, 15 = wet
-        ("m_tyresDamage",               DataTypes.UNSIGNED_INT8.value * 4), # Tyre damage (percentage)
-        ("m_frontLeftWingDamage",       DataTypes.SIGNED_INT8.value),       # Front left wing damage (percentage)
-        ("m_frontRightWingDamage",      DataTypes.SIGNED_INT8.value),       # Front right wing damage (percentage)
-        ("m_rearWingDamage",            DataTypes.SIGNED_INT8.value),       # Rear wing damage (percentage)
-        ("m_engineDamage",              DataTypes.SIGNED_INT8.value),       # Engine damage (percentage)
-        ("m_gearBoxDamage",             DataTypes.SIGNED_INT8.value),       # Gear box damage (percentage)
-        ("m_exhaustDamage",             DataTypes.SIGNED_INT8.value),       # Exhaust damage (percentage)
-        ("m_vehicleFiaFlags",           DataTypes.SIGNED_INT8.value),       # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow
-        ("m_ersStoreEnergy",            DataTypes.FLOAT.value),             # ERS energy store in Joules
-        ("m_ersDeployMode",             DataTypes.UNSIGNED_INT8.value),     # ERS deployment mode, 0 = none, 1 = medium, 2 = hotlap, 3 = overtake
-        ("m_ersHarvestedThisLapMguk",   DataTypes.FLOAT.value),             # ERS energy harvested this lap by MGU-K
-        ("m_ersHarvestedThisLapMguh",   DataTypes.FLOAT.value),             # ERS energy harvested this lap by MGU-H
-        ("m_ersDeployedThisLap",        DataTypes.FLOAT.value),             # ERS energy deployed this lap
+        ("m_tyresDamage",               DataTypes.UNSIGNED_INT8 * 4), # Tyre damage (percentage)
+        ("m_frontLeftWingDamage",       DataTypes.SIGNED_INT8),       # Front left wing damage (percentage)
+        ("m_frontRightWingDamage",      DataTypes.SIGNED_INT8),       # Front right wing damage (percentage)
+        ("m_rearWingDamage",            DataTypes.SIGNED_INT8),       # Rear wing damage (percentage)
+        ("m_engineDamage",              DataTypes.SIGNED_INT8),       # Engine damage (percentage)
+        ("m_gearBoxDamage",             DataTypes.SIGNED_INT8),       # Gear box damage (percentage)
+        ("m_exhaustDamage",             DataTypes.SIGNED_INT8),       # Exhaust damage (percentage)
+        ("m_vehicleFiaFlags",           DataTypes.SIGNED_INT8),       # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow
+        ("m_ersStoreEnergy",            DataTypes.FLOAT),             # ERS energy store in Joules
+        ("m_ersDeployMode",             DataTypes.UNSIGNED_INT8),     # ERS deployment mode, 0 = none, 1 = medium, 2 = hotlap, 3 = overtake
+        ("m_ersHarvestedThisLapMguk",   DataTypes.FLOAT),             # ERS energy harvested this lap by MGU-K
+        ("m_ersHarvestedThisLapMguh",   DataTypes.FLOAT),             # ERS energy harvested this lap by MGU-H
+        ("m_ersDeployedThisLap",        DataTypes.FLOAT),             # ERS energy deployed this lap
     ]
 
 
-class PacketCarStatusData(DataTypes.STRUCTURE.value):
+class PacketCarStatusData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
         ("m_header",        PacketHeader),          # Header
@@ -326,7 +326,7 @@ class MetaData:
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (24, PacketHeader)
+    headerInfo: type | None = PacketHeader
     packetIDAttribute: str | None = "m_packetId"
     
     # use for shared memory

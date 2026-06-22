@@ -11,7 +11,7 @@ https://web.archive.org/web/20230201014848/https://www.projectcarsgame.com/two/p
 
 '''
 
-class DataTypes(Enum):
+class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
     # UNION = ctypes.Union
 
@@ -35,15 +35,15 @@ class DataTypes(Enum):
 #    latest shared memory header if you have problem decoding any data.
 #
 
-class PacketHeader(DataTypes.STRUCTURE.value):
+class PacketHeader(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs
     _fields_ = [
-        ("mPacketNumber",           DataTypes.UNSIGNED_INT.value),     # Counter reflecting all the packets that have been sent during the game run
-        ("mCategoryPacketNumber",   DataTypes.UNSIGNED_INT.value),     # Counter of the packet groups belonging to the given category
-        ("mPartialPacketIndex",     DataTypes.UNSIGNED_BYTE.value),    # If the data from this class had to be sent in several packets, the index number
-        ("mPartialPacketNumber",    DataTypes.UNSIGNED_BYTE.value),    # If the data from this class had to be sent in several packets, the total number
-        ("mPacketType",             DataTypes.UNSIGNED_BYTE.value),    # What is the type of this packet (see EUDPStreamerPacketHanlderType for details)
-        ("mPacketVersion",          DataTypes.UNSIGNED_BYTE.value),    # What is the version of protocol for this handler, to be bumped with data structure change
+        ("mPacketNumber",           DataTypes.UNSIGNED_INT),     # Counter reflecting all the packets that have been sent during the game run
+        ("mCategoryPacketNumber",   DataTypes.UNSIGNED_INT),     # Counter of the packet groups belonging to the given category
+        ("mPartialPacketIndex",     DataTypes.UNSIGNED_BYTE),    # If the data from this class had to be sent in several packets, the index number
+        ("mPartialPacketNumber",    DataTypes.UNSIGNED_BYTE),    # If the data from this class had to be sent in several packets, the total number
+        ("mPacketType",             DataTypes.UNSIGNED_BYTE),    # What is the type of this packet (see EUDPStreamerPacketHanlderType for details)
+        ("mPacketVersion",          DataTypes.UNSIGNED_BYTE),    # What is the version of protocol for this handler, to be bumped with data structure change
     ]
 
 
@@ -55,86 +55,86 @@ class PacketHeader(DataTypes.STRUCTURE.value):
 #   When it is sent: in race
 #
 
-class TelemetryData(DataTypes.STRUCTURE.value):
+class TelemetryData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (556 instead of at least 564 bytes)
     _fields_ = [
         ("s_header",                    PacketHeader),
 
-        ("sViewedParticipantIndex",     DataTypes.SIGNED_BYTE.value),
+        ("sViewedParticipantIndex",     DataTypes.SIGNED_BYTE),
 
-        ("sUnfilteredThrottle",         DataTypes.UNSIGNED_BYTE.value),
-        ("sUnfilteredBrake",            DataTypes.UNSIGNED_BYTE.value),
-        ("sUnfilteredSteering",         DataTypes.SIGNED_BYTE.value),
-        ("sUnfilteredClutch",           DataTypes.UNSIGNED_BYTE.value),
+        ("sUnfilteredThrottle",         DataTypes.UNSIGNED_BYTE),
+        ("sUnfilteredBrake",            DataTypes.UNSIGNED_BYTE),
+        ("sUnfilteredSteering",         DataTypes.SIGNED_BYTE),
+        ("sUnfilteredClutch",           DataTypes.UNSIGNED_BYTE),
 
-        ("sCarFlags",                   DataTypes.UNSIGNED_BYTE.value),
-        ("sOilTempCelsius",             DataTypes.SIGNED_SHORT.value),
-        ("sOilPressureKPa",             DataTypes.UNSIGNED_SHORT.value),
-        ("sWaterTempCelsius",           DataTypes.SIGNED_SHORT.value),
-        ("sWaterPressureKpa",           DataTypes.UNSIGNED_SHORT.value),
-        ("sFuelPressureKpa",            DataTypes.UNSIGNED_SHORT.value),
-        ("sFuelCapacity",               DataTypes.UNSIGNED_BYTE.value),
-        ("sBrake",                      DataTypes.UNSIGNED_BYTE.value),
-        ("sThrottle",                   DataTypes.UNSIGNED_BYTE.value),
-        ("sClutch",                     DataTypes.UNSIGNED_BYTE.value),
-        ("sFuelLevel",                  DataTypes.FLOAT.value),
-        ("sSpeed",                      DataTypes.FLOAT.value),
-        ("sRpm",                        DataTypes.UNSIGNED_SHORT.value),
-        ("sMaxRpm",                     DataTypes.UNSIGNED_SHORT.value),
-        ("sSteering",                   DataTypes.SIGNED_BYTE.value),
-        ("sGearNumGears",               DataTypes.UNSIGNED_BYTE.value),
-        ("sBoostAmount",                DataTypes.UNSIGNED_BYTE.value),
-        ("sCrashState",                 DataTypes.UNSIGNED_BYTE.value),
-        ("sOdometerKM",                 DataTypes.FLOAT.value),
+        ("sCarFlags",                   DataTypes.UNSIGNED_BYTE),
+        ("sOilTempCelsius",             DataTypes.SIGNED_SHORT),
+        ("sOilPressureKPa",             DataTypes.UNSIGNED_SHORT),
+        ("sWaterTempCelsius",           DataTypes.SIGNED_SHORT),
+        ("sWaterPressureKpa",           DataTypes.UNSIGNED_SHORT),
+        ("sFuelPressureKpa",            DataTypes.UNSIGNED_SHORT),
+        ("sFuelCapacity",               DataTypes.UNSIGNED_BYTE),
+        ("sBrake",                      DataTypes.UNSIGNED_BYTE),
+        ("sThrottle",                   DataTypes.UNSIGNED_BYTE),
+        ("sClutch",                     DataTypes.UNSIGNED_BYTE),
+        ("sFuelLevel",                  DataTypes.FLOAT),
+        ("sSpeed",                      DataTypes.FLOAT),
+        ("sRpm",                        DataTypes.UNSIGNED_SHORT),
+        ("sMaxRpm",                     DataTypes.UNSIGNED_SHORT),
+        ("sSteering",                   DataTypes.SIGNED_BYTE),
+        ("sGearNumGears",               DataTypes.UNSIGNED_BYTE),
+        ("sBoostAmount",                DataTypes.UNSIGNED_BYTE),
+        ("sCrashState",                 DataTypes.UNSIGNED_BYTE),
+        ("sOdometerKM",                 DataTypes.FLOAT),
 
-        ("sOrientation",                DataTypes.FLOAT.value * 3),
-        ("sLocalVelocity",              DataTypes.FLOAT.value * 3),
-        ("sWorldVelocity",              DataTypes.FLOAT.value * 3),
-        ("sAngularVelocity",            DataTypes.FLOAT.value * 3),
-        ("sLocalAcceleration",          DataTypes.FLOAT.value * 3),
-        ("sWorldAcceleration",          DataTypes.FLOAT.value * 3),
-        ("sExtentsCentre",              DataTypes.FLOAT.value * 3),
+        ("sOrientation",                DataTypes.FLOAT * 3),
+        ("sLocalVelocity",              DataTypes.FLOAT * 3),
+        ("sWorldVelocity",              DataTypes.FLOAT * 3),
+        ("sAngularVelocity",            DataTypes.FLOAT * 3),
+        ("sLocalAcceleration",          DataTypes.FLOAT * 3),
+        ("sWorldAcceleration",          DataTypes.FLOAT * 3),
+        ("sExtentsCentre",              DataTypes.FLOAT * 3),
 
-        ("sTyreFlags",                  DataTypes.UNSIGNED_BYTE.value * 4),
-        ("sTerrain",                    DataTypes.UNSIGNED_BYTE.value * 4),
-        ("sTyreY",                      DataTypes.FLOAT.value * 4),
-        ("sTyreRPS",                    DataTypes.FLOAT.value * 4),
-        ("sTyreTemp",                   DataTypes.UNSIGNED_BYTE.value * 4),
-        ("sTyreHeightAboveGround",      DataTypes.FLOAT.value * 4),
-        ("sTyreWear",                   DataTypes.UNSIGNED_BYTE.value * 4),
-        ("sBrakeDamage",                DataTypes.UNSIGNED_BYTE.value * 4),
-        ("sSuspensionDamage",           DataTypes.UNSIGNED_BYTE.value * 4),
-        ("sBrakeTempCelsius",           DataTypes.SIGNED_SHORT.value * 4),
-        ("sTyreTreadTemp",              DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreLayerTemp",              DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreCarcassTemp",            DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreRimTemp",                DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreInternalAirTemp",        DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreTempLeft",               DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreTempCenter",             DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sTyreTempRight",              DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sWheelLocalPositionY",        DataTypes.FLOAT.value * 4),
-        ("sRideHeight",                 DataTypes.FLOAT.value * 4),
-        ("sSuspensionTravel",           DataTypes.FLOAT.value * 4),
-        ("sSuspensionVelocity",         DataTypes.FLOAT.value * 4),
-        ("sSuspensionRideHeight",       DataTypes.UNSIGNED_SHORT.value * 4),
-        ("sAirPressure",                DataTypes.UNSIGNED_SHORT.value * 4),
+        ("sTyreFlags",                  DataTypes.UNSIGNED_BYTE * 4),
+        ("sTerrain",                    DataTypes.UNSIGNED_BYTE * 4),
+        ("sTyreY",                      DataTypes.FLOAT * 4),
+        ("sTyreRPS",                    DataTypes.FLOAT * 4),
+        ("sTyreTemp",                   DataTypes.UNSIGNED_BYTE * 4),
+        ("sTyreHeightAboveGround",      DataTypes.FLOAT * 4),
+        ("sTyreWear",                   DataTypes.UNSIGNED_BYTE * 4),
+        ("sBrakeDamage",                DataTypes.UNSIGNED_BYTE * 4),
+        ("sSuspensionDamage",           DataTypes.UNSIGNED_BYTE * 4),
+        ("sBrakeTempCelsius",           DataTypes.SIGNED_SHORT * 4),
+        ("sTyreTreadTemp",              DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreLayerTemp",              DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreCarcassTemp",            DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreRimTemp",                DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreInternalAirTemp",        DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreTempLeft",               DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreTempCenter",             DataTypes.UNSIGNED_SHORT * 4),
+        ("sTyreTempRight",              DataTypes.UNSIGNED_SHORT * 4),
+        ("sWheelLocalPositionY",        DataTypes.FLOAT * 4),
+        ("sRideHeight",                 DataTypes.FLOAT * 4),
+        ("sSuspensionTravel",           DataTypes.FLOAT * 4),
+        ("sSuspensionVelocity",         DataTypes.FLOAT * 4),
+        ("sSuspensionRideHeight",       DataTypes.UNSIGNED_SHORT * 4),
+        ("sAirPressure",                DataTypes.UNSIGNED_SHORT * 4),
 
-        ("sEngineSpeed",                DataTypes.FLOAT.value),
-        ("sEngineTorque",               DataTypes.FLOAT.value),
-        ("sWings",                      DataTypes.UNSIGNED_BYTE.value * 2),
-        ("sHandBrake",                  DataTypes.UNSIGNED_BYTE.value),
+        ("sEngineSpeed",                DataTypes.FLOAT),
+        ("sEngineTorque",               DataTypes.FLOAT),
+        ("sWings",                      DataTypes.UNSIGNED_BYTE * 2),
+        ("sHandBrake",                  DataTypes.UNSIGNED_BYTE),
 
-        ("sAeroDamage",                 DataTypes.UNSIGNED_BYTE.value),
-        ("sEngineDamage",               DataTypes.UNSIGNED_BYTE.value),
+        ("sAeroDamage",                 DataTypes.UNSIGNED_BYTE),
+        ("sEngineDamage",               DataTypes.UNSIGNED_BYTE),
 
-        ("sJoyPad0",                    DataTypes.UNSIGNED_INT.value),
-        ("sDPad",                       DataTypes.UNSIGNED_BYTE.value),
-        ("sTyreCompound",               DataTypes.CHAR.value * 40 * 4),
-        ("sTurboBoostPressure",         DataTypes.FLOAT.value),
-        ("sFullPosition",               DataTypes.FLOAT.value * 3),
-        ("sBrakeBias",                  DataTypes.UNSIGNED_BYTE.value),
-        ("sTickCount",                  DataTypes.UNSIGNED_INT.value),
+        ("sJoyPad0",                    DataTypes.UNSIGNED_INT),
+        ("sDPad",                       DataTypes.UNSIGNED_BYTE),
+        ("sTyreCompound",               DataTypes.CHAR * 40 * 4),
+        ("sTurboBoostPressure",         DataTypes.FLOAT),
+        ("sFullPosition",               DataTypes.FLOAT * 3),
+        ("sBrakeBias",                  DataTypes.UNSIGNED_BYTE),
+        ("sTickCount",                  DataTypes.UNSIGNED_INT),
     ]
 
 
@@ -146,24 +146,24 @@ class TelemetryData(DataTypes.STRUCTURE.value):
 #   When it is sent: Counter resets on entering InRace state and again each time any of the values changes
 #
 
-class RaceData(DataTypes.STRUCTURE.value):
+class RaceData(DataTypes.STRUCTURE):
     _fields_ = [
         ("s_header",                        PacketHeader),
-        ("sWorldFastestLapTime",            DataTypes.FLOAT.value),
-        ("sPersonalFastestLapTime",         DataTypes.FLOAT.value),
-        ("sPersonalFastestSector1Time",     DataTypes.FLOAT.value),
-        ("sPersonalFastestSector2Time",     DataTypes.FLOAT.value),
-        ("sPersonalFastestSector3Time",     DataTypes.FLOAT.value),
-        ("sWorldFastestSector1Time",        DataTypes.FLOAT.value),
-        ("sWorldFastestSector2Time",        DataTypes.FLOAT.value),
-        ("sWorldFastestSector3Time",        DataTypes.FLOAT.value),
-        ("sTrackLength",                    DataTypes.FLOAT.value),
-        ("sTrackLocation",                  DataTypes.CHAR.value * 64),
-        ("sTrackVariation",                 DataTypes.CHAR.value * 64),
-        ("sTranslatedTrackLocation",        DataTypes.CHAR.value * 64),
-        ("sTranslatedTrackVariation",       DataTypes.CHAR.value * 64),
-        ("sLapsTimeInEvent",                DataTypes.UNSIGNED_SHORT.value),
-        ("sEnforcedPitStopLap",             DataTypes.SIGNED_BYTE.value),
+        ("sWorldFastestLapTime",            DataTypes.FLOAT),
+        ("sPersonalFastestLapTime",         DataTypes.FLOAT),
+        ("sPersonalFastestSector1Time",     DataTypes.FLOAT),
+        ("sPersonalFastestSector2Time",     DataTypes.FLOAT),
+        ("sPersonalFastestSector3Time",     DataTypes.FLOAT),
+        ("sWorldFastestSector1Time",        DataTypes.FLOAT),
+        ("sWorldFastestSector2Time",        DataTypes.FLOAT),
+        ("sWorldFastestSector3Time",        DataTypes.FLOAT),
+        ("sTrackLength",                    DataTypes.FLOAT),
+        ("sTrackLocation",                  DataTypes.CHAR * 64),
+        ("sTrackVariation",                 DataTypes.CHAR * 64),
+        ("sTranslatedTrackLocation",        DataTypes.CHAR * 64),
+        ("sTranslatedTrackVariation",       DataTypes.CHAR * 64),
+        ("sLapsTimeInEvent",                DataTypes.UNSIGNED_SHORT),
+        ("sEnforcedPitStopLap",             DataTypes.SIGNED_BYTE),
     ]
 
 
@@ -177,13 +177,13 @@ class RaceData(DataTypes.STRUCTURE.value):
 #   this information with the rest of the participant related packets
 #
 
-class ParticipantsData(DataTypes.STRUCTURE.value):
+class ParticipantsData(DataTypes.STRUCTURE):
     _fields_ = [
         ("s_header",                        PacketHeader),
-        ("sParticipantsChangedTimestamp",   DataTypes.UNSIGNED_INT.value),
-        ("sName",                           DataTypes.CHAR.value * 64 * 16),
-        ("sNationality",                    DataTypes.UNSIGNED_INT.value * 16),
-        ("sIndex",                          DataTypes.UNSIGNED_SHORT.value * 16),
+        ("sParticipantsChangedTimestamp",   DataTypes.UNSIGNED_INT),
+        ("sName",                           DataTypes.CHAR * 64 * 16),
+        ("sNationality",                    DataTypes.UNSIGNED_INT * 16),
+        ("sIndex",                          DataTypes.UNSIGNED_SHORT * 16),
     ]
 
 
@@ -195,38 +195,38 @@ class ParticipantsData(DataTypes.STRUCTURE.value):
 #   When it is sent: in race
 #
 
-class ParticipantsInfo(DataTypes.STRUCTURE.value):
+class ParticipantsInfo(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1059 instead of at least 1192 bytes)
     _fields_ = [
-        ("sWorldPosition",          DataTypes.SIGNED_SHORT.value * 3),
-        ("sOrientation",            DataTypes.SIGNED_SHORT.value * 3),
-        ("sCurrentLapDistance",     DataTypes.UNSIGNED_SHORT.value),
-        ("sRacePosition",           DataTypes.UNSIGNED_BYTE.value),
-        ("sSector",                 DataTypes.UNSIGNED_BYTE.value),
-        ("sHighestFlag",            DataTypes.UNSIGNED_BYTE.value),
-        ("sPitModeSchedule",        DataTypes.UNSIGNED_BYTE.value),
-        ("sCarIndex",               DataTypes.UNSIGNED_SHORT.value),
-        ("sRaceState",              DataTypes.UNSIGNED_BYTE.value),
-        ("sCurrentLap",             DataTypes.UNSIGNED_BYTE.value),
-        ("sCurrentTime",            DataTypes.FLOAT.value),
-        ("sCurrentSectorTime",      DataTypes.FLOAT.value),
-        ("sMPParticipantIndex",     DataTypes.UNSIGNED_SHORT.value),
+        ("sWorldPosition",          DataTypes.SIGNED_SHORT * 3),
+        ("sOrientation",            DataTypes.SIGNED_SHORT * 3),
+        ("sCurrentLapDistance",     DataTypes.UNSIGNED_SHORT),
+        ("sRacePosition",           DataTypes.UNSIGNED_BYTE),
+        ("sSector",                 DataTypes.UNSIGNED_BYTE),
+        ("sHighestFlag",            DataTypes.UNSIGNED_BYTE),
+        ("sPitModeSchedule",        DataTypes.UNSIGNED_BYTE),
+        ("sCarIndex",               DataTypes.UNSIGNED_SHORT),
+        ("sRaceState",              DataTypes.UNSIGNED_BYTE),
+        ("sCurrentLap",             DataTypes.UNSIGNED_BYTE),
+        ("sCurrentTime",            DataTypes.FLOAT),
+        ("sCurrentSectorTime",      DataTypes.FLOAT),
+        ("sMPParticipantIndex",     DataTypes.UNSIGNED_SHORT),
     ]
 
 
-class TimingsData(DataTypes.STRUCTURE.value):
+class TimingsData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (1059 instead of at least 1192 bytes)
     _fields_ = [
         ("s_header",                        PacketHeader),
-        ("sNumParticipants",                DataTypes.SIGNED_BYTE.value),
-        ("sParticipantsChangedTimestamp",   DataTypes.UNSIGNED_INT.value),
-        ("sEventTimeRemaining",             DataTypes.FLOAT.value),
-        ("sSplitTimeAhead",                 DataTypes.FLOAT.value),
-        ("sSplitTimeBehind",                DataTypes.FLOAT.value),
-        ("sSplitTime",                      DataTypes.FLOAT.value),
+        ("sNumParticipants",                DataTypes.SIGNED_BYTE),
+        ("sParticipantsChangedTimestamp",   DataTypes.UNSIGNED_INT),
+        ("sEventTimeRemaining",             DataTypes.FLOAT),
+        ("sSplitTimeAhead",                 DataTypes.FLOAT),
+        ("sSplitTimeBehind",                DataTypes.FLOAT),
+        ("sSplitTime",                      DataTypes.FLOAT),
         ("sParticipants",                   ParticipantsInfo * 32),
-        ("sLocalParticipantIndex",          DataTypes.UNSIGNED_SHORT.value),
-        ("sTickCount",                      DataTypes.UNSIGNED_INT.value),
+        ("sLocalParticipantIndex",          DataTypes.UNSIGNED_SHORT),
+        ("sTickCount",                      DataTypes.UNSIGNED_INT),
     ]
 
 
@@ -239,20 +239,20 @@ class TimingsData(DataTypes.STRUCTURE.value):
 #   When it is sent: Always
 #
 
-class GameStateData(DataTypes.STRUCTURE.value):
+class GameStateData(DataTypes.STRUCTURE):
     _pack_ = 1
     _fields_ = [
         ("s_header",                PacketHeader),
-        ("mBuildVersionNumber",     DataTypes.UNSIGNED_SHORT.value),
-        ("mGameState",              DataTypes.CHAR.value),
-        ("sAmbientTemperature",     DataTypes.SIGNED_BYTE.value),
-        ("sTrackTemperature",       DataTypes.SIGNED_BYTE.value),
-        ("sRainDensity",            DataTypes.UNSIGNED_BYTE.value),
-        ("sSnowDensity",            DataTypes.UNSIGNED_BYTE.value),
-        ("sWindSpeed",              DataTypes.SIGNED_BYTE.value),
-        ("sWindDirectionX",         DataTypes.SIGNED_BYTE.value),
-        ("sWindDirectionY",         DataTypes.SIGNED_BYTE.value),
-        ("paddingD",                DataTypes.SHORT.value),
+        ("mBuildVersionNumber",     DataTypes.UNSIGNED_SHORT),
+        ("mGameState",              DataTypes.CHAR),
+        ("sAmbientTemperature",     DataTypes.SIGNED_BYTE),
+        ("sTrackTemperature",       DataTypes.SIGNED_BYTE),
+        ("sRainDensity",            DataTypes.UNSIGNED_BYTE),
+        ("sSnowDensity",            DataTypes.UNSIGNED_BYTE),
+        ("sWindSpeed",              DataTypes.SIGNED_BYTE),
+        ("sWindDirectionX",         DataTypes.SIGNED_BYTE),
+        ("sWindDirectionY",         DataTypes.SIGNED_BYTE),
+        ("paddingD",                DataTypes.SHORT),
     ]
 
 
@@ -264,29 +264,29 @@ class GameStateData(DataTypes.STRUCTURE.value):
 #   When it is sent: In Race
 #
 
-class ParticipantStatsInfo(DataTypes.STRUCTURE.value):
+class ParticipantStatsInfo(DataTypes.STRUCTURE):
     _fields_ = [
-        ("sFastestLapTime",         DataTypes.FLOAT.value),
-        ("sLastLapTime",            DataTypes.FLOAT.value),
-        ("sLastSectorTime",         DataTypes.FLOAT.value),
-        ("sFastestSector1Time",     DataTypes.FLOAT.value),
-        ("sFastestSector2Time",     DataTypes.FLOAT.value),
-        ("sFastestSector3Time",     DataTypes.FLOAT.value),
-        ("sParticipantOnlineRep",   DataTypes.UNSIGNED_INT.value),
-        ("sMPParticipantIndex",     DataTypes.UNSIGNED_SHORT.value),
+        ("sFastestLapTime",         DataTypes.FLOAT),
+        ("sLastLapTime",            DataTypes.FLOAT),
+        ("sLastSectorTime",         DataTypes.FLOAT),
+        ("sFastestSector1Time",     DataTypes.FLOAT),
+        ("sFastestSector2Time",     DataTypes.FLOAT),
+        ("sFastestSector3Time",     DataTypes.FLOAT),
+        ("sParticipantOnlineRep",   DataTypes.UNSIGNED_INT),
+        ("sMPParticipantIndex",     DataTypes.UNSIGNED_SHORT),
     ]
 
 
-class ParticipantsStats(DataTypes.STRUCTURE.value):
+class ParticipantsStats(DataTypes.STRUCTURE):
     _fields_ = [
         ("sParticipants",   ParticipantStatsInfo * 32),
     ]
 
 
-class TimeStatsData(DataTypes.STRUCTURE.value):
+class TimeStatsData(DataTypes.STRUCTURE):
     _fields_ = [
         ("s_header",                        PacketHeader),
-        ("sParticipantsChangedTimestamp",   DataTypes.UNSIGNED_INT.value),
+        ("sParticipantsChangedTimestamp",   DataTypes.UNSIGNED_INT),
         ("sStats",                          ParticipantsStats),
     ]
 
@@ -302,30 +302,30 @@ class TimeStatsData(DataTypes.STRUCTURE.value):
 #   Note: This data is always sent with at least 2 packets. The 1-(n-1) holds the vehicle name for each participant
 #	The last one holding the class names.
 
-class VehicleInfo(DataTypes.STRUCTURE.value):
+class VehicleInfo(DataTypes.STRUCTURE):
     _fields_ = [
-        ("sIndex",  DataTypes.UNSIGNED_SHORT.value),
-        ("sClass",  DataTypes.UNSIGNED_INT.value),
-        ("sName",   DataTypes.CHAR.value * 64),
+        ("sIndex",  DataTypes.UNSIGNED_SHORT),
+        ("sClass",  DataTypes.UNSIGNED_INT),
+        ("sName",   DataTypes.CHAR * 64),
     ]
 
 
-class ParticipantVehicleNamesData(DataTypes.STRUCTURE.value):
+class ParticipantVehicleNamesData(DataTypes.STRUCTURE):
     _fields_ = [
         ("s_header",        PacketHeader),
         ("sVehicleInfo",    VehicleInfo * 16),
     ]
 
 
-class ClassInfo(DataTypes.STRUCTURE.value):
+class ClassInfo(DataTypes.STRUCTURE):
     _pack_ = 1
     _fields_ = [
-        ("sClassIndex", DataTypes.UNSIGNED_INT.value),
-        ("sName",       DataTypes.CHAR.value * 20),
+        ("sClassIndex", DataTypes.UNSIGNED_INT),
+        ("sName",       DataTypes.CHAR * 20),
     ]
 
 
-class VehicleClassNamesData(DataTypes.STRUCTURE.value):
+class VehicleClassNamesData(DataTypes.STRUCTURE):
     _pack_ = 1
     _fields_ = [
         ("s_header",    PacketHeader),
@@ -350,7 +350,7 @@ class MetaData:
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (12, PacketHeader)
+    headerInfo: type | None = PacketHeader
     packetIDAttribute: str | None = 'mPacketType'
     
     # use for shared memory

@@ -4,7 +4,7 @@ from enum import Enum
 # source
 # https://github.com/MacManley/gt7-udp
 
-class DataTypes(Enum):
+class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
     
     SIGNED_INT = ctypes.c_int
@@ -21,267 +21,267 @@ class DataTypes(Enum):
     CHAR = ctypes.c_char
 
 
-class PacketAData(DataTypes.STRUCTURE.value):
+class PacketAData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("magic",                       DataTypes.SIGNED_INT32.value),  # Magic, different value defines what game is being played
-        ("position",                    DataTypes.FLOAT.value * 3),     # Position on Track in meters in each axis
-        ("worldVelocity",               DataTypes.FLOAT.value * 3),     # Velocity in meters for each axis
-        ("rotation",                    DataTypes.FLOAT.value * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
-        ("orientationRelativeToNorth",  DataTypes.FLOAT.value),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
-        ("angularVelocity",             DataTypes.FLOAT.value * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
-        ("bodyHeight",                  DataTypes.FLOAT.value),         # Body height
-        ("EngineRPM",                   DataTypes.FLOAT.value),         # Engine revolutions per minute
+        ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
+        ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
+        ("worldVelocity",               DataTypes.FLOAT * 3),     # Velocity in meters for each axis
+        ("rotation",                    DataTypes.FLOAT * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
+        ("orientationRelativeToNorth",  DataTypes.FLOAT),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
+        ("angularVelocity",             DataTypes.FLOAT * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
+        ("bodyHeight",                  DataTypes.FLOAT),         # Body height
+        ("EngineRPM",                   DataTypes.FLOAT),         # Engine revolutions per minute
 
-        ("iv",              DataTypes.UNSIGNED_INT8.value * 4),     # IV for Salsa20 encryption/decryption
-        ("fuelLevel",       DataTypes.FLOAT.value),                 # Fuel level of car in liters 
-        ("fuelCapacity",    DataTypes.FLOAT.value),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
-        ("speed",           DataTypes.FLOAT.value),                 # Speed in m/s
-        ("boost",           DataTypes.FLOAT.value),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
-        ("oilPressure",     DataTypes.FLOAT.value),                 # Oil pressure in bars
-        ("waterTemp",       DataTypes.FLOAT.value),                 # Constantly 85
-        ("oilTemp",         DataTypes.FLOAT.value),                 # Constantly 110
-        ("tyreTemp",        DataTypes.FLOAT.value * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
+        ("iv",              DataTypes.UNSIGNED_INT8 * 4),     # IV for Salsa20 encryption/decryption
+        ("fuelLevel",       DataTypes.FLOAT),                 # Fuel level of car in liters 
+        ("fuelCapacity",    DataTypes.FLOAT),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
+        ("speed",           DataTypes.FLOAT),                 # Speed in m/s
+        ("boost",           DataTypes.FLOAT),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
+        ("oilPressure",     DataTypes.FLOAT),                 # Oil pressure in bars
+        ("waterTemp",       DataTypes.FLOAT),                 # Constantly 85
+        ("oilTemp",         DataTypes.FLOAT),                 # Constantly 110
+        ("tyreTemp",        DataTypes.FLOAT * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
         
-        ("packetId",            DataTypes.SIGNED_INT32.value),  # ID of packet
-        ("lapCount",            DataTypes.SIGNED_INT16.value),  # Lap count
-        ("totalLaps",           DataTypes.SIGNED_INT16.value),  # Laps to finish
-        ("bestLaptime",         DataTypes.SIGNED_INT32.value),  # Best lap time, defaults to -1 if not set
-        ("lastLaptime",         DataTypes.SIGNED_INT32.value),  # Previous lap time, defaults to -1 if not set
-        ("dayProgression",      DataTypes.SIGNED_INT32.value),  # Current time of day on track in ms
-        ("RaceStartPosition",   DataTypes.SIGNED_INT16.value),  # Position of the car before the start of the race, defaults to -1 after race start
-        ("preRaceNumCars",      DataTypes.SIGNED_INT16.value),  # Number of cars before the race start, defaults to -1 after start of the race
-        ("minAlertRPM",         DataTypes.SIGNED_INT16.value),  # Minimum RPM that the rev limiter displays an alert
-        ("maxAlertRPM",         DataTypes.SIGNED_INT16.value),  # Maximum RPM that the rev limiter displays an alert
-        ("calcMaxSpeed",        DataTypes.SIGNED_INT16.value),  # Highest possible speed achievable of the current transmission settings
+        ("packetId",            DataTypes.SIGNED_INT32),  # ID of packet
+        ("lapCount",            DataTypes.SIGNED_INT16),  # Lap count
+        ("totalLaps",           DataTypes.SIGNED_INT16),  # Laps to finish
+        ("bestLaptime",         DataTypes.SIGNED_INT32),  # Best lap time, defaults to -1 if not set
+        ("lastLaptime",         DataTypes.SIGNED_INT32),  # Previous lap time, defaults to -1 if not set
+        ("dayProgression",      DataTypes.SIGNED_INT32),  # Current time of day on track in ms
+        ("RaceStartPosition",   DataTypes.SIGNED_INT16),  # Position of the car before the start of the race, defaults to -1 after race start
+        ("preRaceNumCars",      DataTypes.SIGNED_INT16),  # Number of cars before the race start, defaults to -1 after start of the race
+        ("minAlertRPM",         DataTypes.SIGNED_INT16),  # Minimum RPM that the rev limiter displays an alert
+        ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
+        ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16.value), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
         
-        ("gears",       DataTypes.UNSIGNED_INT8.value), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
-        ("throttle",    DataTypes.UNSIGNED_INT8.value), # Throttle (RANGE: 0 -> 255)
-        ("brake",       DataTypes.UNSIGNED_INT8.value), # Brake (RANGE: 0 -> 255)
-        ("PADDING",     DataTypes.UNSIGNED_INT8.value), # Padding byte # * might not be needed
+        ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
+        ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
+        ("brake",       DataTypes.UNSIGNED_INT8), # Brake (RANGE: 0 -> 255)
+        ("PADDING",     DataTypes.UNSIGNED_INT8), # Padding byte # * might not be needed
         
-        ("roadPlane",               DataTypes.FLOAT.value * 3),     # Banking of the road
-        ("roadPlaneDistance",       DataTypes.FLOAT.value),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
-        ("wheelRPS",                DataTypes.FLOAT.value * 4),     # Revolutions per second of tyres in rads
-        ("tyreRadius",              DataTypes.FLOAT.value * 4),     # Radius of the tyre in meters
-        ("suspHeight",              DataTypes.FLOAT.value * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT.value * 8),     # Unknown float (from original source)
-        ("clutch",                  DataTypes.FLOAT.value),         # Clutch (RANGE: 0.0 -> 1.0)
-        ("clutchEngagement",        DataTypes.FLOAT.value),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
-        ("RPMFromClutchToGearbox",  DataTypes.FLOAT.value),         # Pretty much same as engine RPM, is 0 when clutch is depressed
-        ("transmissionTopSpeed",    DataTypes.FLOAT.value),         # Top speed as gear ratio value
-        ("gearRatios",              DataTypes.FLOAT.value  * 8),    # Gear ratios of the car up to 8
-        ("carCode",                 DataTypes.SIGNED_INT32.value),  # This value may be overriden if using a car with more then 9 gears
+        ("roadPlane",               DataTypes.FLOAT * 3),     # Banking of the road
+        ("roadPlaneDistance",       DataTypes.FLOAT),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
+        ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
+        ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
+        ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
+        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
+        ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
+        ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
+        ("transmissionTopSpeed",    DataTypes.FLOAT),         # Top speed as gear ratio value
+        ("gearRatios",              DataTypes.FLOAT  * 8),    # Gear ratios of the car up to 8
+        ("carCode",                 DataTypes.SIGNED_INT32),  # This value may be overriden if using a car with more then 9 gears
     ]
 
 
-class PacketBData(DataTypes.STRUCTURE.value):
+class PacketBData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("magic",                       DataTypes.SIGNED_INT32.value),  # Magic, different value defines what game is being played
-        ("position",                    DataTypes.FLOAT.value * 3),     # Position on Track in meters in each axis
-        ("worldVelocity",               DataTypes.FLOAT.value * 3),     # Velocity in meters for each axis
-        ("rotation",                    DataTypes.FLOAT.value * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
-        ("orientationRelativeToNorth",  DataTypes.FLOAT.value),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
-        ("angularVelocity",             DataTypes.FLOAT.value * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
-        ("bodyHeight",                  DataTypes.FLOAT.value),         # Body height
-        ("EngineRPM",                   DataTypes.FLOAT.value),         # Engine revolutions per minute
+        ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
+        ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
+        ("worldVelocity",               DataTypes.FLOAT * 3),     # Velocity in meters for each axis
+        ("rotation",                    DataTypes.FLOAT * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
+        ("orientationRelativeToNorth",  DataTypes.FLOAT),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
+        ("angularVelocity",             DataTypes.FLOAT * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
+        ("bodyHeight",                  DataTypes.FLOAT),         # Body height
+        ("EngineRPM",                   DataTypes.FLOAT),         # Engine revolutions per minute
 
-        ("iv",              DataTypes.UNSIGNED_INT8.value * 4),     # IV for Salsa20 encryption/decryption
-        ("fuelLevel",       DataTypes.FLOAT.value),                 # Fuel level of car in liters 
-        ("fuelCapacity",    DataTypes.FLOAT.value),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
-        ("speed",           DataTypes.FLOAT.value),                 # Speed in m/s
-        ("boost",           DataTypes.FLOAT.value),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
-        ("oilPressure",     DataTypes.FLOAT.value),                 # Oil pressure in bars
-        ("waterTemp",       DataTypes.FLOAT.value),                 # Constantly 85
-        ("oilTemp",         DataTypes.FLOAT.value),                 # Constantly 110
-        ("tyreTemp",        DataTypes.FLOAT.value * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
+        ("iv",              DataTypes.UNSIGNED_INT8 * 4),     # IV for Salsa20 encryption/decryption
+        ("fuelLevel",       DataTypes.FLOAT),                 # Fuel level of car in liters 
+        ("fuelCapacity",    DataTypes.FLOAT),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
+        ("speed",           DataTypes.FLOAT),                 # Speed in m/s
+        ("boost",           DataTypes.FLOAT),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
+        ("oilPressure",     DataTypes.FLOAT),                 # Oil pressure in bars
+        ("waterTemp",       DataTypes.FLOAT),                 # Constantly 85
+        ("oilTemp",         DataTypes.FLOAT),                 # Constantly 110
+        ("tyreTemp",        DataTypes.FLOAT * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
         
-        ("packetId",            DataTypes.SIGNED_INT32.value),  # ID of packet
-        ("lapCount",            DataTypes.SIGNED_INT16.value),  # Lap count
-        ("totalLaps",           DataTypes.SIGNED_INT16.value),  # Laps to finish
-        ("bestLaptime",         DataTypes.SIGNED_INT32.value),  # Best lap time, defaults to -1 if not set
-        ("lastLaptime",         DataTypes.SIGNED_INT32.value),  # Previous lap time, defaults to -1 if not set
-        ("dayProgression",      DataTypes.SIGNED_INT32.value),  # Current time of day on track in ms
-        ("RaceStartPosition",   DataTypes.SIGNED_INT16.value),  # Position of the car before the start of the race, defaults to -1 after race start
-        ("preRaceNumCars",      DataTypes.SIGNED_INT16.value),  # Number of cars before the race start, defaults to -1 after start of the race
-        ("minAlertRPM",         DataTypes.SIGNED_INT16.value),  # Minimum RPM that the rev limiter displays an alert
-        ("maxAlertRPM",         DataTypes.SIGNED_INT16.value),  # Maximum RPM that the rev limiter displays an alert
-        ("calcMaxSpeed",        DataTypes.SIGNED_INT16.value),  # Highest possible speed achievable of the current transmission settings
+        ("packetId",            DataTypes.SIGNED_INT32),  # ID of packet
+        ("lapCount",            DataTypes.SIGNED_INT16),  # Lap count
+        ("totalLaps",           DataTypes.SIGNED_INT16),  # Laps to finish
+        ("bestLaptime",         DataTypes.SIGNED_INT32),  # Best lap time, defaults to -1 if not set
+        ("lastLaptime",         DataTypes.SIGNED_INT32),  # Previous lap time, defaults to -1 if not set
+        ("dayProgression",      DataTypes.SIGNED_INT32),  # Current time of day on track in ms
+        ("RaceStartPosition",   DataTypes.SIGNED_INT16),  # Position of the car before the start of the race, defaults to -1 after race start
+        ("preRaceNumCars",      DataTypes.SIGNED_INT16),  # Number of cars before the race start, defaults to -1 after start of the race
+        ("minAlertRPM",         DataTypes.SIGNED_INT16),  # Minimum RPM that the rev limiter displays an alert
+        ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
+        ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16.value), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
         
-        ("gears",       DataTypes.UNSIGNED_INT8.value), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
-        ("throttle",    DataTypes.UNSIGNED_INT8.value), # Throttle (RANGE: 0 -> 255)
-        ("brake",       DataTypes.UNSIGNED_INT8.value), # Brake (RANGE: 0 -> 255)
-        ("PADDING",     DataTypes.UNSIGNED_INT8.value), # Padding byte # * might not be needed
+        ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
+        ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
+        ("brake",       DataTypes.UNSIGNED_INT8), # Brake (RANGE: 0 -> 255)
+        ("PADDING",     DataTypes.UNSIGNED_INT8), # Padding byte # * might not be needed
         
-        ("roadPlane",               DataTypes.FLOAT.value * 3),     # Banking of the road
-        ("roadPlaneDistance",       DataTypes.FLOAT.value),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
-        ("wheelRPS",                DataTypes.FLOAT.value * 4),     # Revolutions per second of tyres in rads
-        ("tyreRadius",              DataTypes.FLOAT.value * 4),     # Radius of the tyre in meters
-        ("suspHeight",              DataTypes.FLOAT.value * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT.value * 8),     # Unknown float (from original source)
-        ("clutch",                  DataTypes.FLOAT.value),         # Clutch (RANGE: 0.0 -> 1.0)
-        ("clutchEngagement",        DataTypes.FLOAT.value),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
-        ("RPMFromClutchToGearbox",  DataTypes.FLOAT.value),         # Pretty much same as engine RPM, is 0 when clutch is depressed
-        ("transmissionTopSpeed",    DataTypes.FLOAT.value),         # Top speed as gear ratio value
-        ("gearRatios",              DataTypes.FLOAT.value  * 8),    # Gear ratios of the car up to 8
-        ("carCode",                 DataTypes.SIGNED_INT32.value),  # This value may be overriden if using a car with more then 9 gears
+        ("roadPlane",               DataTypes.FLOAT * 3),     # Banking of the road
+        ("roadPlaneDistance",       DataTypes.FLOAT),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
+        ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
+        ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
+        ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
+        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
+        ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
+        ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
+        ("transmissionTopSpeed",    DataTypes.FLOAT),         # Top speed as gear ratio value
+        ("gearRatios",              DataTypes.FLOAT  * 8),    # Gear ratios of the car up to 8
+        ("carCode",                 DataTypes.SIGNED_INT32),  # This value may be overriden if using a car with more then 9 gears
         
-        ("wheelRotation",   DataTypes.FLOAT.value),  # Calculates the wheel rotation in radians
-        ("UNKNOWNFLOAT10",  DataTypes.FLOAT.value),  # Unknown float
-        ("sway",            DataTypes.FLOAT.value),  # X axis acceleration
-        ("heave",           DataTypes.FLOAT.value),  # Y axis acceleration
-        ("surge",           DataTypes.FLOAT.value),  # Z axis acceleration
+        ("wheelRotation",   DataTypes.FLOAT),  # Calculates the wheel rotation in radians
+        ("UNKNOWNFLOAT10",  DataTypes.FLOAT),  # Unknown float
+        ("sway",            DataTypes.FLOAT),  # X axis acceleration
+        ("heave",           DataTypes.FLOAT),  # Y axis acceleration
+        ("surge",           DataTypes.FLOAT),  # Z axis acceleration
         
     ]
 
 
-class PacketTildaData(DataTypes.STRUCTURE.value):
+class PacketTildaData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("magic",                       DataTypes.SIGNED_INT32.value),  # Magic, different value defines what game is being played
-        ("position",                    DataTypes.FLOAT.value * 3),     # Position on Track in meters in each axis
-        ("worldVelocity",               DataTypes.FLOAT.value * 3),     # Velocity in meters for each axis
-        ("rotation",                    DataTypes.FLOAT.value * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
-        ("orientationRelativeToNorth",  DataTypes.FLOAT.value),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
-        ("angularVelocity",             DataTypes.FLOAT.value * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
-        ("bodyHeight",                  DataTypes.FLOAT.value),         # Body height
-        ("EngineRPM",                   DataTypes.FLOAT.value),         # Engine revolutions per minute
+        ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
+        ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
+        ("worldVelocity",               DataTypes.FLOAT * 3),     # Velocity in meters for each axis
+        ("rotation",                    DataTypes.FLOAT * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
+        ("orientationRelativeToNorth",  DataTypes.FLOAT),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
+        ("angularVelocity",             DataTypes.FLOAT * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
+        ("bodyHeight",                  DataTypes.FLOAT),         # Body height
+        ("EngineRPM",                   DataTypes.FLOAT),         # Engine revolutions per minute
 
-        ("iv",              DataTypes.UNSIGNED_INT8.value * 4),     # IV for Salsa20 encryption/decryption
-        ("fuelLevel",       DataTypes.FLOAT.value),                 # Fuel level of car in liters 
-        ("fuelCapacity",    DataTypes.FLOAT.value),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
-        ("speed",           DataTypes.FLOAT.value),                 # Speed in m/s
-        ("boost",           DataTypes.FLOAT.value),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
-        ("oilPressure",     DataTypes.FLOAT.value),                 # Oil pressure in bars
-        ("waterTemp",       DataTypes.FLOAT.value),                 # Constantly 85
-        ("oilTemp",         DataTypes.FLOAT.value),                 # Constantly 110
-        ("tyreTemp",        DataTypes.FLOAT.value * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
+        ("iv",              DataTypes.UNSIGNED_INT8 * 4),     # IV for Salsa20 encryption/decryption
+        ("fuelLevel",       DataTypes.FLOAT),                 # Fuel level of car in liters 
+        ("fuelCapacity",    DataTypes.FLOAT),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
+        ("speed",           DataTypes.FLOAT),                 # Speed in m/s
+        ("boost",           DataTypes.FLOAT),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
+        ("oilPressure",     DataTypes.FLOAT),                 # Oil pressure in bars
+        ("waterTemp",       DataTypes.FLOAT),                 # Constantly 85
+        ("oilTemp",         DataTypes.FLOAT),                 # Constantly 110
+        ("tyreTemp",        DataTypes.FLOAT * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
         
-        ("packetId",            DataTypes.SIGNED_INT32.value),  # ID of packet
-        ("lapCount",            DataTypes.SIGNED_INT16.value),  # Lap count
-        ("totalLaps",           DataTypes.SIGNED_INT16.value),  # Laps to finish
-        ("bestLaptime",         DataTypes.SIGNED_INT32.value),  # Best lap time, defaults to -1 if not set
-        ("lastLaptime",         DataTypes.SIGNED_INT32.value),  # Previous lap time, defaults to -1 if not set
-        ("dayProgression",      DataTypes.SIGNED_INT32.value),  # Current time of day on track in ms
-        ("RaceStartPosition",   DataTypes.SIGNED_INT16.value),  # Position of the car before the start of the race, defaults to -1 after race start
-        ("preRaceNumCars",      DataTypes.SIGNED_INT16.value),  # Number of cars before the race start, defaults to -1 after start of the race
-        ("minAlertRPM",         DataTypes.SIGNED_INT16.value),  # Minimum RPM that the rev limiter displays an alert
-        ("maxAlertRPM",         DataTypes.SIGNED_INT16.value),  # Maximum RPM that the rev limiter displays an alert
-        ("calcMaxSpeed",        DataTypes.SIGNED_INT16.value),  # Highest possible speed achievable of the current transmission settings
+        ("packetId",            DataTypes.SIGNED_INT32),  # ID of packet
+        ("lapCount",            DataTypes.SIGNED_INT16),  # Lap count
+        ("totalLaps",           DataTypes.SIGNED_INT16),  # Laps to finish
+        ("bestLaptime",         DataTypes.SIGNED_INT32),  # Best lap time, defaults to -1 if not set
+        ("lastLaptime",         DataTypes.SIGNED_INT32),  # Previous lap time, defaults to -1 if not set
+        ("dayProgression",      DataTypes.SIGNED_INT32),  # Current time of day on track in ms
+        ("RaceStartPosition",   DataTypes.SIGNED_INT16),  # Position of the car before the start of the race, defaults to -1 after race start
+        ("preRaceNumCars",      DataTypes.SIGNED_INT16),  # Number of cars before the race start, defaults to -1 after start of the race
+        ("minAlertRPM",         DataTypes.SIGNED_INT16),  # Minimum RPM that the rev limiter displays an alert
+        ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
+        ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16.value), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
         
-        ("gears",       DataTypes.UNSIGNED_INT8.value), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
-        ("throttle",    DataTypes.UNSIGNED_INT8.value), # Throttle (RANGE: 0 -> 255)
-        ("brake",       DataTypes.UNSIGNED_INT8.value), # Brake (RANGE: 0 -> 255)
-        ("PADDING",     DataTypes.UNSIGNED_INT8.value), # Padding byte # * might not be needed
+        ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
+        ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
+        ("brake",       DataTypes.UNSIGNED_INT8), # Brake (RANGE: 0 -> 255)
+        ("PADDING",     DataTypes.UNSIGNED_INT8), # Padding byte # * might not be needed
         
-        ("roadPlane",               DataTypes.FLOAT.value * 3),     # Banking of the road
-        ("roadPlaneDistance",       DataTypes.FLOAT.value),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
-        ("wheelRPS",                DataTypes.FLOAT.value * 4),     # Revolutions per second of tyres in rads
-        ("tyreRadius",              DataTypes.FLOAT.value * 4),     # Radius of the tyre in meters
-        ("suspHeight",              DataTypes.FLOAT.value * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT.value * 8),     # Unknown float (from original source)
-        ("clutch",                  DataTypes.FLOAT.value),         # Clutch (RANGE: 0.0 -> 1.0)
-        ("clutchEngagement",        DataTypes.FLOAT.value),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
-        ("RPMFromClutchToGearbox",  DataTypes.FLOAT.value),         # Pretty much same as engine RPM, is 0 when clutch is depressed
-        ("transmissionTopSpeed",    DataTypes.FLOAT.value),         # Top speed as gear ratio value
-        ("gearRatios",              DataTypes.FLOAT.value  * 8),    # Gear ratios of the car up to 8
-        ("carCode",                 DataTypes.SIGNED_INT32.value),  # This value may be overriden if using a car with more then 9 gears
+        ("roadPlane",               DataTypes.FLOAT * 3),     # Banking of the road
+        ("roadPlaneDistance",       DataTypes.FLOAT),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
+        ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
+        ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
+        ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
+        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
+        ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
+        ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
+        ("transmissionTopSpeed",    DataTypes.FLOAT),         # Top speed as gear ratio value
+        ("gearRatios",              DataTypes.FLOAT  * 8),    # Gear ratios of the car up to 8
+        ("carCode",                 DataTypes.SIGNED_INT32),  # This value may be overriden if using a car with more then 9 gears
         
-        ("wheelRotation",   DataTypes.FLOAT.value),  # Calculates the wheel rotation in radians
-        ("UNKNOWNFLOAT10",  DataTypes.FLOAT.value),  # Unknown float
-        ("sway",            DataTypes.FLOAT.value),  # X axis acceleration
-        ("heave",           DataTypes.FLOAT.value),  # Y axis acceleration
-        ("surge",           DataTypes.FLOAT.value),  # Z axis acceleration
+        ("wheelRotation",   DataTypes.FLOAT),  # Calculates the wheel rotation in radians
+        ("UNKNOWNFLOAT10",  DataTypes.FLOAT),  # Unknown float
+        ("sway",            DataTypes.FLOAT),  # X axis acceleration
+        ("heave",           DataTypes.FLOAT),  # Y axis acceleration
+        ("surge",           DataTypes.FLOAT),  # Z axis acceleration
         
-        ("throttleFiltered",    DataTypes.UNSIGNED_INT8.value),     # Filtered Throttle Output
-        ("brakeFiltered",       DataTypes.UNSIGNED_INT8.value),     # Filtered Brake Output
-        ("UNKNOWNUINT81",       DataTypes.UNSIGNED_INT8.value),     # Unknown unsigned 8 bit integer
-        ("UNKNOWNUINT82",       DataTypes.UNSIGNED_INT8.value),     # Unknown unsigned 8 bit integer
-        ("torqueVectors",       DataTypes.FLOAT.value * 4),         # Torque vectoring for certain cars - Positive = driving force - Negative = braking or regenerating
-        ("energyRecovery",      DataTypes.FLOAT.value),             # Energy being recovered to the battery
-        ("UNKNOWNFLOAT11",      DataTypes.FLOAT.value),             # Unknown float
+        ("throttleFiltered",    DataTypes.UNSIGNED_INT8),     # Filtered Throttle Output
+        ("brakeFiltered",       DataTypes.UNSIGNED_INT8),     # Filtered Brake Output
+        ("UNKNOWNUINT81",       DataTypes.UNSIGNED_INT8),     # Unknown unsigned 8 bit integer
+        ("UNKNOWNUINT82",       DataTypes.UNSIGNED_INT8),     # Unknown unsigned 8 bit integer
+        ("torqueVectors",       DataTypes.FLOAT * 4),         # Torque vectoring for certain cars - Positive = driving force - Negative = braking or regenerating
+        ("energyRecovery",      DataTypes.FLOAT),             # Energy being recovered to the battery
+        ("UNKNOWNFLOAT11",      DataTypes.FLOAT),             # Unknown float
     ]
 
 
-class PacketCData(DataTypes.STRUCTURE.value):
+class PacketCData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("magic",                       DataTypes.SIGNED_INT32.value),  # Magic, different value defines what game is being played
-        ("position",                    DataTypes.FLOAT.value * 3),     # Position on Track in meters in each axis
-        ("worldVelocity",               DataTypes.FLOAT.value * 3),     # Velocity in meters for each axis
-        ("rotation",                    DataTypes.FLOAT.value * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
-        ("orientationRelativeToNorth",  DataTypes.FLOAT.value),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
-        ("angularVelocity",             DataTypes.FLOAT.value * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
-        ("bodyHeight",                  DataTypes.FLOAT.value),         # Body height
-        ("EngineRPM",                   DataTypes.FLOAT.value),         # Engine revolutions per minute
+        ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
+        ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
+        ("worldVelocity",               DataTypes.FLOAT * 3),     # Velocity in meters for each axis
+        ("rotation",                    DataTypes.FLOAT * 3),     # Rotation (Pitch/Yaw/Roll) (RANGE: -1 -> 1)
+        ("orientationRelativeToNorth",  DataTypes.FLOAT),         # Orientation to North (RANGE: 1.0 (North) -> 0.0 (South))
+        ("angularVelocity",             DataTypes.FLOAT * 3),     # Speed at which the car turns around axis in rad/s (RANGE: -1 -> 1)
+        ("bodyHeight",                  DataTypes.FLOAT),         # Body height
+        ("EngineRPM",                   DataTypes.FLOAT),         # Engine revolutions per minute
 
-        ("iv",              DataTypes.UNSIGNED_INT8.value * 4),     # IV for Salsa20 encryption/decryption
-        ("fuelLevel",       DataTypes.FLOAT.value),                 # Fuel level of car in liters 
-        ("fuelCapacity",    DataTypes.FLOAT.value),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
-        ("speed",           DataTypes.FLOAT.value),                 # Speed in m/s
-        ("boost",           DataTypes.FLOAT.value),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
-        ("oilPressure",     DataTypes.FLOAT.value),                 # Oil pressure in bars
-        ("waterTemp",       DataTypes.FLOAT.value),                 # Constantly 85
-        ("oilTemp",         DataTypes.FLOAT.value),                 # Constantly 110
-        ("tyreTemp",        DataTypes.FLOAT.value * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
+        ("iv",              DataTypes.UNSIGNED_INT8 * 4),     # IV for Salsa20 encryption/decryption
+        ("fuelLevel",       DataTypes.FLOAT),                 # Fuel level of car in liters 
+        ("fuelCapacity",    DataTypes.FLOAT),                 # Max fuel capacity for current car (RANGE: 100 (most cars) -> 5 (karts) -> 0 (electric cars))  
+        ("speed",           DataTypes.FLOAT),                 # Speed in m/s
+        ("boost",           DataTypes.FLOAT),                 # Offset by +1 (EXAMPLE: 1.0 = 0 X 100kPa, 2.0 = 1 x 100kPa) # TODO apply -1 offset (from original source)
+        ("oilPressure",     DataTypes.FLOAT),                 # Oil pressure in bars
+        ("waterTemp",       DataTypes.FLOAT),                 # Constantly 85
+        ("oilTemp",         DataTypes.FLOAT),                 # Constantly 110
+        ("tyreTemp",        DataTypes.FLOAT * 4),             # Tyre temp for all 4 tires (FL -> FR -> RL -> RR)
         
-        ("packetId",            DataTypes.SIGNED_INT32.value),  # ID of packet
-        ("lapCount",            DataTypes.SIGNED_INT16.value),  # Lap count
-        ("totalLaps",           DataTypes.SIGNED_INT16.value),  # Laps to finish
-        ("bestLaptime",         DataTypes.SIGNED_INT32.value),  # Best lap time, defaults to -1 if not set
-        ("lastLaptime",         DataTypes.SIGNED_INT32.value),  # Previous lap time, defaults to -1 if not set
-        ("dayProgression",      DataTypes.SIGNED_INT32.value),  # Current time of day on track in ms
-        ("RaceStartPosition",   DataTypes.SIGNED_INT16.value),  # Position of the car before the start of the race, defaults to -1 after race start
-        ("preRaceNumCars",      DataTypes.SIGNED_INT16.value),  # Number of cars before the race start, defaults to -1 after start of the race
-        ("minAlertRPM",         DataTypes.SIGNED_INT16.value),  # Minimum RPM that the rev limiter displays an alert
-        ("maxAlertRPM",         DataTypes.SIGNED_INT16.value),  # Maximum RPM that the rev limiter displays an alert
-        ("calcMaxSpeed",        DataTypes.SIGNED_INT16.value),  # Highest possible speed achievable of the current transmission settings
+        ("packetId",            DataTypes.SIGNED_INT32),  # ID of packet
+        ("lapCount",            DataTypes.SIGNED_INT16),  # Lap count
+        ("totalLaps",           DataTypes.SIGNED_INT16),  # Laps to finish
+        ("bestLaptime",         DataTypes.SIGNED_INT32),  # Best lap time, defaults to -1 if not set
+        ("lastLaptime",         DataTypes.SIGNED_INT32),  # Previous lap time, defaults to -1 if not set
+        ("dayProgression",      DataTypes.SIGNED_INT32),  # Current time of day on track in ms
+        ("RaceStartPosition",   DataTypes.SIGNED_INT16),  # Position of the car before the start of the race, defaults to -1 after race start
+        ("preRaceNumCars",      DataTypes.SIGNED_INT16),  # Number of cars before the race start, defaults to -1 after start of the race
+        ("minAlertRPM",         DataTypes.SIGNED_INT16),  # Minimum RPM that the rev limiter displays an alert
+        ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
+        ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16.value), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
         
-        ("gears",       DataTypes.UNSIGNED_INT8.value), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
-        ("throttle",    DataTypes.UNSIGNED_INT8.value), # Throttle (RANGE: 0 -> 255)
-        ("brake",       DataTypes.UNSIGNED_INT8.value), # Brake (RANGE: 0 -> 255)
-        ("PADDING",     DataTypes.UNSIGNED_INT8.value), # Padding byte # * might not be needed
+        ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
+        ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
+        ("brake",       DataTypes.UNSIGNED_INT8), # Brake (RANGE: 0 -> 255)
+        ("PADDING",     DataTypes.UNSIGNED_INT8), # Padding byte # * might not be needed
         
-        ("roadPlane",               DataTypes.FLOAT.value * 3),     # Banking of the road
-        ("roadPlaneDistance",       DataTypes.FLOAT.value),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
-        ("wheelRPS",                DataTypes.FLOAT.value * 4),     # Revolutions per second of tyres in rads
-        ("tyreRadius",              DataTypes.FLOAT.value * 4),     # Radius of the tyre in meters
-        ("suspHeight",              DataTypes.FLOAT.value * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT.value * 8),     # Unknown float (from original source)
-        ("clutch",                  DataTypes.FLOAT.value),         # Clutch (RANGE: 0.0 -> 1.0)
-        ("clutchEngagement",        DataTypes.FLOAT.value),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
-        ("RPMFromClutchToGearbox",  DataTypes.FLOAT.value),         # Pretty much same as engine RPM, is 0 when clutch is depressed
-        ("transmissionTopSpeed",    DataTypes.FLOAT.value),         # Top speed as gear ratio value
-        ("gearRatios",              DataTypes.FLOAT.value  * 8),    # Gear ratios of the car up to 8
-        ("carCode",                 DataTypes.SIGNED_INT32.value),  # This value may be overriden if using a car with more then 9 gears
+        ("roadPlane",               DataTypes.FLOAT * 3),     # Banking of the road
+        ("roadPlaneDistance",       DataTypes.FLOAT),         # Distance above or below the plane, e.g a dip in the road is negative, hill is positive.
+        ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
+        ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
+        ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
+        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
+        ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
+        ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
+        ("transmissionTopSpeed",    DataTypes.FLOAT),         # Top speed as gear ratio value
+        ("gearRatios",              DataTypes.FLOAT  * 8),    # Gear ratios of the car up to 8
+        ("carCode",                 DataTypes.SIGNED_INT32),  # This value may be overriden if using a car with more then 9 gears
         
-        ("wheelRotation",   DataTypes.FLOAT.value),  # Calculates the wheel rotation in radians
-        ("UNKNOWNFLOAT10",  DataTypes.FLOAT.value),  # Unknown float
-        ("sway",            DataTypes.FLOAT.value),  # X axis acceleration
-        ("heave",           DataTypes.FLOAT.value),  # Y axis acceleration
-        ("surge",           DataTypes.FLOAT.value),  # Z axis acceleration
+        ("wheelRotation",   DataTypes.FLOAT),  # Calculates the wheel rotation in radians
+        ("UNKNOWNFLOAT10",  DataTypes.FLOAT),  # Unknown float
+        ("sway",            DataTypes.FLOAT),  # X axis acceleration
+        ("heave",           DataTypes.FLOAT),  # Y axis acceleration
+        ("surge",           DataTypes.FLOAT),  # Z axis acceleration
         
-        ("throttleFiltered",    DataTypes.UNSIGNED_INT8.value),     # Filtered Throttle Output
-        ("brakeFiltered",       DataTypes.UNSIGNED_INT8.value),     # Filtered Brake Output
-        ("UNKNOWNUINT81",       DataTypes.UNSIGNED_INT8.value),     # Unknown unsigned 8 bit integer
-        ("UNKNOWNUINT82",       DataTypes.UNSIGNED_INT8.value),     # Unknown unsigned 8 bit integer
-        ("torqueVectors",       DataTypes.FLOAT.value * 4),         # Torque vectoring for certain cars - Positive = driving force - Negative = braking or regenerating
-        ("energyRecovery",      DataTypes.FLOAT.value),             # Energy being recovered to the battery
-        ("UNKNOWNFLOAT11",      DataTypes.FLOAT.value),             # Unknown float
+        ("throttleFiltered",    DataTypes.UNSIGNED_INT8),     # Filtered Throttle Output
+        ("brakeFiltered",       DataTypes.UNSIGNED_INT8),     # Filtered Brake Output
+        ("UNKNOWNUINT81",       DataTypes.UNSIGNED_INT8),     # Unknown unsigned 8 bit integer
+        ("UNKNOWNUINT82",       DataTypes.UNSIGNED_INT8),     # Unknown unsigned 8 bit integer
+        ("torqueVectors",       DataTypes.FLOAT * 4),         # Torque vectoring for certain cars - Positive = driving force - Negative = braking or regenerating
+        ("energyRecovery",      DataTypes.FLOAT),             # Energy being recovered to the battery
+        ("UNKNOWNFLOAT11",      DataTypes.FLOAT),             # Unknown float
         
-        ("surfaceType",     DataTypes.CHAR.value * 4),          # The kind of surface in contact with the tyres (T: tarmac, C: curb/kerb D: Dirt/Grass)
-        ("currentLap",      DataTypes.SIGNED_INT32.value),      # The current lap being set in milliseconds
-        ("UNKNOWNFLOATS",   DataTypes.FLOAT.value * 3),         # Unknown float
-        ("carCategory",     DataTypes.CHAR.value * 4),          # Null terminated string of car category (GR3, GRX etc.)
+        ("surfaceType",     DataTypes.CHAR * 4),          # The kind of surface in contact with the tyres (T: tarmac, C: curb/kerb D: Dirt/Grass)
+        ("currentLap",      DataTypes.SIGNED_INT32),      # The current lap being set in milliseconds
+        ("UNKNOWNFLOATS",   DataTypes.FLOAT * 3),         # Unknown float
+        ("carCategory",     DataTypes.CHAR * 4),          # Null terminated string of car category (GR3, GRX etc.)
     ]
 
 
@@ -351,7 +351,7 @@ class MetaData:
     decrytionFunc = decrypt_data
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (0, None)
+    headerInfo: type | None = None
     packetIDAttribute: str | None = None
     
     # use for shared memory

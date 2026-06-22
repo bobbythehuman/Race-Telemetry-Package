@@ -4,7 +4,7 @@ from enum import Enum
 # source
 # https://documentation.beamng.com/modding/protocols/
 
-class DataTypes(Enum):
+class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
 
     SIGNED_INT = ctypes.c_int
@@ -18,28 +18,28 @@ class DataTypes(Enum):
 
 # Items marked as `N/A` are not implemented.
 
-class TelemetryData(DataTypes.STRUCTURE.value):
+class TelemetryData(DataTypes.STRUCTURE):
     _fields_ = [
-        ("time",            DataTypes.UNSIGNED_INT.value),      # time in milliseconds (to check order) // N/A, hardcoded to 0
-        ("car",             DataTypes.CHAR.value * 4),          # Car name // N/A, fixed value of "beam"
-        ("flags",           DataTypes.UNSIGNED_SHORT.value),    # Info (see OG_x below)
-        ("gear",            DataTypes.CHAR.value),              # Reverse:0, Neutral:1, First:2...
-        ("plid",            DataTypes.CHAR.value),              # Unique ID of viewed player (0 = none) // N/A, hardcoded to 0
-        ("speed",           DataTypes.FLOAT.value),             # M/S
-        ("rpm",             DataTypes.FLOAT.value),             # RPM
-        ("turbo",           DataTypes.FLOAT.value),             # BAR
-        ("engTemp",         DataTypes.FLOAT.value),             # C
-        ("fuel",            DataTypes.FLOAT.value),             # 0 to 1
-        ("oilPressure",     DataTypes.FLOAT.value),             # BAR // N/A, hardcoded to 0
-        ("oilTemp",         DataTypes.FLOAT.value),             # C
-        ("dashLights",      DataTypes.UNSIGNED_INT.value),      # Dash lights available (see DL_x below)
-        ("showLights",      DataTypes.UNSIGNED_INT.value),      # Dash lights currently switched on
-        ("throttle",        DataTypes.FLOAT.value),             # 0 to 1
-        ("brake",           DataTypes.FLOAT.value),             # 0 to 1
-        ("clutch",          DataTypes.FLOAT.value),             # 0 to 1
-        ("display1",        DataTypes.CHAR.value * 16),         # Usually Fuel // N/A, hardcoded to ""
-        ("display2",        DataTypes.CHAR.value * 16),         # Usually Settings // N/A, hardcoded to ""
-        ("id",              DataTypes.SIGNED_INT.value)         # optional - only if OutGauge ID is specified
+        ("time",            DataTypes.UNSIGNED_INT),      # time in milliseconds (to check order) // N/A, hardcoded to 0
+        ("car",             DataTypes.CHAR * 4),          # Car name // N/A, fixed value of "beam"
+        ("flags",           DataTypes.UNSIGNED_SHORT),    # Info (see OG_x below)
+        ("gear",            DataTypes.CHAR),              # Reverse:0, Neutral:1, First:2...
+        ("plid",            DataTypes.CHAR),              # Unique ID of viewed player (0 = none) // N/A, hardcoded to 0
+        ("speed",           DataTypes.FLOAT),             # M/S
+        ("rpm",             DataTypes.FLOAT),             # RPM
+        ("turbo",           DataTypes.FLOAT),             # BAR
+        ("engTemp",         DataTypes.FLOAT),             # C
+        ("fuel",            DataTypes.FLOAT),             # 0 to 1
+        ("oilPressure",     DataTypes.FLOAT),             # BAR // N/A, hardcoded to 0
+        ("oilTemp",         DataTypes.FLOAT),             # C
+        ("dashLights",      DataTypes.UNSIGNED_INT),      # Dash lights available (see DL_x below)
+        ("showLights",      DataTypes.UNSIGNED_INT),      # Dash lights currently switched on
+        ("throttle",        DataTypes.FLOAT),             # 0 to 1
+        ("brake",           DataTypes.FLOAT),             # 0 to 1
+        ("clutch",          DataTypes.FLOAT),             # 0 to 1
+        ("display1",        DataTypes.CHAR * 16),         # Usually Fuel // N/A, hardcoded to ""
+        ("display2",        DataTypes.CHAR * 16),         # Usually Settings // N/A, hardcoded to ""
+        ("id",              DataTypes.SIGNED_INT)         # optional - only if OutGauge ID is specified
     ]
     
 
@@ -66,30 +66,30 @@ class TelemetryData(DataTypes.STRUCTURE.value):
 
 # MotionSim UDP protocol
 
-class MotionSim(DataTypes.STRUCTURE.value):
+class MotionSim(DataTypes.STRUCTURE):
     _fields_ = [
-        ("format",      DataTypes.CHAR.value * 4),  # allows to verify if packet is the expected format, fixed value of "BNG1"
-        ("posX",        DataTypes.FLOAT.value),     # world position of the vehicle
-        ("posY",        DataTypes.FLOAT.value),     # world position of the vehicle
-        ("posZ",        DataTypes.FLOAT.value),     # world position of the vehicle
-        ("velX",        DataTypes.FLOAT.value),     # velocity of the vehicle
-        ("velY",        DataTypes.FLOAT.value),     # velocity of the vehicle
-        ("velZ",        DataTypes.FLOAT.value),     # velocity of the vehicle
-        ("accX",        DataTypes.FLOAT.value),     # acceleration of the vehicle, gravity not included
-        ("accY",        DataTypes.FLOAT.value),     # acceleration of the vehicle, gravity not included
-        ("accZ",        DataTypes.FLOAT.value),     # acceleration of the vehicle, gravity not included
-        ("upX",         DataTypes.FLOAT.value),     # vector components of a vector pointing "up" relative to the vehicle
-        ("upY",         DataTypes.FLOAT.value),     # vector components of a vector pointing "up" relative to the vehicle
-        ("upZ",         DataTypes.FLOAT.value),     # vector components of a vector pointing "up" relative to the vehicle
-        ("rollPos",     DataTypes.FLOAT.value),     # angle of roll, pitch and yaw of the vehicle
-        ("pitchPos",    DataTypes.FLOAT.value),     # angle of roll, pitch and yaw of the vehicle
-        ("yawPos",      DataTypes.FLOAT.value),     # angle of roll, pitch and yaw of the vehicle
-        ("rollVel",     DataTypes.FLOAT.value),     # angular velocities of roll, pitch and yaw of the vehicle
-        ("pitchVel",    DataTypes.FLOAT.value),     # angular velocities of roll, pitch and yaw of the vehicle
-        ("yawVel",      DataTypes.FLOAT.value),     # angular velocities of roll, pitch and yaw of the vehicle
-        ("rollAcc",     DataTypes.FLOAT.value),     # angular acceleration of roll, pitch and yaw of the vehicle
-        ("pitchAcc",    DataTypes.FLOAT.value),     # angular acceleration of roll, pitch and yaw of the vehicle
-        ("yawAcc",      DataTypes.FLOAT.value),     # angular acceleration of roll, pitch and yaw of the vehicle
+        ("format",      DataTypes.CHAR * 4),  # allows to verify if packet is the expected format, fixed value of "BNG1"
+        ("posX",        DataTypes.FLOAT),     # world position of the vehicle
+        ("posY",        DataTypes.FLOAT),     # world position of the vehicle
+        ("posZ",        DataTypes.FLOAT),     # world position of the vehicle
+        ("velX",        DataTypes.FLOAT),     # velocity of the vehicle
+        ("velY",        DataTypes.FLOAT),     # velocity of the vehicle
+        ("velZ",        DataTypes.FLOAT),     # velocity of the vehicle
+        ("accX",        DataTypes.FLOAT),     # acceleration of the vehicle, gravity not included
+        ("accY",        DataTypes.FLOAT),     # acceleration of the vehicle, gravity not included
+        ("accZ",        DataTypes.FLOAT),     # acceleration of the vehicle, gravity not included
+        ("upX",         DataTypes.FLOAT),     # vector components of a vector pointing "up" relative to the vehicle
+        ("upY",         DataTypes.FLOAT),     # vector components of a vector pointing "up" relative to the vehicle
+        ("upZ",         DataTypes.FLOAT),     # vector components of a vector pointing "up" relative to the vehicle
+        ("rollPos",     DataTypes.FLOAT),     # angle of roll, pitch and yaw of the vehicle
+        ("pitchPos",    DataTypes.FLOAT),     # angle of roll, pitch and yaw of the vehicle
+        ("yawPos",      DataTypes.FLOAT),     # angle of roll, pitch and yaw of the vehicle
+        ("rollVel",     DataTypes.FLOAT),     # angular velocities of roll, pitch and yaw of the vehicle
+        ("pitchVel",    DataTypes.FLOAT),     # angular velocities of roll, pitch and yaw of the vehicle
+        ("yawVel",      DataTypes.FLOAT),     # angular velocities of roll, pitch and yaw of the vehicle
+        ("rollAcc",     DataTypes.FLOAT),     # angular acceleration of roll, pitch and yaw of the vehicle
+        ("pitchAcc",    DataTypes.FLOAT),     # angular acceleration of roll, pitch and yaw of the vehicle
+        ("yawAcc",      DataTypes.FLOAT),     # angular acceleration of roll, pitch and yaw of the vehicle
     ]
 
 
@@ -111,7 +111,7 @@ class MetaData:
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (0, None)
+    headerInfo: type | None = None
     packetIDAttribute: str | None = None
     
     # use for shared memory
