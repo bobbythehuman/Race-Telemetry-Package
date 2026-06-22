@@ -94,6 +94,8 @@ class telemetryManager:
         self.sharedMemoryName = None
         self.sharedMemorySize = None
         
+        self.enumMode = 0
+        
     # User controlled functions
 
     def updateMeta(self, MetaData):
@@ -139,17 +141,28 @@ class telemetryManager:
         """Manually stop the program by entering q to stop"""
         self.manuallyStopped = target
 
-    def isMultiThreaded(self, target: bool):
+    def isMultiThreaded(self, target: bool = True):
         '''Currently does nothing'''
         self.multiThreaded = target
 
-    def isSharedMemory(self, target: bool):
+    def isSharedMemory(self, target: bool = False):
         '''
         Call this to set whether to use shared memory or UDP for telemetry.
         Default is False (UDP).
         '''
         self.sharedMemory = target
     
+    def setEnumMode(self, target: int = 0):
+        '''
+        Call this to set the enum mode for handling enum values.
+        Default is 0 (no special handling).
+        Modes:
+        0: No special handling (default)
+        1: Convert fields with to the raw value
+        2: Convert fields to their enum type
+        '''
+        self.enumMode = target
+
     # Misc packet functions
 
     def __metaDataCheck(self, name: str, value: Any = None):
@@ -321,11 +334,15 @@ class telemetryManager:
                 except ValueError as exc:
                     continue
                 else:
-                    packet = dynamic_ingest(rawPacket)
+                    packet = dynamic_ingest(rawPacket, self.enumMode)
                     break
         if len(possiblePacketStruct) == len(packetSizes):
             print(f"[Warning]\tNo matching packet size [{packetSizes}] for received data length {dataLength}")
             packet = None
+        
+        # do enum check here
+        # do enum convert
+        
         return packet
 
     def __retrieve_packet(self, data: bytes) -> tuple[type | None, int, Any]:

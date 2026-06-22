@@ -43,16 +43,43 @@ def unpackArray(packet):
     return value
 
 
-def dynamic_ingest(packet: type) -> type:
+def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     '''
-    Takes a packet and dynamically ingests it, converting any bytes values to strings and any ctypes arrays to lists.
+    Takes a packet and dynamically ingests it, converting:
+    - floats to rounded floats
+    - bytes values to strings 
+    - ctypes arrays to lists
+    - recursively ingests any nested classes
+    - fields with a declared _enums_ mapped to their enum type
     '''
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
+    enums = getattr(packet, "_enums_", {})
 
     packetName = packet.__class__.__name__
     newPacket = type(packetName, (), {})
 
+    inverseEnums = {}
+    for k,v in enums.items():
+        for x in v:
+            inverseEnums.setdefault(x, []).append(k)
+
     for source_attr, value in attrs.items():
+        
+            
+        if enumMode != 1 and source_attr in inverseEnums:
+            all_enum_type = inverseEnums[source_attr]
+            if len(all_enum_type) > 1:
+                raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
+            else:
+                enum_type = all_enum_type[0]
+            try:
+                if enumMode == 0:
+                    value = enum_type(value)
+                elif enumMode == 2:
+                    value = enum_type(value).name
+            except ValueError:
+                # If the value is not a valid enum member, keep it as is
+                value = value
 
         if isinstance(value, int):
             pass

@@ -189,7 +189,59 @@ class PacketMotionData(DataTypes.STRUCTURE):
 
 ```
 
-### Step 2: Setup MetaData
+### Step 2: Setup Enums (Optional)
+
+Create enum classes for any fields that have a defined set of values.
+
+```python
+from enum import Enum, IntEnum
+
+# Create an enum
+class Gear(IntEnum):
+    NEUTRAL = 0
+    FIRST = 1
+    SECOND = 2
+    THIRD = 3
+    FOURTH = 4
+    FIFTH = 5
+    SIXTH = 6
+    SEVENTH = 7
+    EIGHTH = 8
+
+class TelemetryData(DataTypes.STRUCTURE):
+    # Setup enums, field paring as a dictionary for dynamic ingestion
+    _enums_: dict[type, tuple[str, ...]] = {
+        SESSION_TYPE: ("session",),
+        GEAR: ("current_gear", "recommended_gear",),
+    }
+    _fields_ = [
+        ("speed",               DataTypes.UNSIGNED_INT8),
+        ("current_gear",        DataTypes.UNSIGNED_INT8),
+        ("recommended_gear",    DataTypes.UNSIGNED_INT8),
+        # ...
+    ]
+```
+
+Before startiing the telemetry, set the enum mode in your main script:
+
+```python
+activeThreads = telemetryManager()
+activeThreads.updateMeta(MetaData)
+activeThreads.addWorkerThread(displayTime)
+
+# Default is mode 0 (no special handling). Returns all enums members (<AC_STATUS.AC_PAUSE: 3>).
+activeThreads.setEnumMode(0)
+
+# Mode 1: Leave fields as raw values. Returns enum values / raw values (3).
+activeThreads.setEnumMode(1)
+
+# Mode 2: Convert fields to their enum type. Returns enum name ('AC_PAUSE').
+activeThreads.setEnumMode(2)
+
+activeThreads.StartTelemetry()
+```
+
+### Step 3: Setup MetaData
 
 In your main script, import the new metadata:
 
