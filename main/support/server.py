@@ -9,7 +9,6 @@ from datetime import datetime
 
 from support.digestion import dynamic_ingest
 
-# from ..support.digestion import dynamic_ingest
 
 # ---------------------------------------------------------------------------
 # Central Storage
@@ -171,7 +170,6 @@ class telemetryManager:
         Helper function to unpack metadata attributes into class attributes for easy access
         '''
         self.mainPort = self.__metaDataCheck("port")
-        # self.fullBufferSize = self.__metaDataCheck("fullBufferSize")
 
         self.heartBeatPort = self.__metaDataCheck("heartBeatPort")
         self.heartBeatFunc = self.__metaDataCheck("heartBeatFunc")
@@ -181,12 +179,10 @@ class telemetryManager:
 
         self.decryptionFunc = self.__metaDataCheck("decrytionFunc")
 
-        self.headerBufferSize = self.__metaDataCheck("headerInfo")[0]
-        self.headerPacketStruct = self.__metaDataCheck("headerInfo")[1]
+        self.headerPacket = self.__metaDataCheck("headerInfo")
         self.packetIDAttr = self.__metaDataCheck("packetIDAttribute")
         
         self.allSharedMemoryNames = self.__metaDataCheck("allSharedMemoryNames")
-        # self.sharedMemorySize = self.__metaDataCheck("sharedMemorySize")
 
         self.packetInfo = self.__metaDataCheck("packetInfo", [])
 
@@ -338,9 +334,9 @@ class telemetryManager:
         Returns a tuple of (packet, packetID, headerPacket).
         packet and headerPacket may be None if no matching packet structure is found or if no header is defined in the metadata.
         '''
-        if self.headerPacketStruct:
-            headerBufferSize = self.__getPacketSize(self.headerPacketStruct)
-            rawHeaderPacket = self.headerPacketStruct.from_buffer_copy(data[0 : headerBufferSize])
+        if self.headerPacket:
+            headerBufferSize = self.__getPacketSize(self.headerPacket)
+            rawHeaderPacket = self.headerPacket.from_buffer_copy(data[0 : headerBufferSize])
             headerPacket = dynamic_ingest(rawHeaderPacket)
 
             packetID = int(getattr(headerPacket, self.packetIDAttr))
@@ -359,7 +355,7 @@ class telemetryManager:
 
     # Main UDP packet function
 
-    def __process_loop(self, sock: socket.socket, PACKET_COUNTER):
+    def __process_loop(self, sock: socket.socket, PACKET_COUNTER) -> Tuple[Type[Any] | None, int, Type[Any] | None]:
         '''
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
@@ -436,7 +432,7 @@ class telemetryManager:
 
     # Main shared memory packet function
     
-    def get_shared_packets(self):
+    def get_shared_packets(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
         allSharedMemoryNames = self.allSharedMemoryNames
 
         if not allSharedMemoryNames:
@@ -460,6 +456,8 @@ class telemetryManager:
                         SMMap = mmap.mmap(-1, SMSize, tagname=SMName, access=mmap.ACCESS_READ)
                         sharedMemoryInfo.update({SMMap: SMSize})
             print(f"[NTWK] [Info]\tServer started for {SMNames} with sizes {[size for size in sharedMemoryInfo.values()]} bytes")
+        else:
+            raise ValueError("[NTWK] [Error]\tShared memory name must be a string or a dict mapping packet names to shared memory names.")
         
         while not self.__isStillActive():
             try:

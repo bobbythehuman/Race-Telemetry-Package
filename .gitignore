@@ -1,4 +1,6 @@
 **/__pycache__/*
+.vscode/*
+
 Packaged_Program/*
 
 requirements.txt

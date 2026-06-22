@@ -1,39 +1,11 @@
 import ctypes
 
 
-def expand(packet, tyre=False):
-    tempList = []
-    tempDict = {}
-    tyres = ["RL", "RR", "FL", "FR"]
-    if tyre:
-        for x in range(len(packet)):
-            name = f"{tyre}_{tyres[x]}"
-            tempDict[name] = round(packet[x], 5)
-        return tempDict
-    else:
-        for x in range(len(packet)):
-            tempList.append(packet[x])
-
-        return tempList
-
-
-def split(value) -> list:
-    involved = []
-    lst = [1]
-    while len(lst) <= 31:
-        lst.append(int(lst[-1:][0]) * 2)
-    for x in reversed(lst):
-        newValue = value - x
-        if value - x < 0:
-            continue
-        value = newValue
-        involved.append(x)
-    if involved:
-        return involved
-    return [0]
-
-
-def newChrToString(value, extra=True):
+def newChrToString(value: bytes, extra=True) -> str:
+    '''
+    Takes a bytes value and converts it to a string, 
+    stripping any null characters and splitting on the first null character if extra is True.
+    '''
     if extra:
         return bytes(value).decode("utf-8").strip("\0").split("\x00", 1)[0]
     else:
@@ -41,6 +13,9 @@ def newChrToString(value, extra=True):
 
 
 def unpackArray(packet):
+    '''
+    Takes a ctypes array and converts it to a list, with any bytes values converted to strings.
+    '''
     if isinstance(packet[0], bytes):
         value = newChrToString(packet)
         return value
@@ -68,7 +43,10 @@ def unpackArray(packet):
     return value
 
 
-def dynamic_ingest(packet):
+def dynamic_ingest(packet: type) -> type:
+    '''
+    Takes a packet and dynamically ingests it, converting any bytes values to strings and any ctypes arrays to lists.
+    '''
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
 
     packetName = packet.__class__.__name__
