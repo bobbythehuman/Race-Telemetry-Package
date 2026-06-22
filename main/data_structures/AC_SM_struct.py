@@ -178,6 +178,7 @@ class SPageFileGraphicData(DataTypes.STRUCTURE.value):
         ("tyreCompound",            DataTypes.CHAR.value * 33),         # Current tyre compound
         ("replayTimeMultiplier",    DataTypes.FLOAT.value),             # Replay multiplier
         ("normalizedCarPosition",   DataTypes.FLOAT.value),             # Car position on the track’s spline
+        ("carCoordinates",          DataTypes.FLOAT.value * 3),         # Car position on world coordinates [x, y, z]
         ("penaltyTime",             DataTypes.FLOAT.value),             # Time of penalty
         ("flag",                    DataTypes.SIGNED_INT.value),        # Type of flag being shown: AC_NO_FLAG 0, AC_BLUE_FLAG 1, AC_YELLOW_FLAG 2, AC_BLACK_FLAG 3, AC_WHITE_FLAG 4, AC_CHECKERED_FLAG 5, AC_PENALTY_FLAG 6
         ("idealLineOn",             DataTypes.SIGNED_INT.value),        # If ideal line is enabled: 0 (false) or 1 (true)
@@ -207,7 +208,7 @@ class MetaData:
     decrytionFunc = None
     
     # use if there is a header packet
-    headerInfo: tuple[int, type | None] = (0, None)
+    headerInfo: type | None = None
     packetIDAttribute: str | None = None
     
     # use for shared memory
