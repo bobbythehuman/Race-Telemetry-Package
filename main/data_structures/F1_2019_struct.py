@@ -314,6 +314,7 @@ class SURFACE_TYPE(IntEnum):
     Metal = 10
     Ridged = 11
 
+
 ### * Data Structure
 
 ### Packet Header -- 26 bytes
