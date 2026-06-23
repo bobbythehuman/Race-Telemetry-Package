@@ -493,9 +493,9 @@ class PacketEventData(DataTypes.STRUCTURE):
         EVENT_STRING_CODE: ("m_eventStringCode",),
     }
     _fields_ = [
-        ("m_header",            PacketHeader),                      # Header
-        ("m_eventStringCode",   DataTypes.UNSIGNED_INT8 * 4), # Event string code
-        ("m_eventDetails",      EventDataDetails),                  # Event details - should be interpreted differently for each type
+        ("m_header",            PacketHeader),			# Header
+        ("m_eventStringCode",   DataTypes.CHAR * 4),	# Event string code # Using 'CHAR' to skips the decoding process
+        ("m_eventDetails",      EventDataDetails),		# Event details - should be interpreted differently for each type
     ]
 
 
