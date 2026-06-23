@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, IntEnum
 
 # source
 # https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/
@@ -13,8 +13,84 @@ class DataTypes:
     BOOL = ctypes.c_bool
     DOUBLE = ctypes.c_double
     CHAR = ctypes.c_wchar
-    # a = ctypes.c_w
+
+
+class ACC_FLAG_TYPE(IntEnum):
+    ACC_NO_FLAG = 0
+    ACC_BLUE_FLAG = 1
+    ACC_YELLOW_FLAG = 2
+    ACC_BLACK_FLAG = 3
+    ACC_WHITE_FLAG = 4
+    ACC_CHECKERED_FLAG = 5
+    ACC_PENALTY_FLAG = 6
+    ACC_GREEN_FLAG = 7
+    ACC_ORANGE_FLAG = 8
+
+class ACC_PENALTY_TYPE(IntEnum):
+    ACC_None = 0
+    ACC_DriveThrough_Cutting = 1
+    ACC_StopAndGo_10_Cutting = 2
+    ACC_StopAndGo_20_Cutting = 3
+    ACC_StopAndGo_30_Cutting = 4
+    ACC_Disqualified_Cutting = 5
+    ACC_RemoveBestLaptime_Cutting = 6
+    ACC_DriveThrough_PitSpeeding = 7
+    ACC_StopAndGo_10_PitSpeeding = 8
+    ACC_StopAndGo_20_PitSpeeding = 9
+    ACC_StopAndGo_30_PitSpeeding = 10
+    ACC_Disqualified_PitSpeeding = 11
+    ACC_RemoveBestLaptime_PitSpeeding = 12
+    ACC_Disqualified_IgnoredMandatoryPit = 13
+    ACC_PostRaceTime = 14
+    ACC_Disqualified_Trolling = 15
+    ACC_Disqualified_PitEntry = 16
+    ACC_Disqualified_PitExit = 17
+    ACC_Disqualified_Wrongway = 18
+    ACC_DriveThrough_IgnoredDriverStint = 19
+    ACC_Disqualified_IgnoredDriverStint = 20
+    ACC_Disqualified_ExceededDriverStintLimit = 21
     
+class ACC_SESSION_TYPE(IntEnum):
+    ACC_UNKNOWN = -1
+    ACC_PRACTICE  = 0
+    ACC_QUALIFY = 1
+    ACC_RACE = 2
+    ACC_HOTLAP  = 3
+    ACC_TIMEATTACK = 4
+    ACC_DRIFT = 5
+    ACC_DRAG = 6
+    ACC_HOTSTINT = 7
+    ACC_HOTSTINTSUPERPOLE = 8
+    
+class ACC_STATUS(IntEnum):
+    ACC_OFF = 0
+    ACC_REPLAY = 1
+    ACC_LIVE = 2
+    ACC_PAUSE = 3
+
+class ACC_WHEELS_TYPE(IntEnum):
+    ACC_FrontLeft = 0
+    ACC_FrontRight = 1
+    ACC_RearLeft = 2
+    ACC_RearRight = 3
+    
+class ACC_TRACK_GRIP_STATUS(IntEnum):
+    ACC_GREEN = 0
+    ACC_FAST = 1
+    ACC_OPTIMUM = 2
+    ACC_GREASY = 3
+    ACC_DAMP = 4
+    ACC_WET = 5
+    ACC_FLOODED = 6
+    
+class ACC_RAIN_INTENSITY(IntEnum):
+    ACC_NO_RAIN = 0
+    ACC_DRIZZLE = 1
+    ACC_LIGHT_RAIN = 2
+    ACC_MEDIUM_RAIN = 3
+    ACC_HEAVY_RAIN = 4
+    ACC_THUNDERSTORM = 5
+
 
 # The following members change at each graphic step. They all refer to the player’s car. 
 class SPageFilePhysicsData(DataTypes.STRUCTURE):
@@ -113,10 +189,20 @@ class SPageFilePhysicsData(DataTypes.STRUCTURE):
 # except for carCoordinates and carID, which refer to the cars currently on track.
 class SPageFileGraphicData(DataTypes.STRUCTURE):
     # _pack_ = 1
+    _enums_: dict[type, tuple[str, ...]] = {
+        ACC_STATUS: ("status",),
+        ACC_SESSION_TYPE: ("session",),
+        ACC_FLAG_TYPE: ("flag",),
+        ACC_PENALTY_TYPE: ("penalty",),
+        ACC_TRACK_GRIP_STATUS: ("trackGripStatus",),
+        ACC_RAIN_INTENSITY: ("rainIntensity",),
+        ACC_RAIN_INTENSITY: ("rainIntensityIn10min",),
+        ACC_RAIN_INTENSITY: ("rainIntensityIn30min",),
+    }
     _fields_ = [
         ("packetId",                DataTypes.SIGNED_INT),        # Current step index
-        # ("status",                  DataTypes.FLOAT),         # See enums ACC_STATUS
-        # ("session",                 DataTypes.FLOAT),         # See enums ACC_SESSION_TYPE
+        ("status",                  DataTypes.SIGNED_INT),         # See enums ACC_STATUS
+        ("session",                 DataTypes.SIGNED_INT),         # See enums ACC_SESSION_TYPE
         ("currentTime",             DataTypes.CHAR * 15),         # Current lap time in wide character
         ("lastTime",                DataTypes.CHAR * 15),         # Last lap time in wide character
         ("bestTime",                DataTypes.CHAR * 15),         # Best lap time in wide character 
@@ -140,8 +226,8 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
         ("carID",                   DataTypes.SIGNED_INT),        # Car IDs of cars on track
         ("playerCarID",             DataTypes.SIGNED_INT),        # Player Car ID
         ("penaltyTime",             DataTypes.FLOAT),             # Penalty time to wait
-        # ("flag",                    DataTypes.SIGNED_INT),    # See enums ACC_FLAG_TYPE
-        # ("penalty",                 DataTypes.SIGNED_INT),    # See enums ACC_PENALTY_TYPE
+        ("flag",                    DataTypes.SIGNED_INT),    # See enums ACC_FLAG_TYPE
+        ("penalty",                 DataTypes.SIGNED_INT),    # See enums ACC_PENALTY_TYPE
         ("idealLineOn",             DataTypes.SIGNED_INT),        # Ideal line on 
         ("isInPitLane",             DataTypes.SIGNED_INT),        # Car is in pit lane
         ("surfaceGrip",             DataTypes.FLOAT),             # Ideal line friction coefficient 
@@ -166,43 +252,43 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
         ("driverStintTimeLeft",         DataTypes.SIGNED_INT),    # Time the driver is allowed to drive/stint (ms)
         ("rainTyres",                   DataTypes.SIGNED_INT),    # Are rain tyres equipped
         ("sessionIndex",                DataTypes.SIGNED_INT),
-        ("usedFuel",                    DataTypes.FLOAT),         # Used fuel since last time refueling
-        ("deltaLapTime",                DataTypes.CHAR * 15),     # Delta time in wide character
-        ("iDeltaLapTime",               DataTypes.SIGNED_INT),    # Delta time time in milliseconds
-        ("estimatedLapTime",            DataTypes.CHAR * 15),     # Estimated lap time in milliseconds
-        ("iEstimatedLapTime",           DataTypes.SIGNED_INT),    # Estimated lap time in wide character
-        ("isDeltaPositive",             DataTypes.SIGNED_INT),    # Delta positive (1) or negative (0)
-        ("iSplit",                      DataTypes.SIGNED_INT),    # Last split time in milliseconds
-        ("isValidLap",                  DataTypes.SIGNED_INT),    # Check if Lap is valid for timing
-        ("fuelEstimatedLaps",           DataTypes.FLOAT),         # Laps possible with current fuel level
-        ("trackStatus",                 DataTypes.CHAR * 33),     # Status of track 
-        ("missingMandatoryPits",        DataTypes.SIGNED_INT),    # Mandatory pitstops the player still has to do
-        ("Clock",                       DataTypes.FLOAT),         # Time of day in seconds
-        ("directionLightsLeft",         DataTypes.SIGNED_INT),    # Is Blinker left on
-        ("directionLightsRight",        DataTypes.SIGNED_INT),    # Is Blinker right on
-        ("GlobalYellow",                DataTypes.SIGNED_INT),    # Yellow Flag is out?
-        ("GlobalYellow1",               DataTypes.SIGNED_INT),    # Yellow Flag in Sector 1 is out?
-        ("GlobalYellow2",               DataTypes.SIGNED_INT),    # Yellow Flag in Sector 2 is out?
-        ("GlobalYellow3",               DataTypes.SIGNED_INT),    # Yellow Flag in Sector 3 is out?
-        ("GlobalWhite",                 DataTypes.SIGNED_INT),    # White Flag is out?
-        ("GlobalGreen",                 DataTypes.SIGNED_INT),    # Green Flag is out?
-        ("GlobalChequered",             DataTypes.SIGNED_INT),    # Checkered Flag is out?
-        ("GlobalRed",                   DataTypes.SIGNED_INT),    # Red Flag is out?
-        ("mfdTyreSet",                  DataTypes.SIGNED_INT),    # num of tyre set on the MFD
-        ("mfdFuelToAdd",                DataTypes.FLOAT),         # How much fuel to add on the MFD
-        ("mfdTyrePressureLF",           DataTypes.FLOAT),         # Tyre pressure left front on the MFD
+        ("usedFuel",                    DataTypes.FLOAT),       # Used fuel since last time refueling
+        ("deltaLapTime",                DataTypes.CHAR * 15),   # Delta time in wide character
+        ("iDeltaLapTime",               DataTypes.SIGNED_INT),  # Delta time time in milliseconds
+        ("estimatedLapTime",            DataTypes.CHAR * 15),   # Estimated lap time in milliseconds
+        ("iEstimatedLapTime",           DataTypes.SIGNED_INT),  # Estimated lap time in wide character
+        ("isDeltaPositive",             DataTypes.SIGNED_INT),  # Delta positive (1) or negative (0)
+        ("iSplit",                      DataTypes.SIGNED_INT),  # Last split time in milliseconds
+        ("isValidLap",                  DataTypes.SIGNED_INT),  # Check if Lap is valid for timing
+        ("fuelEstimatedLaps",           DataTypes.FLOAT),       # Laps possible with current fuel level
+        ("trackStatus",                 DataTypes.CHAR * 33),   # Status of track 
+        ("missingMandatoryPits",        DataTypes.SIGNED_INT),  # Mandatory pitstops the player still has to do
+        ("Clock",                       DataTypes.FLOAT),       # Time of day in seconds
+        ("directionLightsLeft",         DataTypes.SIGNED_INT),  # Is Blinker left on
+        ("directionLightsRight",        DataTypes.SIGNED_INT),  # Is Blinker right on
+        ("GlobalYellow",                DataTypes.SIGNED_INT),  # Yellow Flag is out?
+        ("GlobalYellow1",               DataTypes.SIGNED_INT),  # Yellow Flag in Sector 1 is out?
+        ("GlobalYellow2",               DataTypes.SIGNED_INT),  # Yellow Flag in Sector 2 is out?
+        ("GlobalYellow3",               DataTypes.SIGNED_INT),  # Yellow Flag in Sector 3 is out?
+        ("GlobalWhite",                 DataTypes.SIGNED_INT),  # White Flag is out?
+        ("GlobalGreen",                 DataTypes.SIGNED_INT),  # Green Flag is out?
+        ("GlobalChequered",             DataTypes.SIGNED_INT),  # Checkered Flag is out?
+        ("GlobalRed",                   DataTypes.SIGNED_INT),  # Red Flag is out?
+        ("mfdTyreSet",                  DataTypes.SIGNED_INT),  # num of tyre set on the MFD
+        ("mfdFuelToAdd",                DataTypes.FLOAT),       # How much fuel to add on the MFD
+        ("mfdTyrePressureLF",           DataTypes.FLOAT),       # Tyre pressure left front on the MFD
         
-        ("mfdTyrePressureRF",       DataTypes.FLOAT),         # Tyre pressure right front on the MFD
-        ("mfdTyrePressureLR",       DataTypes.FLOAT),         # Tyre pressure left rear on the MFD
-        ("mfdTyrePressureRR",       DataTypes.FLOAT),         # Tyre pressure right rear on the MFD
-        # ("trackGripStatus",         DataTypes.SIGNED_INT),    # See enums ACC_TRACK_GRIP_STATUS
-        # ("rainIntensity",           DataTypes.SIGNED_INT),    # See enums ACC_RAIN_INTENSITY
-        # ("rainIntensityIn10min",    DataTypes.FLOAT),         # See enums ACC_RAIN_INTENSITY
-        # ("rainIntensityIn30min",    DataTypes.FLOAT),         # See enums ACC_RAIN_INTENSITY
-        ("currentTyreSet",          DataTypes.SIGNED_INT),    # Tyre Set currently in use
-        ("strategyTyreSet",         DataTypes.SIGNED_INT),    # Next Tyre set per strategy
-        ("gapAhead",                DataTypes.SIGNED_INT),    # Distance in ms to car in front
-        ("gapBehind",               DataTypes.SIGNED_INT),    # Distance in ms to car behind
+        ("mfdTyrePressureRF",       DataTypes.FLOAT),           # Tyre pressure right front on the MFD
+        ("mfdTyrePressureLR",       DataTypes.FLOAT),           # Tyre pressure left rear on the MFD
+        ("mfdTyrePressureRR",       DataTypes.FLOAT),           # Tyre pressure right rear on the MFD
+        ("trackGripStatus",         DataTypes.SIGNED_INT),      # See enums ACC_TRACK_GRIP_STATUS
+        ("rainIntensity",           DataTypes.SIGNED_INT),      # See enums ACC_RAIN_INTENSITY
+        ("rainIntensityIn10min",    DataTypes.SIGNED_INT),      # See enums ACC_RAIN_INTENSITY
+        ("rainIntensityIn30min",    DataTypes.SIGNED_INT),      # See enums ACC_RAIN_INTENSITY
+        ("currentTyreSet",          DataTypes.SIGNED_INT),      # Tyre Set currently in use
+        ("strategyTyreSet",         DataTypes.SIGNED_INT),      # Next Tyre set per strategy
+        ("gapAhead",                DataTypes.SIGNED_INT),      # Distance in ms to car in front
+        ("gapBehind",               DataTypes.SIGNED_INT),      # Distance in ms to car behind
     ]
 
 # The following members are initialized when the instance starts and never changes until the
