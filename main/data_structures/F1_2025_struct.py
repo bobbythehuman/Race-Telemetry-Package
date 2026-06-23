@@ -182,15 +182,15 @@ class TEAM_ID(IntEnum):
     Konnersport_24 = 155
     Art_GP_24 = 158
     Campos_24 = 159
-    Carlin_24 = 160
-    PHM_24 = 161
+    Rodin_Motorsport_24 = 160
+    AIX_Racing_24 = 161
     Dams_24 = 162
     Hitech_24 = 163
     MP_Motorsport_24 = 164
     Prema_24 = 165
     Trident_24 = 166
     Van_Amersfoort_Racing_24 = 167
-    Virtuosi_24 = 168
+    Invicta_24 = 168
     Mercedes_24 = 185
     Ferrari_24 = 186
     Red_Bull_Racing_24 = 187
@@ -629,7 +629,7 @@ class GAME_MODE(IntEnum):
     # Championship_Invitational = 12
     # Championship = 13
     # Online_Championship = 14
-    # Online_Weekly_Event = 15
+    Online_Weekly_Event = 15
     Story_Mode_Breaking_Point = 17
     # Career_22 = 19
     # Career_22_Online = 20
@@ -679,8 +679,8 @@ class SESSION_TYPE(IntEnum):
     Race_3 = 17
     Time_Trial = 18
 
-### * Data Structure
 
+### * Data Structure
 
 ### Packet Header -- 32 bytes
 

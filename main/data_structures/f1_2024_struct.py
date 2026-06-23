@@ -628,6 +628,7 @@ class SESSION_TYPE(IntEnum):
     Race_3 = 17
     Time_Trial = 18
 
+
 ### * Data Structure
 
 ### Packet Header -- 32 bytes
