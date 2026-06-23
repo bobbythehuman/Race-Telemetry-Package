@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class DataTypes:
@@ -22,8 +22,56 @@ class DataTypes:
     BYTE = ctypes.c_byte
 
 
+### * Enums
+
+class TEAM_ID(IntEnum):
+    RedBull = 0
+    Ferrari = 1
+    McLaren = 2
+    Lotus = 3
+    Mercedes = 4
+    Sauber = 5
+    Force_India = 6
+    Williams = 7
+    Toro_Rosso = 8
+    Caterham = 9
+    Marussia = 10
+    Haas = 11
+    Manor = 12
+
+class TRACK_ID(IntEnum):
+    Melbourne = 0
+    Sepang = 1
+    Shanghai = 2
+    Sakhir_Bahrain = 3
+    Catalunya = 4
+    Monaco = 5
+    Montreal = 6
+    Silverstone = 7
+    Hockenheim = 8
+    Hungaroring = 9
+    Spa = 10
+    Monza = 11
+    Singapore = 12
+    Suzuka = 13
+    Abu_Dhabi = 14
+    Texas = 15
+    Brazil = 16
+    Austria = 17
+    Sochi = 18
+    Mexico = 19
+    unused = 20
+    Baka_Azerbaijan = 21
+
+
+### * Data Structure
+
 class UDPPacket(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = {
+        TEAM_ID: ("m_team_info",),
+        TRACK_ID: ("m_track_number",),
+    }
     _fields_ = [
         ("m_time",                      DataTypes.FLOAT),
         ("m_lapTime",                   DataTypes.FLOAT),
@@ -92,8 +140,7 @@ class UDPPacket(DataTypes.STRUCTURE):
     ]
 
 
-
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info
