@@ -24,6 +24,8 @@ class DataTypes:
     CHAR = ctypes.c_wchar
 
 
+### * Enums
+
 class ACEVO_STATUS(IntEnum):
     AC_OFF = 0      # Simulator is not running / no session active
     AC_REPLAY = 1   # A replay is currently being played back
@@ -66,6 +68,8 @@ class ACEVO_STARTING_GRIP(IntEnum):
     ACEVO_FAST = 1      # Track grip in advanced (fast) stage
     ACEVO_OPTIMUM = 2   # Track conditions starting at optimum grip
 
+
+### * Data Structure
 
 # Complete state of a single tyre corner. Embedded four times in SPageFileGraphicEvo (lf, rf, lr, rr). [256 bytes]
 class SMEvoTyreState(DataTypes.STRUCTURE):
@@ -501,7 +505,7 @@ class SPageFileStaticEvoData(DataTypes.STRUCTURE):
     ]
 
 
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info

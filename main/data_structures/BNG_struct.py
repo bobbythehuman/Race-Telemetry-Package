@@ -14,10 +14,11 @@ class DataTypes:
     FLOAT = ctypes.c_float
     CHAR = ctypes.c_char
 
+
+### * Data Structure
+
 # OutGauge UDP protocol
-
 # Items marked as `N/A` are not implemented.
-
 class TelemetryData(DataTypes.STRUCTURE):
     _fields_ = [
         ("time",            DataTypes.UNSIGNED_INT),      # time in milliseconds (to check order) // N/A, hardcoded to 0
@@ -41,7 +42,6 @@ class TelemetryData(DataTypes.STRUCTURE):
         ("display2",        DataTypes.CHAR * 16),         # Usually Settings // N/A, hardcoded to ""
         ("id",              DataTypes.SIGNED_INT)         # optional - only if OutGauge ID is specified
     ]
-    
 
 # -- OG_x - bits for flags
 # local OG_SHIFT =     1  -- key // N/A
@@ -49,7 +49,6 @@ class TelemetryData(DataTypes.STRUCTURE):
 # local OG_TURBO =  8192  -- show turbo gauge
 # local OG_KM    = 16384  -- if not set - user prefers MILES
 # local OG_BAR   = 32768  -- if not set - user prefers PSI
-
 # -- DL_x - bits for dashLights and showLights
 # local DL_SHIFT        = 2 ^ 0    -- shift light
 # local DL_FULLBEAM     = 2 ^ 1    -- full beam
@@ -65,7 +64,6 @@ class TelemetryData(DataTypes.STRUCTURE):
 # local DL_SPARE        = 2 ^ 11   -- N/A
 
 # MotionSim UDP protocol
-
 class MotionSim(DataTypes.STRUCTURE):
     _fields_ = [
         ("format",      DataTypes.CHAR * 4),  # allows to verify if packet is the expected format, fixed value of "BNG1"
@@ -93,7 +91,7 @@ class MotionSim(DataTypes.STRUCTURE):
     ]
 
 
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info

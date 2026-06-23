@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, IntEnum
 
 # source
 # https://github.com/truckermudgeon/scs-sdk-plugin
@@ -26,6 +26,8 @@ class DataTypes:
     CHAR = ctypes.c_char
     BOOL = ctypes.c_bool
 
+
+### * Data Structure
 
 class scsTrailer(DataTypes.STRUCTURE):
     _pack_ = 1
@@ -379,6 +381,8 @@ class scsTelemetryMapData(DataTypes.STRUCTURE):
         ("trailers",    scsTrailer * 10),
     ]
 
+
+### * MetaData
 
 class MetaData:
     # standard network info

@@ -13,6 +13,8 @@ class DataTypes:
     CHAR = ctypes.c_wchar
 
 
+### * Enums
+
 class AC_STATUS(IntEnum):
     AC_OFF = 0
     AC_REPLAY = 1
@@ -38,6 +40,8 @@ class AC_FLAG_TYPE(IntEnum):
     AC_CHECKERED_FLAG = 5
     AC_PENALTY_FLAG = 6
 
+
+### * Data Structure
 
 # The following members are initialized when the instance starts and never changes until the instance is closed.
 class SPageFileStaticData(DataTypes.STRUCTURE):
@@ -195,7 +199,7 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
     ]
 
 
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info

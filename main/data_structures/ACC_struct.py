@@ -15,6 +15,8 @@ class DataTypes:
     CHAR = ctypes.c_wchar
 
 
+### * Enums
+
 class ACC_FLAG_TYPE(IntEnum):
     ACC_NO_FLAG = 0
     ACC_BLUE_FLAG = 1
@@ -91,6 +93,8 @@ class ACC_RAIN_INTENSITY(IntEnum):
     ACC_HEAVY_RAIN = 4
     ACC_THUNDERSTORM = 5
 
+
+### * Data Structure
 
 # The following members change at each graphic step. They all refer to the player’s car. 
 class SPageFilePhysicsData(DataTypes.STRUCTURE):
@@ -345,6 +349,7 @@ class SPageFileStaticData(DataTypes.STRUCTURE):
     ]
 
 
+### * MetaData
 
 class MetaData:
     # standard network info

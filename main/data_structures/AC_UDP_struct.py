@@ -14,6 +14,8 @@ class DataTypes:
     CHAR = ctypes.c_wchar
 
 
+### * Data Structure
+
 # If the client subscribed himself with SUBSCRIBE_UPDATE identifier, it will receive the following structured data
 class RTCarData(DataTypes.STRUCTURE):
     # _pack_ = 1 # ! Do Not Enable or data will be wrong
@@ -82,7 +84,7 @@ class RTLapData(DataTypes.STRUCTURE):
     ]
 
 
-### Hand Shake
+### * Hand Shake
 
 # The PC running Assetto Corsa will be referred as the ACServer.
 
@@ -136,8 +138,7 @@ def endHandShake(socket, destination: tuple[int, int]):
     socket.sendto(prepHandShake, destination)
 
 
-
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info
