@@ -129,7 +129,7 @@ class TEAM_ID(IntEnum):
     # McLaren_Artura = 101
     # Mercedes_AMG_GT_Black_Series_Safety_Car = 102
     # Mercedes_AMG_GTR_Pro = 103
-    # F1_Custom_Team = 104
+    F1_Custom_Team = 104
     # Prema_21 = 106
     # Uni_Virtuosi_21 = 107
     # Carlin_21 = 108
