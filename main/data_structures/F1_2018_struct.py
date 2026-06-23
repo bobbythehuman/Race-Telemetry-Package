@@ -241,7 +241,7 @@ class NATIONALITY_ID(IntEnum):
 
 class PacketHeader(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
-    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+    _enums_: dict[type, tuple[str, ...]] = {
         PACKET_ID: ("m_packetId",),
     }
     _fields_ = [
@@ -315,7 +315,7 @@ class MarshalZone(DataTypes.STRUCTURE):
 
 class PacketSessionData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
-    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+    _enums_: dict[type, tuple[str, ...]] = {
         TRACK_ID: ("m_trackId",),
     }
     _fields_ = [
@@ -388,7 +388,7 @@ class PacketEventData(DataTypes.STRUCTURE):
 
 class ParticipantData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
-    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+    _enums_: dict[type, tuple[str, ...]] = {
         DRIVER_ID: ("m_driverId",),
         TEAM_ID: ("m_teamId",),
         NATIONALITY_ID: ("m_nationality",),
