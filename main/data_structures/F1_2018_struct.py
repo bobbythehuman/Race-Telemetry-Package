@@ -69,7 +69,6 @@ class DRIVER_ID(IntEnum):
     # Daniil_Kvyat = 1
     Daniel_Ricciardo = 2
     Fernando_Alonso = 3
-    # Felipe_Massa = 3
     Kimi_Räikkönen = 6
     Lewis_Hamilton = 7
     Marcus_Ericsson = 8
@@ -83,8 +82,6 @@ class DRIVER_ID(IntEnum):
     Esteban_Ocon = 17
     Stoffel_Vandoorne = 18
     Lance_Stroll = 19
-    # Jolyon_Palmer = 20
-    # Pascal_Wehrlein = 31
     Arron_Barnes = 20
     Martin_Giles = 21
     Alex_Murray = 22
