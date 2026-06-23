@@ -444,9 +444,10 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - F1 2025 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
 - F1 2026 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
 - Forza Horizon 4 - Link to [richstokes GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat) - Forza-data-tools
+- Forza Horizon 5 - Link to [forza horizon 5 data out format](https://pastebin.com/GFbbzbg3) - pastebin
 - Forza Horizon 6 - Link to [Forza Horizon 6 "Data Out" Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)
 - Forza Motorsport 7 - Link to [Forza Motorsport 7 ‘Data Out’ feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013)
-- Forza Motorsport 8 - Link to [Forza Motorsport "Data Out" Documentation](https://web.archive.org/web/20260303125422/https://support.forzamotorsport.net/hc/en-us/articles/21742934024211-Forza-Motorsport-Data-Out-Documentation)
+- Forza Motorsport 8 - Link to [Data Out feature in Forza Motorsport](https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333/2)
 - Gran Turismo 7 - Link to [MacManley Github](https://github.com/MacManley/gt7-udp) - gt7-udp
 - Project cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) - Project Cars 2 UDP
 

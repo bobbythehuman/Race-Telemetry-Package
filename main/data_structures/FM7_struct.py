@@ -18,6 +18,11 @@ class DataTypes:
     
     FLOAT = ctypes.c_float
 
+### * Enums
+# Unknow of car ordinal list
+
+
+### * Data Structure
 
 class SledData(DataTypes.STRUCTURE):
     _fields_ = [
@@ -96,7 +101,6 @@ class SledData(DataTypes.STRUCTURE):
         ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
     ]
 
-
 class DashData(DataTypes.STRUCTURE):
     _pack_ = 1
     _fields_ = [
@@ -174,11 +178,9 @@ class DashData(DataTypes.STRUCTURE):
         ("DrivetrainType",          DataTypes.SIGNED_INT32),  # 0 = FWD, 1 = RWD, 2 = AWD
         ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
         
-        # Position (meters)
         ("PositionX",           DataTypes.FLOAT),
         ("PositionY",           DataTypes.FLOAT),
         ("PositionZ",           DataTypes.FLOAT),
-        
         ("Speed",               DataTypes.FLOAT), # meters per second
         ("Power",               DataTypes.FLOAT), # watts
         ("Torque",              DataTypes.FLOAT), # newton meter
@@ -209,12 +211,12 @@ class DashData(DataTypes.STRUCTURE):
         # ("TireWearFrontRight",  DataTypes.FLOAT),
         # ("TireWearRearLeft",    DataTypes.FLOAT),
         # ("TireWearRearRight",   DataTypes.FLOAT),
-        # ("TrackOrdinal",        DataTypes.SIGNED_INT32),
-            
         
+        # ("TrackOrdinal",        DataTypes.SIGNED_INT32),    # ID for track
     ]
 
-### MetaData
+
+### * MetaData
 
 class MetaData:
     # standard network info

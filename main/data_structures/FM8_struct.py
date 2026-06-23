@@ -19,6 +19,12 @@ class DataTypes:
     FLOAT = ctypes.c_float
 
 
+### * Enums
+# There is a really long list for Car Ordinal
+
+
+### * Data Structure
+
 class SledData(DataTypes.STRUCTURE):
     _fields_ = [
         ("IsRaceOn",            DataTypes.SIGNED_INT32),  # 1 when race is on. = 0 when in menus/race stopped
@@ -95,7 +101,6 @@ class SledData(DataTypes.STRUCTURE):
         ("DrivetrainType",          DataTypes.SIGNED_INT32),  # 0 = FWD, 1 = RWD, 2 = AWD
         ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
     ]
-
 
 class DashData(DataTypes.STRUCTURE):
     _pack_ = 1
@@ -207,12 +212,12 @@ class DashData(DataTypes.STRUCTURE):
         ("TireWearFrontRight",  DataTypes.FLOAT),
         ("TireWearRearLeft",    DataTypes.FLOAT),
         ("TireWearRearRight",   DataTypes.FLOAT),
-        ("TrackOrdinal",        DataTypes.SIGNED_INT32),
-            
         
+        ("TrackOrdinal",        DataTypes.SIGNED_INT32),    # ID for track
     ]
 
-### MetaData
+
+### * MetaData
 
 class MetaData:
     # standard network info

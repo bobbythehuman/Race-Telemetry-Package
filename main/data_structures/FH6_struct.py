@@ -90,15 +90,14 @@ class DashData(DataTypes.STRUCTURE):
         ("SuspensionTravelMetersRearLeft",      DataTypes.FLOAT),
         ("SuspensionTravelMetersRearRight",     DataTypes.FLOAT),
         
-        ("CarOrdinal",              DataTypes.SIGNED_INT32),  # Unique ID of the car make/model
-        ("CarClass",                DataTypes.SIGNED_INT32),  # Between 0 (D -- worst cars) and 7 (X class -- best cars) inclusive      
-        ("CarPerformanceIndex",     DataTypes.SIGNED_INT32),  # Between 100 (worst car) and 999 (best car) inclusive
-        ("DrivetrainType",          DataTypes.SIGNED_INT32),  # 0 = FWD, 1 = RWD, 2 = AWD
-        ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
-        
-        ("CarCategory",     DataTypes.SIGNED_INT32),
-        ("Unknown1",        DataTypes.SIGNED_INT32),
-        ("Unknown2",        DataTypes.SIGNED_INT32),
+        ("CarOrdinal",              DataTypes.SIGNED_INT32),    # Unique ID of the car make/model
+        ("CarClass",                DataTypes.SIGNED_INT32),    # Between 0 (D -- worst cars) and 7 (X class -- best cars) inclusive      
+        ("CarPerformanceIndex",     DataTypes.SIGNED_INT32),    # Between 100 (worst car) and 999 (best car) inclusive
+        ("DrivetrainType",          DataTypes.SIGNED_INT32),    # 0 = FWD, 1 = RWD, 2 = AWD
+        ("NumCylinders",            DataTypes.SIGNED_INT32),    # Number of cylinders in the engine
+        ("CarGroup",                DataTypes.UNSIGNED_INT32),  # Car group identifier
+        ("SmashableVelDiff",        DataTypes.FLOAT),           # Velocity loss from smashable object collision (m/s)
+        ("SmashableMass",           DataTypes.FLOAT),           # Mass of recently hit smashable object (kg)
         
         # Dash data
         ("PositionX",           DataTypes.FLOAT),
