@@ -1,5 +1,5 @@
 import ctypes
-
+from enum import Enum, IntEnum, StrEnum
 
 def newChrToString(value: bytes, extra=True) -> str:
     '''
@@ -12,7 +12,7 @@ def newChrToString(value: bytes, extra=True) -> str:
         return bytes(value).decode("utf-8").strip("\0")
 
 
-def unpackArray(packet):
+def unpackArray(packet) -> list | str:
     '''
     Takes a ctypes array and converts it to a list, with any bytes values converted to strings.
     '''
@@ -42,6 +42,24 @@ def unpackArray(packet):
             
     return value
 
+def applyEnum(value, enumType, enumMode: int):
+    '''
+    Receives a value and converts it into an Enum then returns a value depending on enumMode.
+    '''
+    if not enumType:
+        return value
+    try:
+        if enumMode == 0:
+            value = enumType(value)
+        elif enumMode == 1:
+            value = enumType(value).value
+        elif enumMode == 2:
+            value = enumType(value).name
+    except ValueError:
+        # If the value is not a valid enum member, keep it as is
+        value = value
+    
+    return value
 
 def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     '''
@@ -64,23 +82,6 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
             inverseEnums.setdefault(x, []).append(k)
 
     for source_attr, value in attrs.items():
-        
-            
-        if enumMode != 1 and source_attr in inverseEnums:
-            all_enum_type = inverseEnums[source_attr]
-            if len(all_enum_type) > 1:
-                raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
-            else:
-                enum_type = all_enum_type[0]
-            try:
-                if enumMode == 0:
-                    value = enum_type(value)
-                elif enumMode == 2:
-                    value = enum_type(value).name
-            except ValueError:
-                # If the value is not a valid enum member, keep it as is
-                value = value
-
         if isinstance(value, int):
             pass
         elif isinstance(value, str):
@@ -96,11 +97,23 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
 
         elif isinstance(value, ctypes.Array):
             value = unpackArray(value)
-
+            
         else:
             # print("Unrecognised type or assuming it is a class")
             value = dynamic_ingest(value)
-            # continue
+        
+        enum_type = None
+        if source_attr in inverseEnums:
+            all_enum_type = inverseEnums[source_attr]
+            if len(all_enum_type) > 1:
+                raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
+            else:
+                enum_type = all_enum_type[0]
+            
+            if isinstance(value, list):
+                value = [applyEnum(i, enum_type, enumMode) for i in value]
+            else:
+                value = applyEnum(value, enum_type, enumMode)
 
         setattr(newPacket, source_attr, value)
 
