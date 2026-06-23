@@ -543,6 +543,7 @@ class INFRINGEMENT_TYPE(IntEnum):
 class GAME_MODE(IntEnum):
     Event_Mode = 0
     Grand_Prix = 3
+    Grand_Prix_23 = 4
     Time_Trial = 5
     Splitscreen = 6
     Online_Custom = 7
@@ -552,6 +553,7 @@ class GAME_MODE(IntEnum):
     Championship = 13
     Online_Championship = 14
     Online_Weekly_Event = 15
+    Story_Mode = 17
     Career_22 = 19
     Career_22_Online = 20
     Career_23 = 21
