@@ -11,7 +11,6 @@ class DataTypes:
     FLOAT = ctypes.c_float
     # CHAR = ctypes.c_char
     CHAR = ctypes.c_wchar
-    a = ctypes
 
 
 class AC_STATUS(IntEnum):
@@ -157,10 +156,14 @@ class SPageFilePhysicsData(DataTypes.STRUCTURE):
 # The following members change at each graphical step. They all refer to the player’s car.
 class SPageFileGraphicData(DataTypes.STRUCTURE):
     # _pack_ = 1
+    _enums_: dict[type, tuple[str, ...]] = {
+        AC_STATUS: ("status",),
+        AC_SESSION_TYPE: ("session",),
+        AC_FLAG_TYPE: ("flag",)
+    }
     _fields_ = [
         ("packetId",                DataTypes.SIGNED_INT),        # Index of the shared memory’s current step
         ("status",                  DataTypes.SIGNED_INT),        # Status of the instance: AC_OFF 0, AC_REPLAY 1, AC_LIVE 2, AC_PAUSE 3
-        # ("status",                  AC_STATUS),        # Status of the instance: AC_OFF 0, AC_REPLAY 1, AC_LIVE 2, AC_PAUSE 3
         ("session",                 DataTypes.SIGNED_INT),        # Session type: AC_UNKNOWN -1, AC_PRACTICE 0, AC_QUALIFY 1, AC_RACE 2, AC_HOTLAP 3, AC_TIME_ATTACK 4, AC_DRIFT 5, AC_DRAG 6
         ("currentTime",             DataTypes.CHAR * 15),         # Current lap time
         ("lastTime",                DataTypes.CHAR * 15),         # Last lap time

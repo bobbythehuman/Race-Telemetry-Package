@@ -11,8 +11,8 @@ class DataTypes:
     
     BOOL = ctypes.c_bool
     FLOAT = ctypes.c_float
-    # CHAR = ctypes.c_char
     CHAR = ctypes.c_wchar
+
 
 # If the client subscribed himself with SUBSCRIBE_UPDATE identifier, it will receive the following structured data
 class RTCarData(DataTypes.STRUCTURE):
@@ -31,10 +31,6 @@ class RTCarData(DataTypes.STRUCTURE):
         ("isTcEnabled",         DataTypes.BOOL),
         ("isInPit",             DataTypes.BOOL),
         ("isEngineLimiterOn",   DataTypes.BOOL),
-        
-        # ("Unknown1", ctypes.c_bool),
-        # ("Unknown2", ctypes.c_bool),
-        # might be 2 unknown bytes
         
         ("accG_vertical",       DataTypes.FLOAT),
         ("accG_horizontal",     DataTypes.FLOAT),
@@ -64,15 +60,13 @@ class RTCarData(DataTypes.STRUCTURE):
         ("Mz",                          DataTypes.FLOAT * 4),
         ("tyreDirtyLevel",              DataTypes.FLOAT * 4),
         
-        ("camberRAD",           DataTypes.FLOAT * 4),
-        ("tyreRadius",          DataTypes.FLOAT * 4),
-        ("tyreLoadedRadius",    DataTypes.FLOAT * 4),
-        
+        ("camberRAD",               DataTypes.FLOAT * 4),
+        ("tyreRadius",              DataTypes.FLOAT * 4),
+        ("tyreLoadedRadius",        DataTypes.FLOAT * 4),
         ("suspensionHeight",        DataTypes.FLOAT * 4),
         ("carPositionNormalized",   DataTypes.FLOAT),
         ("carSlope",                DataTypes.FLOAT),
         ("carCoordinates",          DataTypes.FLOAT * 3),
-
     ]
 
 # If the client subscribed himself with SUBSCRIBE_SPOT identifier, it will receive the following structured data whenever a spot event is triggered (for example for the end of a lap). 
@@ -141,8 +135,6 @@ def endHandShake(socket, destination: tuple[int, int]):
     
     socket.sendto(prepHandShake, destination)
 
-
-### Decryption
 
 
 ### MetaData
