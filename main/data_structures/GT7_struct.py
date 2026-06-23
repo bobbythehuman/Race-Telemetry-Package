@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, StrEnum
 
 # source
 # https://github.com/MacManley/gt7-udp
@@ -20,6 +20,22 @@ class DataTypes:
     FLOAT = ctypes.c_float
     CHAR = ctypes.c_char
 
+
+### * Enums
+# There is a really long list for Car list
+
+class SURFACE_TYPE(StrEnum):
+    Curb_Kerb = "C"
+    Dirt = "D"
+    Grass = "G"
+    Sand = "S"
+    Snow = "s"
+    Tarmac = "T"
+
+
+### * Data Structure
+
+### Packet A -- 296 bytes -- Frequency: 60Hz (60 times a second)
 
 class PacketAData(DataTypes.STRUCTURE):
     # _pack_ = 1
@@ -76,6 +92,7 @@ class PacketAData(DataTypes.STRUCTURE):
         ("carCode",                 DataTypes.SIGNED_INT32),  # This value may be overriden if using a car with more then 9 gears
     ]
 
+### Packet B -- 316 bytes -- Frequency: 60Hz (60 times a second)
 
 class PacketBData(DataTypes.STRUCTURE):
     # _pack_ = 1
@@ -131,6 +148,7 @@ class PacketBData(DataTypes.STRUCTURE):
         ("gearRatios",              DataTypes.FLOAT  * 8),    # Gear ratios of the car up to 8
         ("carCode",                 DataTypes.SIGNED_INT32),  # This value may be overriden if using a car with more then 9 gears
         
+        # For Packet B
         ("wheelRotation",   DataTypes.FLOAT),  # Calculates the wheel rotation in radians
         ("UNKNOWNFLOAT10",  DataTypes.FLOAT),  # Unknown float
         ("sway",            DataTypes.FLOAT),  # X axis acceleration
@@ -139,6 +157,7 @@ class PacketBData(DataTypes.STRUCTURE):
         
     ]
 
+### Packet ~ -- 344 bytes -- Frequency: 60Hz (60 times a second)
 
 class PacketTildaData(DataTypes.STRUCTURE):
     # _pack_ = 1
@@ -200,6 +219,7 @@ class PacketTildaData(DataTypes.STRUCTURE):
         ("heave",           DataTypes.FLOAT),  # Y axis acceleration
         ("surge",           DataTypes.FLOAT),  # Z axis acceleration
         
+        # For Packet Tilda
         ("throttleFiltered",    DataTypes.UNSIGNED_INT8),     # Filtered Throttle Output
         ("brakeFiltered",       DataTypes.UNSIGNED_INT8),     # Filtered Brake Output
         ("UNKNOWNUINT81",       DataTypes.UNSIGNED_INT8),     # Unknown unsigned 8 bit integer
@@ -209,9 +229,13 @@ class PacketTildaData(DataTypes.STRUCTURE):
         ("UNKNOWNFLOAT11",      DataTypes.FLOAT),             # Unknown float
     ]
 
+### Packet C -- 368 bytes -- Frequency: 60Hz (60 times a second)
 
 class PacketCData(DataTypes.STRUCTURE):
     # _pack_ = 1
+    _enums_: dict[type, tuple[str, ...]] = {
+        SURFACE_TYPE: ("surfaceType",),
+    }
     _fields_ = [
         ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
         ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
@@ -278,6 +302,7 @@ class PacketCData(DataTypes.STRUCTURE):
         ("energyRecovery",      DataTypes.FLOAT),             # Energy being recovered to the battery
         ("UNKNOWNFLOAT11",      DataTypes.FLOAT),             # Unknown float
         
+        # For Packet C
         ("surfaceType",     DataTypes.CHAR * 4),          # The kind of surface in contact with the tyres (T: tarmac, C: curb/kerb D: Dirt/Grass)
         ("currentLap",      DataTypes.SIGNED_INT32),      # The current lap being set in milliseconds
         ("UNKNOWNFLOATS",   DataTypes.FLOAT * 3),         # Unknown float
@@ -285,8 +310,7 @@ class PacketCData(DataTypes.STRUCTURE):
     ]
 
 
-
-### Heart Beat
+### * Heart Beat
 
 def heartBeat(socket, destination: tuple[int, int], msg = b'C'):
     
@@ -296,7 +320,7 @@ def heartBeat(socket, destination: tuple[int, int], msg = b'C'):
     # msg = packetVersion = A | B | ~
     # else packetVersion = A 
 
-### Decryption
+### * Decryption
 
 # pip install pycryptodome
 try:
@@ -333,7 +357,8 @@ def decrypt_data(raw: bytes) -> bytes:
     decrypted = cipher.decrypt(raw)
     return decrypted
 
-### MetaData
+
+### * MetaData
 
 class MetaData:
     # standard network info
