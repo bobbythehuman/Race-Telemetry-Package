@@ -406,6 +406,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 ### Documents
 
 - [ACSharedMemoryDocumentation.pdf](./Supporting%20Docs/ACSharedMemoryDocumentation.pdf) - Assetto Corsa shared memory documentation(official release)
+- [ACRemoteTelemetryDocumentation.pdf](./Supporting%20Docs/ACRemoteTelemetryDocumentation.pdf) - Assetto Corsa (UDP) remote telemetry documentation(official release)
 - [ACCSharedMemoryDocumentationV1.8.12.pdf](./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
 - [ACE_SharedFileOut_Documentation_V1.pdf](./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
 - [Data Output from F1 22 v16.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2022%20v16.docx) - Packet structures and data output for F1 2022 version 16 (official release)
@@ -422,8 +423,10 @@ Debugging guides available in the `Supporting Docs/` folder:
 
 Documentation and links to packet structures in the [`Supporting Docs/`](./Supporting%20Docs/) folder:
 
-- Assetto Corsa - Link to [AC Socket Document](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
-- Assetto Corsa - Link to [ACServer UDP configuration](https://www.assettocorsa.net/forum/index.php?threads/acserver-udp-configuration.59626/#post-1080816)
+- Assetto Corsa UDP - Link to [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
+- Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/)
+- Assetto Corsa UDP - Link to [ACServer UDP configuration](https://www.assettocorsa.net/forum/index.php?threads/acserver-udp-configuration.59626/#post-1080816)
+- Assetto Corsa SM - Link to [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/)
 - Assetto Corsa Competizione - Link to [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)
 - Assetto Corsa EVO - Link to [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)
 - Beamng.drive - Link to [Protocols](https://documentation.beamng.com/modding/protocols/) (official release)
