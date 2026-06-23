@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class DataTypes:
@@ -18,17 +18,236 @@ class DataTypes:
     FLOAT = ctypes.c_float
     CHAR = ctypes.c_char
     DOUBLE = ctypes.c_double
+    
+    
+### * Enums
 
+class PACKET_ID(IntEnum):
+    Motion = 0
+    Session = 1
+    LapData = 2
+    Event = 3
+    Participants = 4
+    CarSetups = 5
+    CarTelemetry = 6
+    CarStatus = 7
+
+class TEAM_ID(IntEnum):
+    Mercedes = 0
+    Ferrari = 1
+    RedBull = 2
+    Williams = 3
+    Force_India = 4
+    Renault = 5
+    Toro_Rosso = 6
+    Haas = 7
+    McLaren = 8
+    Sauber = 9
+    McLaren_1988 = 10
+    McLaren_1991 = 11
+    Williams_1992 = 12
+    Ferrari_1995 = 13
+    Williams_1996 = 14
+    McLaren_1998 = 15
+    Ferrari_2002 = 16
+    Ferrari_2004 = 17
+    Renault_2006 = 18
+    Ferrari_2007 = 19
+    McLaren_2008 = 20
+    Redbull_2010 = 21
+    Ferrari_1976 = 22
+    McLaren_1976 = 34
+    Lotus_1972 = 35
+    Ferrari_1979 = 36
+    McLaren_1982 = 37
+    Williams_2003 = 38
+    Brawn_2009 = 39
+    Lotus_1978 = 30
+
+class DRIVER_ID(IntEnum):
+    Carlos_Sainz = 0
+    # Daniil_Kvyat = 1
+    Daniel_Ricciardo = 2
+    Fernando_Alonso = 3
+    # Felipe_Massa = 3
+    Kimi_Räikkönen = 6
+    Lewis_Hamilton = 7
+    Marcus_Ericsson = 8
+    Max_Verstappen = 9
+    Nico_Hulkenberg = 10
+    Kevin_Magnussen = 11
+    Romain_Grosjean = 12
+    Sebastian_Vettel = 13
+    Sergio_Perez = 14
+    Valtteri_Bottas = 15
+    Esteban_Ocon = 17
+    Stoffel_Vandoorne = 18
+    Lance_Stroll = 19
+    # Jolyon_Palmer = 20
+    # Pascal_Wehrlein = 31
+    Arron_Barnes = 20
+    Martin_Giles = 21
+    Alex_Murray = 22
+    Lucas_Roth = 23
+    Igor_Correia = 24
+    Sophie_Levasseur = 25
+    Jonas_Schiffer = 26
+    Alain_Forest = 27
+    Jay_Letourneau = 28
+    Esto_Saari = 29
+    Yasar_Atiyeh = 30
+    Callisto_Calabresi = 31
+    Naota_Izum = 32
+    Howard_Clarke = 33
+    Wilheim_KaufMann = 34
+    Marie_Laursen = 35
+    Flavio_Nieves = 36
+    Peter_Belousov = 37
+    Klimek_Michalski = 38
+    Santiago_Moreno = 39
+    Benjamin_Coppens = 40
+    Noah_Visser = 41
+    Gert_Waldmuller = 42
+    Julian_Quesada = 43
+    Daniel_Jones = 44
+    Charles_Leclerc = 58
+    Pierre_Gasly = 59
+    Brendon_Hartley = 60
+    Sergey_Sirotkin = 61
+    Ruben_Meijer = 69
+    Rashid_Nair = 70
+    Jack_Tremblay = 71
+
+class TRACK_ID(IntEnum):
+    Unknown = -1
+    Melbourne = 0
+    Paul_Ricard = 1
+    Shanghai = 2
+    Sakhir_Bahrain = 3
+    Catalunya = 4
+    Monaco = 5
+    Montreal = 6
+    Silverstone = 7
+    Hockenheim = 8
+    Hungaroring = 9
+    Spa = 10
+    Monza = 11
+    Singapore = 12
+    Suzuka = 13
+    Abu_Dhabi = 14
+    Texas = 15
+    Brazil = 16
+    Austria = 17
+    Sochi = 18
+    Mexico = 19
+    Baka_Azerbaijan = 20
+    Sakhir_Short = 21
+    Silverstone_Short = 22
+    Texas_Short = 23
+    Suzuka_Short = 24
+
+class NATIONALITY_ID(IntEnum):
+    American = 1
+    Argentinean = 2
+    Australian = 3
+    Austrian = 4
+    Azerbaijani = 5
+    Bahraini = 6
+    Belgian = 7
+    Bolivian = 8
+    Brazilian = 9
+    British = 10
+    Bulgarian = 11
+    Cameroonian = 12
+    Canadian = 13
+    Chilaen = 14
+    Chinese = 15
+    Colombian = 16
+    Costa_Rican = 17
+    Croatian = 18
+    Cypriot = 19
+    Czech = 20
+    Danish = 21
+    Dutch = 22
+    Ecuadorian = 23
+    English = 24
+    Emirian = 25
+    Estonia = 26
+    Finnish = 27
+    French = 28
+    German = 29
+    Ghanaian = 30
+    Greek = 31
+    Guatemalan = 32
+    Honduran = 33
+    Hong_Konger = 34
+    Hungarian = 35
+    Icelander = 36
+    Indian = 37
+    Indonesian = 38
+    Irish = 39
+    Israeli = 40
+    Italian = 41
+    Jamaican = 42
+    Japanese = 43
+    Jordanian = 44
+    Kuwaiti = 45
+    Latvian = 46
+    Lebanese = 47
+    Lithuanian = 48
+    Luxembourger = 49
+    Malaysian = 50
+    Maltese = 51
+    Mexian = 52
+    Monegasque = 53
+    New_Zealander = 54
+    Nicaraguan = 55
+    North_Korean = 56
+    Northen_Irish = 57
+    Norwegian = 58
+    Omani = 59
+    Pakistani = 60
+    Panamanian = 61
+    Paraguayan = 62
+    Peruvian = 63
+    Polish = 64
+    Portuguese = 65
+    Qatari = 66
+    Romanian = 67
+    Russian = 68
+    Salvadoran = 69
+    Saudi = 70
+    Scottish = 71
+    Serbian = 72
+    Singaporean = 73
+    Slovakian = 74
+    Slovenian = 75
+    South_Korean = 76
+    South_African = 77
+    Spanish = 78
+    Swedish = 79
+    Swiss = 80
+    Taiwanese = 81
+    Thai = 82
+    Turkish = 83
+    Uruguayan = 84
+    Ukrainian = 85
+    Venezuelan = 86
+    Welsh = 87
+
+### * Data Structure
 
 ### Packet Header -- 24 bytes
 
-
 class PacketHeader(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+        PACKET_ID: ("m_packetId",),
+    }
     _fields_ = [
         ("m_packetFormat",              DataTypes.UNSIGNED_INT16),    # 2018
         ("m_packetVersion",             DataTypes.UNSIGNED_INT8),     # Version of this packet type, all start from 1
-        ("m_packetId",                  DataTypes.UNSIGNED_INT8),     # Identifier for the packet type, see below
+        ("m_packetId",                  DataTypes.UNSIGNED_INT8),     # Identifier for the packet type
         ("m_sessionUID",                DataTypes.UNSIGNED_INT64),    # Unique identifier for the session
         ("m_sessionTime",               DataTypes.FLOAT),             # Session timestamp
         ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32),    # Identifier for the frame the data was retrieved on
@@ -37,7 +256,6 @@ class PacketHeader(DataTypes.STRUCTURE):
 
 
 ### Motion Packet -- Rate as specified in menus -- 1341 bytes
-
 
 class CarMotionData(DataTypes.STRUCTURE):
     # _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -61,7 +279,6 @@ class CarMotionData(DataTypes.STRUCTURE):
         ("m_pitch",                 DataTypes.FLOAT),         # Pitch angle in radians
         ("m_roll",                  DataTypes.FLOAT),         # Roll angle in radians
     ]
-
 
 class PacketMotionData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -89,7 +306,6 @@ class PacketMotionData(DataTypes.STRUCTURE):
 
 ### Session Packet -- 2 per second -- 147 bytes
 
-
 class MarshalZone(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
@@ -97,35 +313,36 @@ class MarshalZone(DataTypes.STRUCTURE):
         ("m_zoneFlag",  DataTypes.SIGNED_INT8),   # -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow, 4 = red
     ]
 
-
 class PacketSessionData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+        TRACK_ID: ("m_trackId",),
+    }
     _fields_ = [
-        ("m_header",                            PacketHeader),                          # Header
-        ("m_weather",                           DataTypes.UNSIGNED_INT8),         # Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
-        ("m_trackTemperature",                  DataTypes.SIGNED_INT8),           # Track temp. in degrees celsius
-        ("m_airTemperature",                    DataTypes.SIGNED_INT8),           # Air temp. in degrees celsius
-        ("m_totalLaps",                         DataTypes.UNSIGNED_INT8),         # Total number of laps in this race
-        ("m_trackLength",                       DataTypes.UNSIGNED_INT16),        # Track length in metres
-        ("m_sessionType",                       DataTypes.UNSIGNED_INT8),         # 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = R3, 13 = Time Trial
-        ("m_trackId",                           DataTypes.SIGNED_INT8),           # -1 for unknown, 0-21 for tracks, see appendix
-        ("m_era",                               DataTypes.UNSIGNED_INT8),         # Era, 0 = modern, 1 = classic
-        ("m_sessionTimeLeft",                   DataTypes.UNSIGNED_INT16),        # Time left in session in seconds
-        ("m_sessionDuration",                   DataTypes.UNSIGNED_INT16),        # Session duration in seconds
-        ("m_pitSpeedLimit",                     DataTypes.UNSIGNED_INT8),         # Pit speed limit in kilometres per hour
-        ("m_gamePaused",                        DataTypes.UNSIGNED_INT8),         # Whether the game is paused – network game only
-        ("m_isSpectating",                      DataTypes.UNSIGNED_INT8),         # Whether the player is spectating
-        ("m_spectatorCarIndex",                 DataTypes.UNSIGNED_INT8),         # Index of the car being spectated
-        ("m_sliProNativeSupport",               DataTypes.UNSIGNED_INT8),         # SLI Pro support, 0 = inactive, 1 = active
-        ("m_numMarshalZones",                   DataTypes.UNSIGNED_INT8),         # Number of marshal zones to follow
-        ("m_marshalZones",                      MarshalZone * 21),                      # List of marshal zones – max 21
-        ("m_safetyCarStatus",                   DataTypes.UNSIGNED_INT8),         # 0 = no safety car, 1 = full, 2 = virtual, 3 = formation lap
-        ("m_networkGame",                       DataTypes.UNSIGNED_INT8),         # 0 = offline, 1 = online
+        ("m_header",                            PacketHeader),				# Header
+        ("m_weather",                           DataTypes.UNSIGNED_INT8),	# Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
+        ("m_trackTemperature",                  DataTypes.SIGNED_INT8),		# Track temp. in degrees celsius
+        ("m_airTemperature",                    DataTypes.SIGNED_INT8),		# Air temp. in degrees celsius
+        ("m_totalLaps",                         DataTypes.UNSIGNED_INT8),	# Total number of laps in this race
+        ("m_trackLength",                       DataTypes.UNSIGNED_INT16),	# Track length in metres
+        ("m_sessionType",                       DataTypes.UNSIGNED_INT8),	# 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = R3, 13 = Time Trial
+        ("m_trackId",                           DataTypes.SIGNED_INT8),		# -1 for unknown, 0-21 for tracks, see appendix
+        ("m_era",                               DataTypes.UNSIGNED_INT8),	# Era, 0 = modern, 1 = classic
+        ("m_sessionTimeLeft",                   DataTypes.UNSIGNED_INT16),	# Time left in session in seconds
+        ("m_sessionDuration",                   DataTypes.UNSIGNED_INT16),	# Session duration in seconds
+        ("m_pitSpeedLimit",                     DataTypes.UNSIGNED_INT8),	# Pit speed limit in kilometres per hour
+        ("m_gamePaused",                        DataTypes.UNSIGNED_INT8),	# Whether the game is paused – network game only
+        ("m_isSpectating",                      DataTypes.UNSIGNED_INT8),	# Whether the player is spectating
+        ("m_spectatorCarIndex",                 DataTypes.UNSIGNED_INT8),	# Index of the car being spectated
+        ("m_sliProNativeSupport",               DataTypes.UNSIGNED_INT8),	# SLI Pro support, 0 = inactive, 1 = active
+        ("m_numMarshalZones",                   DataTypes.UNSIGNED_INT8),	# Number of marshal zones to follow
+        ("m_marshalZones",                      MarshalZone * 21),			# List of marshal zones – max 21
+        ("m_safetyCarStatus",                   DataTypes.UNSIGNED_INT8),	# 0 = no safety car, 1 = full, 2 = virtual, 3 = formation lap
+        ("m_networkGame",                       DataTypes.UNSIGNED_INT8),	# 0 = offline, 1 = online
     ]
 
 
 ### Lap Data Packet -- Rate as specified in menus -- 841 bytes
-
 
 class LapData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -149,7 +366,6 @@ class LapData(DataTypes.STRUCTURE):
         ("m_resultStatus",          DataTypes.UNSIGNED_INT8),     # Result status - 0 = invalid, 1 = inactive, 2 = active, 3 = finished, 4 = didnotfinish, 5 = disqualified, 6 = not classified, 7 = retired
     ]
 
-
 class PacketLapData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
@@ -159,7 +375,6 @@ class PacketLapData(DataTypes.STRUCTURE):
 
 
 ### Event Packet -- When the event occurs -- 25 bytes
-
 
 class PacketEventData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -171,9 +386,13 @@ class PacketEventData(DataTypes.STRUCTURE):
 
 ### Participants Packet -- Every 5 seconds -- 1082 bytes
 
-
 class ParticipantData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+        DRIVER_ID: ("m_driverId",),
+        TEAM_ID: ("m_teamId",),
+        NATIONALITY_ID: ("m_nationality",),
+    }
     _fields_ = [
         ("m_aiControlled",      DataTypes.UNSIGNED_INT8),     # Whether the vehicle is AI (1) or Human (0) controlled
         ("m_driverId",          DataTypes.UNSIGNED_INT8),     # Driver id - see appendix, 255 if network human
@@ -182,7 +401,6 @@ class ParticipantData(DataTypes.STRUCTURE):
         ("m_nationality",       DataTypes.UNSIGNED_INT8),     # Nationality of the driver
         ("m_name",              DataTypes.CHAR * 48),         # Name of participant in UTF-8 format – null terminated, Will be truncated with … (U+2026) if too long
     ]
-
 
 class PacketParticipantsData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -194,7 +412,6 @@ class PacketParticipantsData(DataTypes.STRUCTURE):
 
 
 ### Car Setups Packet -- 2 per second -- 841 bytes
-
 
 class CarSetupData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -232,7 +449,6 @@ class PacketCarSetupData(DataTypes.STRUCTURE):
 
 ### Car Telemetry Packet -- Rate as specified in menus -- 1085 bytes
 
-
 class CarTelemetryData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
     _fields_ = [
@@ -263,7 +479,6 @@ class PacketCarTelemetryData(DataTypes.STRUCTURE):
 
 
 ### Car Status Packet -- Rate as specified in menus -- 1061 bytes
-
 
 class CarStatusData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
@@ -308,7 +523,7 @@ class PacketCarStatusData(DataTypes.STRUCTURE):
     ]
 
 
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info
