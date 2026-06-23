@@ -32,7 +32,7 @@ class PACKET_ID(IntEnum):
     CarTelemetry = 6
     CarStatus = 7
     FinalClassification = 8
-    LobbYInfo = 9
+    LobbyInfo = 9
 
 class TEAM_ID(IntEnum):
     Mercedes = 0
@@ -345,8 +345,8 @@ class PENALTY_TYPE(IntEnum):
     This_And_Next_Lap_Invalidated_Without_Reason = 13
     This_And_Previous_Lap_Invalidated = 14
     This_And_Previous_Lap_Invalidated_Without_Reason = 15
-    Retired = 15
-    Black_Flag_Timer = 15
+    Retired = 16
+    Black_Flag_Timer = 17
 
 class INFRINGEMENT_TYPE(IntEnum):
     Blocking_by_slow_driving = 0
