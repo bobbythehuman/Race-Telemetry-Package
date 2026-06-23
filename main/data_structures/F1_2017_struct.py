@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class DataTypes:
@@ -22,11 +22,120 @@ class DataTypes:
     BYTE = ctypes.c_byte
 
 
-### Motion Packet -- Rate as specified in menus -- 1341 bytes
+### * Enums
 
+class TRACK_ID(IntEnum):
+    Melbourne = 0
+    Sepang = 1
+    Shanghai = 2
+    Sakhir_Bahrain = 3
+    Catalunya = 4
+    Monaco = 5
+    Montreal = 6
+    Silverstone = 7
+    Hockenheim = 8
+    Hungaroring = 9
+    Spa = 10
+    Monza = 11
+    Singapore = 12
+    Suzuka = 13
+    Abu_Dhabi = 14
+    Texas = 15
+    Brazil = 16
+    Austria = 17
+    Sochi = 18
+    Mexico = 19
+    Baka_Azerbaijan = 20
+    Sakhir_Short = 21
+    Silverstone_Short = 22
+    Texas_Short = 23
+    Suzuka_Short = 24
+
+class TEAM_ID(IntEnum):
+    RedBull = 0
+    Ferrari = 1
+    McLaren = 2
+    Renault = 3
+    Mercedes = 4
+    Sauber = 5
+    Force_India = 6
+    Williams = 7
+    Toro_Rosso = 8
+    Haas = 11
+
+class CLASSIC_TEAM_ID(IntEnum):
+    Williams_1992 = 0
+    McLaren_1988 = 1
+    McLaren_2008 = 2
+    Ferrari_2004 = 3
+    Ferrari_1995 = 4
+    Ferrari_2007 = 5
+    McLaren_1998 = 6
+    Williams_1996 = 7
+    Renault_2006 = 8
+    Ferrari_2002 = 10
+    Redbull_2010 = 11
+    McLaren_1991 = 12
+
+class DRIVER_ID(IntEnum):
+    Sebastian_Vettel = 0
+    Daniil_Kvyat = 1
+    Fernando_Alonso = 2
+    Felipe_Massa = 3
+    Sergio_Perez = 5
+    Kimi_Räikkönen = 6
+    Romain_Grosjean = 7
+    Lewis_Hamilton = 9
+    Nico_Hulkenberg = 10
+    Kevin_Magnussen = 14
+    Valtteri_Bottas = 15
+    Daniel_Ricciardo = 16
+    Marcus_Ericsson = 18
+    Jolyon_Palmer = 20
+    Max_Verstappen = 22
+    Carlos_Sainz_Jr = 23
+    Pascal_Wehrlein = 31
+    Esteban_Ocon = 33
+    Stoffel_Vandoorne = 34
+    Lance_Stroll = 35
+
+class CLASSIC_DRIVER_ID(IntEnum):
+    Klimek_Michalski = 0
+    Martin_Giles = 1
+    Igor_Correia = 2
+    Sophie_Levasseur = 3
+    Alain_Forest = 4
+    Santiago_Moreno = 5
+    Esto_Saari = 6
+    Peter_Belousov = 7
+    Lars_Kaufmann = 8
+    Yasar_Atiyeh = 9
+    Howard_Clarke = 10
+    Marie_Laursen = 14
+    Benjamin_Coppens = 15
+    Alex_Murray = 16
+    Callisto_Calabresi = 18
+    Jay_Letourneau = 20
+    Naota_Izum = 22
+    Arron_Barnes = 23
+    Jonas_Schiffer = 24
+    Flavio_Nieves = 31
+    Noah_Visser = 32
+    Gert_Waldmuller = 33
+    Julian_Quesada = 34
+    Lucas_Roth = 68
+
+
+### * Data Structure
+
+# 1289 bytes
 
 class CarUDPData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = { # ! might be swappable with classic teams/drivers
+        TEAM_ID: ("m_teamId",),
+        DRIVER_ID: ("m_driverId",),
+    }
     _fields_ = [
         ("m_worldPosition",         DataTypes.FLOAT * 3),     # world co-ordinates of vehicle
         ("m_lastLapTime",           DataTypes.FLOAT),
@@ -94,7 +203,7 @@ class UDPPacket(DataTypes.STRUCTURE):
         ("m_sector2_time",              DataTypes.FLOAT),     # time of sector2 (or 0)
         ("m_brakes_temp",               DataTypes.FLOAT * 4), # brakes temperature (centigrade)
         ("m_tyres_pressure",            DataTypes.FLOAT * 4), # tyres pressure PSI
-        ("m_team_info",                 DataTypes.FLOAT),     # team ID 
+        ("m_team_info",                 DataTypes.FLOAT),     # team ID # ! not sure how this relates to enums
         ("m_total_laps",                DataTypes.FLOAT),     # total number of laps in this race
         ("m_track_size",                DataTypes.FLOAT),     # track size meters
         ("m_last_lap_time",             DataTypes.FLOAT),     # last lap time
@@ -148,7 +257,7 @@ class UDPPacket(DataTypes.STRUCTURE):
 
 
 
-### MetaData
+### * MetaData
 
 class MetaData:
     # standard network info
