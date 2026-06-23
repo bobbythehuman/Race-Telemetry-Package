@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, StrEnum
 
 
 class DataTypes:
@@ -18,8 +18,8 @@ class DataTypes:
     FLOAT = ctypes.c_float
     CHAR = ctypes.c_char
     DOUBLE = ctypes.c_double
-    
-    
+
+
 ### * Enums
 
 class PACKET_ID(IntEnum):
@@ -62,7 +62,7 @@ class TEAM_ID(IntEnum):
     McLaren_1982 = 37
     Williams_2003 = 38
     Brawn_2009 = 39
-    Lotus_1978 = 30
+    Lotus_1978 = 40
 
 class DRIVER_ID(IntEnum):
     Carlos_Sainz = 0
@@ -235,6 +235,10 @@ class NATIONALITY_ID(IntEnum):
     Venezuelan = 86
     Welsh = 87
 
+class EVENT_STRING_CODE(StrEnum):
+    Session_Started = "SSTA"
+    Session_Ended = "SEND"
+
 ### * Data Structure
 
 ### Packet Header -- 24 bytes
@@ -378,6 +382,9 @@ class PacketLapData(DataTypes.STRUCTURE):
 
 class PacketEventData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = {
+        EVENT_STRING_CODE: ("m_eventStringCode",),
+    }
     _fields_ = [
         ("m_header",            PacketHeader),                      # Header
         ("m_eventStringCode",   DataTypes.UNSIGNED_INT8 * 4), # Event string code
