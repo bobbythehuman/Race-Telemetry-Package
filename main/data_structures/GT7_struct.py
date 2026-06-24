@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, StrEnum
+from enum import Enum, Flag, StrEnum
 
 # source
 # https://github.com/MacManley/gt7-udp
@@ -32,6 +32,21 @@ class SURFACE_TYPE(StrEnum):
     Snow = "s"
     Tarmac = "T"
 
+class SIMULATOR_FLAG(Flag):
+    None_No_Active_Flags = 0
+    Car_On_Track = 1
+    Paused = 2
+    Loading_or_Processing = 4
+    In_Gear = 8
+    Has_Turbo = 16
+    Rev_Limit_Alert_Active = 32
+    Handbrake_Active = 64
+    Light_Active = 128
+    High_Beams_Active = 256
+    Low_Beams_Active = 512
+    ASM_Active = 1024
+    TCS_Active = 2048
+
 
 ### * Data Structure
 
@@ -39,6 +54,9 @@ class SURFACE_TYPE(StrEnum):
 
 class PacketAData(DataTypes.STRUCTURE):
     # _pack_ = 1
+    _enums_: dict[type, tuple[str, ...]] = {
+        SIMULATOR_FLAG: ("flags",),
+    }
     _fields_ = [
         ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
         ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
@@ -71,7 +89,7 @@ class PacketAData(DataTypes.STRUCTURE):
         ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
         ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags
         
         ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
         ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
@@ -96,6 +114,9 @@ class PacketAData(DataTypes.STRUCTURE):
 
 class PacketBData(DataTypes.STRUCTURE):
     # _pack_ = 1
+    _enums_: dict[type, tuple[str, ...]] = {
+        SIMULATOR_FLAG: ("flags",),
+    }
     _fields_ = [
         ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
         ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
@@ -128,7 +149,7 @@ class PacketBData(DataTypes.STRUCTURE):
         ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
         ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags
         
         ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
         ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
@@ -161,6 +182,9 @@ class PacketBData(DataTypes.STRUCTURE):
 
 class PacketTildaData(DataTypes.STRUCTURE):
     # _pack_ = 1
+    _enums_: dict[type, tuple[str, ...]] = {
+        SIMULATOR_FLAG: ("flags",),
+    }
     _fields_ = [
         ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
         ("position",                    DataTypes.FLOAT * 3),     # Position on Track in meters in each axis
@@ -193,7 +217,7 @@ class PacketTildaData(DataTypes.STRUCTURE):
         ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
         ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags
         
         ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
         ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
@@ -235,6 +259,7 @@ class PacketCData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _enums_: dict[type, tuple[str, ...]] = {
         SURFACE_TYPE: ("surfaceType",),
+        SIMULATOR_FLAG: ("flags",),
     }
     _fields_ = [
         ("magic",                       DataTypes.SIGNED_INT32),  # Magic, different value defines what game is being played
@@ -268,7 +293,7 @@ class PacketCData(DataTypes.STRUCTURE):
         ("maxAlertRPM",         DataTypes.SIGNED_INT16),  # Maximum RPM that the rev limiter displays an alert
         ("calcMaxSpeed",        DataTypes.SIGNED_INT16),  # Highest possible speed achievable of the current transmission settings
         
-        ("flags",           DataTypes.SIGNED_INT16), # Packet flags # TODO: Get working (from original source)
+        ("flags",           DataTypes.SIGNED_INT16), # Packet flags
         
         ("gears",       DataTypes.UNSIGNED_INT8), # First 4 bits: Current Gear, Last 4 bits: Suggested Gear, # TODO see getCurrentGearFromByte and getSuggestedGearFromByte
         ("throttle",    DataTypes.UNSIGNED_INT8), # Throttle (RANGE: 0 -> 255)
@@ -328,6 +353,7 @@ try:
 except:
     print("Cant use GT7 struct! Install pycryptodome. 'pip install pycryptodome'")
 import struct
+
 def decrypt_data(raw: bytes) -> bytes:
     def detect_packet_version(data: bytes) -> str:
         size = len(data)
