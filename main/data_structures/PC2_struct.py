@@ -213,7 +213,6 @@ class PacketHeader(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs
     _enums_: dict[type, tuple[str, ...]] = {
         PacketName: ("mPacketType",),
-        # PacketType: ("mPacketType",),
     }
     _fields_ = [
         ("mPacketNumber",           DataTypes.UNSIGNED_INT),     # Counter reflecting all the packets that have been sent during the game run

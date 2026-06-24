@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum
+from enum import Enum, Flag
 
 # source
 # https://documentation.beamng.com/modding/protocols/
@@ -15,11 +15,39 @@ class DataTypes:
     CHAR = ctypes.c_char
 
 
+### * Enums
+
+class OG_X(Flag):   # bits for flags
+    OG_SHIFT = 1    # key // N/A
+    OG_CTRL = 2     # key // N/A
+    OG_TURBO = 8192 # show turbo gauge
+    OG_KM = 16384   # if not set - user prefers MILES
+    OG_BAR = 32768  # if not set - user prefers PSI
+
+class DL_X(Flag):   # bits for dashLights and showLights
+    DL_SHIFT = 1        # shift light
+    DL_FULLBEAM = 2     # full beam
+    DL_HANDBRAKE = 4    # handbrake
+    DL_PITSPEED = 8     # pit speed limiter // N/A
+    DL_TC = 16          # tc active or switched off
+    DL_SIGNAL_L = 32    # left turn signal
+    DL_SIGNAL_R = 64    # right turn signal
+    DL_SIGNAL_ANY = 128 # shared turn signal // N/A
+    DL_OILWARN = 256    # oil pressure warning
+    DL_BATTERY = 512    # battery warning
+    DL_ABS = 1024       # abs active or switched off
+    DL_SPARE = 2048     # N/A
+
+
 ### * Data Structure
 
 # OutGauge UDP protocol
 # Items marked as `N/A` are not implemented.
 class TelemetryData(DataTypes.STRUCTURE):
+    _enums_: dict[type, tuple[str, ...]] = {
+        OG_X: ("flags",),
+        DL_X: ("dashLights", "showLights",),
+    }
     _fields_ = [
         ("time",            DataTypes.UNSIGNED_INT),      # time in milliseconds (to check order) // N/A, hardcoded to 0
         ("car",             DataTypes.CHAR * 4),          # Car name // N/A, fixed value of "beam"
@@ -42,26 +70,6 @@ class TelemetryData(DataTypes.STRUCTURE):
         ("display2",        DataTypes.CHAR * 16),         # Usually Settings // N/A, hardcoded to ""
         ("id",              DataTypes.SIGNED_INT)         # optional - only if OutGauge ID is specified
     ]
-
-# -- OG_x - bits for flags
-# local OG_SHIFT =     1  -- key // N/A
-# local OG_CTRL  =     2  -- key // N/A
-# local OG_TURBO =  8192  -- show turbo gauge
-# local OG_KM    = 16384  -- if not set - user prefers MILES
-# local OG_BAR   = 32768  -- if not set - user prefers PSI
-# -- DL_x - bits for dashLights and showLights
-# local DL_SHIFT        = 2 ^ 0    -- shift light
-# local DL_FULLBEAM     = 2 ^ 1    -- full beam
-# local DL_HANDBRAKE    = 2 ^ 2    -- handbrake
-# local DL_PITSPEED     = 2 ^ 3    -- pit speed limiter // N/A
-# local DL_TC           = 2 ^ 4    -- tc active or switched off
-# local DL_SIGNAL_L     = 2 ^ 5    -- left turn signal
-# local DL_SIGNAL_R     = 2 ^ 6    -- right turn signal
-# local DL_SIGNAL_ANY   = 2 ^ 7    -- shared turn signal // N/A
-# local DL_OILWARN      = 2 ^ 8    -- oil pressure warning
-# local DL_BATTERY      = 2 ^ 9    -- battery warning
-# local DL_ABS          = 2 ^ 10   -- abs active or switched off
-# local DL_SPARE        = 2 ^ 11   -- N/A
 
 # MotionSim UDP protocol
 class MotionSim(DataTypes.STRUCTURE):
