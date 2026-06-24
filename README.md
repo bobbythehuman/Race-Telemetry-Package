@@ -66,9 +66,6 @@ telemetry = telemetryManager()
 # Configure metadata and network settings
 telemetry.updateMeta(MetaData)
 
-# Use shared memory instead of UDP (if supported by the game)
-telemetry.isSharedMemory(True)
-
 # Start receiving telemetry data
 for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
@@ -112,12 +109,6 @@ activeThreads = telemetryManager()
 # Configure metadata and network settings
 activeThreads.updateMeta(MetaData)
 
-activeThreads.updateLocalIP("127.0.0.1") # Optional. Defaults to 0.0.0.0
-activeThreads.updateSendIP("192.168.1.100")  # Optional: for heartbeat destination
-
-# Use shared memory instead of UDP (if supported by the game)
-activeThreads.isSharedMemory(True)
-
 # Add worker threads to process telemetry data concurrently
 activeThreads.addWorkerThread(my_worker_thread)
 
@@ -125,11 +116,27 @@ activeThreads.addWorkerThread(my_worker_thread)
 activeThreads.StartTelemetry()
 ```
 
+## Config Options
+
+| Syntax				| Syntax									| Parameters																												| Description																																|
+| --------------------- | ----------------------------- 			| -----------------------------																									 | ---------------|
+| telemetryManager()	| `manager = telemetryManager()`				| None																															| Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.			|
+| updateMeta			| `manager.updateMeta(MetaData)`				| `MetaData` (class): see [Adding and Using a New Packet Structure](#adding-and-using-a-new-packet-structure) for details1"`	| Apply game-specific metadata to configure packet structures, ports, and data handling. **Must be called before starting telemetry.**	|
+| updateLocalIP			| `manager.updateLocalIP(ip_address)`			| `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`																			| Set the local IP address that the telemetry server listens on for incoming packets.													|
+| updateSendIP			| `manager.updateSendIP(ip_address)`			| `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`																			| The IP data is sent to for heart beat and handshake																					|
+| addWorkerThread		| `manager.addWorkerThread(worker_function)`	| `mainFunc` (callable): A function with the signature: `def worker_function(worker_id: int, ro_storage, stop_event):`			| Add worker threads to the program																										|
+| manualStop			| `manager.manualStop(should_stop)`			| `target` (bool): `True` to stop, `False` to resume 																			| Manually trigger a stop signal from outside the main thread or telemetryloop.															|
+| isSharedMemory		| `manager.isSharedMemory(use_shared_memory)`	| `target` (bool): `True` to use shared memory, `False` to use UDP																| Toggle between UDP and shared memory as the telemetry data source. Shared memory is faster but only available on the local machine.	|
+| setEnumMode			| `manager.setEnumMode(mode)`					| `target` (int): Enum handling mode: `0` (default): Return full enum members with both name and value, `1`: Return raw integer values, `2`: Return enum names as strings	| Configure how enum fields are handled in packet data. Affects what values are returned for fields with enum types.					|
+| StartTelemetry		| `manager.StartTelemetry()`					| None																															| Start the telemetry system with all configured settings. Creates and starts the network listener thread and all worker threads. **Blocks until a stop signal is received** (Ctrl+C or manual stop).|
+| GetTelemetry			| `for packet, packetID, headerPacket in manager.GetTelemetry():`	| None		|Retrieve telemetry packets one at a time in a generator pattern. Use this for **single-threaded** applications	|
+
+
 ## Adding and Using a New Packet Structure
 
 ### Step 1: Create the Packet Structure File
 
-Create a new file in [`main/data_structures/`](main/data_structures/) following the naming convention `{game}_struct.py`.
+Create a new file in `data_structures/` following the naming convention `{game}_struct.py`.
 
 Example structure:
 
@@ -147,12 +154,9 @@ class DataTypes:
   
     UNSIGNED_INT8 = ctypes.c_uint8
     UNSIGNED_INT16 = ctypes.c_uint16
-    UNSIGNED_INT32 = ctypes.c_uint32
-    UNSIGNED_INT64 = ctypes.c_uint64
   
     FLOAT = ctypes.c_float
     CHAR = ctypes.c_char
-    DOUBLE = ctypes.c_double
 
 # Define your header packet, if required
 class PacketHeader(DataTypes.STRUCTURE):
@@ -160,10 +164,6 @@ class PacketHeader(DataTypes.STRUCTURE):
     _fields_ = [
         ("m_packetFormat",              DataTypes.UNSIGNED_INT16),
         ("m_gameYear",                  DataTypes.UNSIGNED_INT8),
-        ("m_packetId",                  DataTypes.UNSIGNED_INT8),
-        ("m_frameIdentifier",           DataTypes.UNSIGNED_INT32),
-        ("m_sessionUID",                DataTypes.UNSIGNED_INT64),
-        ("m_sessionTime",               DataTypes.FLOAT),
         # ...
     ]
 
@@ -173,9 +173,6 @@ class CarMotionData(DataTypes.STRUCTURE):
     _fields_ = [
         ("m_worldPositionX",        DataTypes.FLOAT),
         ("m_worldVelocityX",        DataTypes.FLOAT),
-        ("m_worldForwardDirX",      DataTypes.SIGNED_INT16),
-        ("m_worldRightDirX",        DataTypes.SIGNED_INT16),
-        ("m_gForceLateral",         DataTypes.FLOAT),
         # ...
     ]
 
@@ -194,22 +191,27 @@ class PacketMotionData(DataTypes.STRUCTURE):
 Create enum classes for any fields that have a defined set of values.
 
 ```python
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, StrEnum, Flag
 
 # Create an enum
 class Gear(IntEnum):
     NEUTRAL = 0
     FIRST = 1
     SECOND = 2
-    THIRD = 3
-    FOURTH = 4
-    FIFTH = 5
-    SIXTH = 6
-    SEVENTH = 7
-    EIGHTH = 8
+
+class Gear(IntEnum):
+    NEUTRAL = "N"
+    FIRST = "ONE"
+    SECOND = "TWO"
+
+class Gear(Flag):
+    NEUTRAL = 1
+    FIRST = 2
+    SECOND = 4
+    SECOND = 8
 
 class TelemetryData(DataTypes.STRUCTURE):
-    # Setup enums, field paring as a dictionary for dynamic ingestion
+    # Setup enums, field pairing as a dictionary for dynamic ingestion
     _enums_: dict[type, tuple[str, ...]] = {
         SESSION_TYPE: ("session",),
         GEAR: ("current_gear", "recommended_gear",),
@@ -255,7 +257,7 @@ In your main script, import the new metadata:
 | decrytionFunc     | Function                          | Data decryption function                                      |
 | headerInfo        | Type                              | The header struct class (if protocol uses header).            |
 | packetIDAttribute | String                            | An attribute in the header packet defining the packet ID      |
-| sharedMemoryName  | String | None | dict[String, String]    | Name of the shared memory segment used for data exchange      |
+| sharedMemoryName  | String | dict[String, String]     | Name of the shared memory segment used for data exchange      |
 | packetInfo        | Dict [Int, List [Type] ]          | Game packet mapping - See more below                          |
 
 #### PacketInfo
@@ -328,7 +330,7 @@ class MetaData:
     }
 ```
 
-### Step 3: Import and Use
+### Step 4: Import and Use
 
 In your main script, import the new metadata and use it with either mode:
 
@@ -350,7 +352,7 @@ activeThreads.addWorkerThread(your_worker_function)
 activeThreads.StartTelemetry()
 ```
 
-### Step 4: Handle Packet Decoding
+### Step 5: Handle Packet Decoding
 
 The system automatically handles packet decoding based on the `packetInfo` dictionary. Ensure:
 
@@ -361,32 +363,32 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 ## Supported Games
 
 ### UDP
-- Assetto Corsa <!-- has link / has document -->
-- BeamNG Drive <!-- has link -->
-- F1 2016 (untested) <!-- has link -->
-- F1 2017 <!-- has link -->
-- F1 2018 <!-- has link -->
-- F1 2019 <!-- has link -->
-- F1 2020 <!-- has link -->
-- F1 2021 <!-- has link -->
-- F1 2022 <!-- has link / has document -->
-- F1 2023 <!-- has link / has document -->
-- F1 2024 <!-- has link / has document -->
-- F1 2025 (untested) <!-- has link / has document -->
-- F1 2025 (2026 dlc)(untested) <!-- has link / has document -->
-- Forza Horizon 4
-- Forza Horizon 5
-- Forza Horizon 6
-- Forza Motorsport 7 (untested)
-- Forza Motorsport 8
-- Gran Turismo 7
-- Project Cars 2
+- Assetto Corsa                 <!-- official link / official document -->
+- BeamNG Drive                  <!-- official link -->
+- F1 2016 (untested)            <!-- official link -->
+- F1 2017                       <!-- official link -->
+- F1 2018                       <!-- official link -->
+- F1 2019                       <!-- official link -->
+- F1 2020                       <!-- official link -->
+- F1 2021                       <!-- official link / dead document-->
+- F1 2022                       <!-- official link / official document -->
+- F1 2023                       <!-- official link / official document -->
+- F1 2024                       <!-- official link / official document -->
+- F1 2025 (untested)            <!-- official link / official document -->
+- F1 2026 (2025 dlc)(untested)  <!-- official link / official document -->
+- Forza Horizon 4               <!-- github link -->
+- Forza Horizon 5               <!-- pastebin link -->
+- Forza Horizon 6               <!-- official link -->
+- Forza Motorsport 7 (untested) <!-- official link -->
+- Forza Motorsport 8            <!-- official link -->
+- Gran Turismo 7                <!-- github link -->
+- Project Cars 2                <!-- github link -->
 
 ### Shared Memory
-- Assetto Corsa
-- Assetto Corsa Competizione (untested) <!-- has link / has document -->
-- Assetto Corsa Evo (untested) <!-- has link / has document -->
-- Euro Truck Simulator 2
+- Assetto Corsa                         <!-- official link / official document -->
+- Assetto Corsa Competizione (untested) <!-- official link / official document -->
+- Assetto Corsa Evo (untested)          <!-- official link / official document -->
+- Euro Truck Simulator 2                <!-- github link -->
 
 ## Troubleshooting
 
@@ -425,7 +427,6 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 
 - Assetto Corsa UDP - Link to [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
 - Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/)
-- Assetto Corsa UDP - Link to [ACServer UDP configuration](https://www.assettocorsa.net/forum/index.php?threads/acserver-udp-configuration.59626/#post-1080816)
 - Assetto Corsa SM - Link to [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/)
 - Assetto Corsa Competizione - Link to [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)
 - Assetto Corsa EVO - Link to [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)
