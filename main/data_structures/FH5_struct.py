@@ -97,9 +97,9 @@ class DashData(DataTypes.STRUCTURE):
         ("DrivetrainType",          DataTypes.SIGNED_INT32),  # 0 = FWD, 1 = RWD, 2 = AWD
         ("NumCylinders",            DataTypes.SIGNED_INT32),  # Number of cylinders in the engine
         
-        ("CarCategory",     DataTypes.SIGNED_INT32),
-        ("Unknown1",        DataTypes.SIGNED_INT32),
-        ("Unknown2",        DataTypes.SIGNED_INT32),
+        ("CarCategory",         DataTypes.SIGNED_INT32),
+        ("SmashableVelDiff",    DataTypes.FLOAT),           # Velocity loss from smashable object collision (m/s)
+        ("SmashableMass",       DataTypes.FLOAT),           # Mass of recently hit smashable object (kg)
         
         # Dash data
         ("PositionX",           DataTypes.FLOAT),
