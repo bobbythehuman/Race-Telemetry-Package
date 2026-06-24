@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, IntEnum, StrEnum
+from enum import Enum, Flag, IntEnum, StrEnum
 
 
 class DataTypes:
@@ -455,6 +455,24 @@ class INFRINGEMENT_TYPE(IntEnum):
     Illegal_Time_Gain = 50
     Mandatory_Pitstop = 51
 
+class BUTTON_FLAGS(Flag):
+    Cross_or_A = 1
+    Triangle_or_Y = 2
+    Circle_or_B = 4
+    Square_or_X = 8
+    DPad_Left = 16
+    DPad_Right = 32
+    DPad_Up = 64
+    DPad_Down = 128
+    Options_or_Menu = 256
+    L1_LB = 512
+    R1_RB = 1024
+    L2_LT = 2048
+    R2_RT = 4096
+    Left_Stick_Click = 8192
+    Right_Stick_Click = 16384
+    Special = 32768
+
 
 ### * Data Structure
 
@@ -706,6 +724,9 @@ class Flashback(DataTypes.STRUCTURE):
     ]
 
 class Buttons(DataTypes.STRUCTURE):
+    _enums_: dict[type, tuple[str, ...]] = {
+        BUTTON_FLAGS: ("m_buttonStatus",),
+    }
     _fields_ = [
         ("m_buttonStatus",  DataTypes.UNSIGNED_INT32),    # Bit flags specifying which buttons are being pressed currently - see appendices
     ]

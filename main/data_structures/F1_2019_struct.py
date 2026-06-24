@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, IntEnum, StrEnum
+from enum import Enum, Flag, IntEnum, StrEnum
 
 
 class DataTypes:
@@ -314,6 +314,23 @@ class SURFACE_TYPE(IntEnum):
     Metal = 10
     Ridged = 11
 
+class BUTTON_FLAGS(Flag):
+    Cross_or_A = 1
+    Triangle_or_Y = 2
+    Circle_or_B = 4
+    Square_or_X = 8
+    DPad_Left = 16
+    DPad_Right = 32
+    DPad_Up = 64
+    DPad_Down = 128
+    Options_or_Menu = 256
+    L1_LB = 512
+    R1_RB = 1024
+    L2_LT = 2048
+    R2_RT = 4096
+    Left_Stick_Click = 8192
+    Right_Stick_Click = 16384
+
 
 ### * Data Structure
 
@@ -589,6 +606,9 @@ class CarTelemetryData(DataTypes.STRUCTURE):
 
 class PacketCarTelemetryData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small
+    _enums_: dict[type, tuple[str, ...]] = {
+        BUTTON_FLAGS: ("m_buttonStatus",),
+    }
     _fields_ = [
         ("m_header",                        PacketHeader),                      # Header
         ("m_carTelemetryData",              CarTelemetryData * 20),

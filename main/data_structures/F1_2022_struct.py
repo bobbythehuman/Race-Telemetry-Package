@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, IntEnum, StrEnum
+from enum import Enum, Flag, IntEnum, StrEnum
 
 
 class DataTypes:
@@ -543,6 +543,36 @@ class RULESET(IntEnum):
     Avererage_Speed_Zone = 10
     Rival_Duel = 11
 
+class BUTTON_FLAGS(Flag):
+    Cross_or_A = 1
+    Triangle_or_Y = 2
+    Circle_or_B = 4
+    Square_or_X = 8
+    DPad_Left = 16
+    DPad_Right = 32
+    DPad_Up = 64
+    DPad_Down = 128
+    Options_or_Menu = 256
+    L1_LB = 512
+    R1_RB = 1024
+    L2_LT = 2048
+    R2_RT = 4096
+    Left_Stick_Click = 8192
+    Right_Stick_Click = 16384
+    Special = 32768
+    UDP_Action_1 = 65536
+    UDP_Action_2 = 131072
+    UDP_Action_3 = 262144
+    UDP_Action_4 = 524288
+    UDP_Action_5 = 1048576
+    UDP_Action_6 = 2097152
+    UDP_Action_7 = 4194304
+    UDP_Action_8 = 8388608
+    UDP_Action_9 = 16777216
+    UDP_Action_10 = 33554432
+    UDP_Action_11 = 67108864
+    UDP_Action_12 = 134217728
+
 
 ### * Data Structure
 
@@ -804,6 +834,9 @@ class Flashback(DataTypes.STRUCTURE):
     ]
 
 class Buttons(DataTypes.STRUCTURE):
+    _enums_: dict[type, tuple[str, ...]] = {
+        BUTTON_FLAGS: ("m_buttonStatus",),
+    }
     _fields_ = [
         ("m_buttonStatus",  DataTypes.UNSIGNED_INT32),	# Bit flags specifying which buttons are being pressed currently - see appendices
     ]
