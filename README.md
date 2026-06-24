@@ -1,7 +1,7 @@
 # Race-Telemetry-Package
 
 A single telemetry package that can extract UDP and shared memory data from multiple racing games including: <br>
-F1 2017 to F1 2025, BeamNG Drive, Project Cars 2, Forza Horizon, Forza Motorsport, Gran Turismo, and more.
+Assetto Corsa, BeamNG Drive, F1 2016 to F1 2026, Forza Horizon, Forza Motorsport, Gran Turismo, Project Cars 2, and more.
 
 ## Features
 
