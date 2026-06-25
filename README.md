@@ -1,6 +1,6 @@
 # Race-Telemetry-Package
 
-A single telemetry package that can extract UDP and shared memory data from multiple racing games including: <br>
+A single telemetry package that can extract UDP and shared memory data from multiple racing games including: `<br>`
 Assetto Corsa, BeamNG Drive, F1 2016 to F1 2026, Forza Horizon, Forza Motorsport, Gran Turismo, Project Cars 2, and more.
 
 ## Features
@@ -53,7 +53,7 @@ Located in [`server.py`](main/support/server.py), the `telemetryManager.StartTel
 
 ### Single-Threaded Setup
 
-For basic telemetry extraction without threading: <br>
+For basic telemetry extraction without threading: `<br>`
 See [`test_programs`](main/test_programs) for more single thread examples.
 
 ```python
@@ -74,7 +74,7 @@ for packet, packetID, headerPacket in telemetry.GetTelemetry():
     # Check packetID, if available
     if packetID == 6:
         pass # Process data here
-    
+  
     # Check packet name
     packetName = packet.__name__
     if packetName == 'PacketCarTelemetryData'
@@ -83,7 +83,7 @@ for packet, packetID, headerPacket in telemetry.GetTelemetry():
 
 ### Multi-Threaded Setup
 
-For real-time telemetry processing with multiple threads: <br>
+For real-time telemetry processing with multiple threads: `<br>`
 See [`test_programs`](main/test_programs) for more multi thread examples.
 
 ```python
@@ -94,7 +94,7 @@ from support.server import telemetryManager
 def my_worker_thread(worker_id: int, ro_storage, stop_event):
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
-      
+    
         # Access telemetry data
         data = snapshot.get("lastestData")
         if data:
@@ -118,18 +118,20 @@ activeThreads.StartTelemetry()
 
 ## Config Options
 
-| Syntax				| Syntax									| Parameters																												| Description																																|
-| --------------------- | ----------------------------- 			| -----------------------------																									 | ---------------|
-| telemetryManager()	| `manager = telemetryManager()`				| None																															| Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.			|
-| updateMeta			| `manager.updateMeta(MetaData)`				| `MetaData` (class): see [Adding and Using a New Packet Structure](#adding-and-using-a-new-packet-structure) for details1"`	| Apply game-specific metadata to configure packet structures, ports, and data handling. **Must be called before starting telemetry.**	|
-| updateLocalIP			| `manager.updateLocalIP(ip_address)`			| `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`																			| Set the local IP address that the telemetry server listens on for incoming packets.													|
-| updateSendIP			| `manager.updateSendIP(ip_address)`			| `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`																			| The IP data is sent to for heart beat and handshake																					|
-| addWorkerThread		| `manager.addWorkerThread(worker_function)`	| `mainFunc` (callable): A function with the signature: `def worker_function(worker_id: int, ro_storage, stop_event):`			| Add worker threads to the program																										|
-| manualStop			| `manager.manualStop(should_stop)`			| `target` (bool): `True` to stop, `False` to resume 																			| Manually trigger a stop signal from outside the main thread or telemetryloop.															|
-| isSharedMemory		| `manager.isSharedMemory(use_shared_memory)`	| `target` (bool): `True` to use shared memory, `False` to use UDP																| Toggle between UDP and shared memory as the telemetry data source. Shared memory is faster but only available on the local machine.	|
-| setEnumMode			| `manager.setEnumMode(mode)`					| `target` (int): Enum handling mode: `0` (default): Return full enum members with both name and value, `1`: Return raw integer values, `2`: Return enum names as strings	| Configure how enum fields are handled in packet data. Affects what values are returned for fields with enum types.					|
-| StartTelemetry		| `manager.StartTelemetry()`					| None																															| Start the telemetry system with all configured settings. Creates and starts the network listener thread and all worker threads. **Blocks until a stop signal is received** (Ctrl+C or manual stop).|
-| GetTelemetry			| `for packet, packetID, headerPacket in manager.GetTelemetry():`	| None		|Retrieve telemetry packets one at a time in a generator pattern. Use this for **single-threaded** applications	|
+
+
+| Systax             | Parameters                                                                                                                                                                                                 | Description                                                                                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| telemetryManager() | None                                                                                                                                                                                                       | Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.                                                                             |
+| .updateMeta()      | `MetaData` (class): see [Adding and Using a New Packet Structure](#adding-and-using-a-new-packet-structure) for details                                                                                     | Apply game-specific metadata to configure packet structures, ports, and data handling.<br />**Must be called before starting telemetry.**                                                          |
+| .updateLocalIP()   | `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`                                                                                                                                                   | Set the local IP address that the telemetry server listens on for incoming packets.                                                                                                                      |
+| .updateSendIP()    | `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`                                                                                                                                                   | Set the destination IP address for sending heartbeats and handshake packets.                                                                                                                             |
+| .addWorkerThread() | `mainFunc` (callable): A function with the signature: <br />``def worker_function(worker_id: int, ro_storage, stop_event):``                                                                             | Register a worker thread function to process telemetry data concurrently. Worker threads receive read-only snapshots of the data, ensuring thread safety.                                                |
+| .manualStop()      | `target` (bool): `True` to stop                                                                                                                                                                       | Manually trigger a stop signal from outside the main thread or telemetryloop.                                                                                                                            |
+| .isSharedMemory()  | `target` (bool): <br />- `True` to use shared memory, <br />- `False` to use UDP                                                                                                                   | Toggle between UDP and shared memory as the telemetry data source. Shared memory is faster but only available on the local machine.                                                                      |
+| .setEnumMode()     | `target` (int): Enum handling mode: <br />- `0` (default): Return full enum members with both name and value, <br />- `1`: Return raw integer values, <br />- `2`: Return enum names as strings | Configure how enum fields are handled in packet data. Affects what values are returned for fields with enum types.                                                                                       |
+| .GetTelemetry()    | None                                                                                                                                                                                                       | Retrieve telemetry packets one at a time in a generator pattern. Use this for**single-threaded** applications                                                                                      |
+| .StartTelemetry()  | None                                                                                                                                                                                                       | Start the telemetry system with all configured settings. Creates and starts the network listener thread and all worker threads.**Blocks until a stop signal is received** (Ctrl+C or manual stop). |
 
 
 ## Adding and Using a New Packet Structure
@@ -183,7 +185,6 @@ class PacketMotionData(DataTypes.STRUCTURE):
         ("m_header",        PacketHeader),          # Header
         ("m_carMotionData", CarMotionData * 22),    # Data for all cars on track
     ]
-
 ```
 
 ### Step 2: Setup Enums (Optional)
@@ -247,18 +248,18 @@ activeThreads.StartTelemetry()
 
 In your main script, import the new metadata:
 
-| Syntax            | Type                              | Description                                                   |
-| ----------------- | --------------------------------- | ------------------------------------------------------------- |
-| port              | Integer                           | UDP port data is received on                                  |
-| heartBeatPort     | Integer                           | UDP port to send a heart beat to                              |
-| heartBeatFunc     | Function                          | Heart beat function                                           |
-| handShakePort     | Integer                           | UDP port to send a hand shake to                              |
-| handShakeFunc     | Tuple [Function, Function]        | Tuple containing start and stop hand shake functions          |
-| decrytionFunc     | Function                          | Data decryption function                                      |
-| headerInfo        | Type                              | The header struct class (if protocol uses header).            |
-| packetIDAttribute | String                            | An attribute in the header packet defining the packet ID      |
-| sharedMemoryName  | String | dict[String, String]     | Name of the shared memory segment used for data exchange      |
-| packetInfo        | Dict [Int, List [Type] ]          | Game packet mapping - See more below                          |
+| Syntax            | Type                       | Description                                              |
+| ----------------- | -------------------------- | -------------------------------------------------------- |
+| port              | Integer                    | UDP port data is received on                             |
+| heartBeatPort     | Integer                    | UDP port to send a heart beat to                         |
+| heartBeatFunc     | Function                   | Heart beat function                                      |
+| handShakePort     | Integer                    | UDP port to send a hand shake to                         |
+| handShakeFunc     | Tuple [Function, Function] | Tuple containing start and stop hand shake functions     |
+| decrytionFunc     | Function                   | Data decryption function                                 |
+| headerInfo        | Type                       | The header struct class (if protocol uses header).       |
+| packetIDAttribute | String                     | An attribute in the header packet defining the packet ID |
+| sharedMemoryName  | String                     | dict[String, String]                                     |
+| packetInfo        | Dict [Int, List [Type] ]   | Game packet mapping - See more below                     |
 
 #### PacketInfo
 
@@ -319,7 +320,7 @@ class MetaData:
     # use if there is a header packet
     headerInfo: type | None = PacketHeader  # Header type
     packetIDAttribute: str = "m_packetId"  # Attribute name for packet ID
-    
+  
     # use for shared memory
     sharedMemoryName: str | None | dict[str, str] = "Local\\SCSTelemetry" # Names of the shared memory segment
 
@@ -363,32 +364,34 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 ## Supported Games
 
 ### UDP
-- Assetto Corsa                 <!-- official link / official document -->
-- BeamNG Drive                  <!-- official link -->
-- F1 2016 (untested)            <!-- official link -->
-- F1 2017                       <!-- official link -->
-- F1 2018                       <!-- official link -->
-- F1 2019                       <!-- official link -->
-- F1 2020                       <!-- official link -->
-- F1 2021                       <!-- official link / dead document-->
-- F1 2022                       <!-- official link / official document -->
-- F1 2023                       <!-- official link / official document -->
-- F1 2024                       <!-- official link / official document -->
-- F1 2025 (untested)            <!-- official link / official document -->
-- F1 2026 (2025 dlc)(untested)  <!-- official link / official document -->
-- Forza Horizon 4               <!-- github link -->
-- Forza Horizon 5               <!-- pastebin link -->
-- Forza Horizon 6               <!-- official link -->
-- Forza Motorsport 7 (untested) <!-- official link -->
-- Forza Motorsport 8            <!-- official link -->
-- Gran Turismo 7                <!-- github link -->
-- Project Cars 2                <!-- github link -->
+
+- Assetto Corsa                 `<!-- official link / official document -->`
+- BeamNG Drive                  `<!-- official link -->`
+- F1 2016 (untested)            `<!-- official link -->`
+- F1 2017                       `<!-- official link -->`
+- F1 2018                       `<!-- official link -->`
+- F1 2019                       `<!-- official link -->`
+- F1 2020                       `<!-- official link -->`
+- F1 2021                       `<!-- official link / dead document-->`
+- F1 2022                       `<!-- official link / official document -->`
+- F1 2023                       `<!-- official link / official document -->`
+- F1 2024                       `<!-- official link / official document -->`
+- F1 2025 (untested)            `<!-- official link / official document -->`
+- F1 2026 (2025 dlc) (untested) `<!-- official link / official document -->`
+- Forza Horizon 4               `<!-- github link -->`
+- Forza Horizon 5               `<!-- pastebin link -->`
+- Forza Horizon 6               `<!-- official link -->`
+- Forza Motorsport 7 (untested) `<!-- official link -->`
+- Forza Motorsport 8            `<!-- official link -->`
+- Gran Turismo 7                `<!-- github link -->`
+- Project Cars 2 			   `<!-- github link -->`
 
 ### Shared Memory
-- Assetto Corsa                         <!-- official link / official document -->
-- Assetto Corsa Competizione (untested) <!-- official link / official document -->
-- Assetto Corsa Evo (untested)          <!-- official link / official document -->
-- Euro Truck Simulator 2                <!-- github link -->
+
+- Assetto Corsa				              `<!-- official link / official document -->`
+- Assetto Corsa Competizione (untested) `<!-- official link / official document -->`
+- Assetto Corsa Evo (untested)          `<!-- official link / official document -->`
+- Euro Truck Simulator 2 				     `<!-- github link -->`
 
 ## Troubleshooting
 
@@ -399,9 +402,9 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - Ensure firewall allows UDP traffic on the configured port
 
 ## Game Specific Notes
+
 - For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](./Supporting%20Docs/forza%20debug.txt) in supporting docs)
 - Euro Truck Simulator 2 requires a 'scs-sdk-plugin' to be installed in the plugins folder, see support docs for more details
-
 
 ## Support Documentation
 
@@ -446,7 +449,7 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - F1 2026 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
 - Forza Horizon 4 - Link to [richstokes GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat) - Forza-data-tools
 - Forza Horizon 5 - Link to [forza horizon 5 data out format](https://pastebin.com/GFbbzbg3) - pastebin
-- Forza Horizon 6 - Link to [Forza Horizon 6 "Data Out" Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)
+- Forza Horizon 6 - Link to [Forza Horizon 6 &#34;Data Out&#34; Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)
 - Forza Motorsport 7 - Link to [Forza Motorsport 7 ‘Data Out’ feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013)
 - Forza Motorsport 8 - Link to [Data Out feature in Forza Motorsport](https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333/2)
 - Gran Turismo 7 - Link to [MacManley Github](https://github.com/MacManley/gt7-udp) - gt7-udp
