@@ -1,6 +1,6 @@
 # Race-Telemetry-Package
 
-A single telemetry package that can extract UDP and shared memory data from multiple racing games including: `<br>`
+A single telemetry package that can extract UDP and shared memory data from multiple racing games including:
 Assetto Corsa, BeamNG Drive, F1 2016 to F1 2026, Forza Horizon, Forza Motorsport, Gran Turismo, Project Cars 2, and more.
 
 ## Features
@@ -94,7 +94,7 @@ from support.server import telemetryManager
 def my_worker_thread(worker_id: int, ro_storage, stop_event):
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
-    
+  
         # Access telemetry data
         data = snapshot.get("lastestData")
         if data:
@@ -118,8 +118,6 @@ activeThreads.StartTelemetry()
 
 ## Config Options
 
-
-
 | Systax             | Parameters                                                                                                                                                                                                 | Description                                                                                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | telemetryManager() | None                                                                                                                                                                                                       | Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.                                                                             |
@@ -132,7 +130,6 @@ activeThreads.StartTelemetry()
 | .setEnumMode()     | `target` (int): Enum handling mode: <br />- `0` (default): Return full enum members with both name and value, <br />- `1`: Return raw integer values, <br />- `2`: Return enum names as strings | Configure how enum fields are handled in packet data. Affects what values are returned for fields with enum types.                                                                                       |
 | .GetTelemetry()    | None                                                                                                                                                                                                       | Retrieve telemetry packets one at a time in a generator pattern. Use this for**single-threaded** applications                                                                                      |
 | .StartTelemetry()  | None                                                                                                                                                                                                       | Start the telemetry system with all configured settings. Creates and starts the network listener thread and all worker threads.**Blocks until a stop signal is received** (Ctrl+C or manual stop). |
-
 
 ## Adding and Using a New Packet Structure
 
@@ -384,7 +381,8 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - Forza Motorsport 7 (untested) `<!-- official link -->`
 - Forza Motorsport 8            `<!-- official link -->`
 - Gran Turismo 7                `<!-- github link -->`
-- Project Cars 2 			   `<!-- github link -->`
+- Project Cars                  `<!-- official link -->`
+- Project Cars 2 			    `<!-- github link -->`
 
 ### Shared Memory
 
@@ -453,9 +451,19 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - Forza Motorsport 7 - Link to [Forza Motorsport 7 ‘Data Out’ feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013)
 - Forza Motorsport 8 - Link to [Data Out feature in Forza Motorsport](https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333/2)
 - Gran Turismo 7 - Link to [MacManley Github](https://github.com/MacManley/gt7-udp) - gt7-udp
-- Project cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) - Project Cars 2 UDP
+- Project Cars UDP - Link to [Companion App - UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming)
+- Project Cars SM - Link to [Shared Memory (API) App](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)
+- Project Cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) - Project Cars 2 UDP
 
 ### Other Links
 
-- Project cars - Link to [Companion App - UDP Streaming](https://web.archive.org/web/20160826185519/http://forum.projectcarsgame.com/showthread.php?40113-HowTo-Companion-App-UDP-Streaming&s=0147744ec824a4eb44be2e778d278c49)
-- Project cars - Link to [Shared Memory (API) App](https://web.archive.org/web/20180111115813/http://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&highlight=shared+memory+api)
+- EA Sports WRC 2023 - Link to [How to use User Datagram Protocol (UDP) on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068)
+- Dirt Rally - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
+- Dirt 4 - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
+- Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
+- Project cars 3 - might be the same as project cars 2
+- Le Mans Ultimate - Link to [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)
+- Race Room - Link to [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)
+- IRacing - Link to [kutu GitHub](https://github.com/kutu/pyirsdk) - pyirsdk
+- Richard Burns Rally - Link to [groybe GitHub](https://github.com/groybe/rbr-udp-telem) - rbr-udp-telem
+- kartkraft - Link to [motorsportgames GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs) - kartkraft-telemetry
