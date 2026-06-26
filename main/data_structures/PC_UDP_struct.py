@@ -6,8 +6,6 @@ udp
 https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=293667394#gid=293667394
 https://web.archive.org/web/20160826185519/http://forum.projectcarsgame.com/showthread.php?40113-HowTo-Companion-App-UDP-Streaming&s=0147744ec824a4eb44be2e778d278c49
 https://web.archive.org/web/20180111115541/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming
-
-https://web.archive.org/web/20180111115813/http://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&highlight=shared+memory+api
 '''
 
 class DataTypes:
@@ -396,7 +394,7 @@ class MetaData:
     packetIDAttribute: str | None = None
     
     # use for shared memory
-    allSharedMemoryNames: str | None | dict[str, str] = "$pcars$"
+    allSharedMemoryNames: str | None | dict[str, str] = None
     
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {

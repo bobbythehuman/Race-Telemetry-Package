@@ -362,34 +362,35 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ### UDP
 
-- Assetto Corsa                 `<!-- official link / official document -->`
-- BeamNG Drive                  `<!-- official link -->`
-- F1 2016 (untested)            `<!-- official link -->`
-- F1 2017                       `<!-- official link -->`
-- F1 2018                       `<!-- official link -->`
-- F1 2019                       `<!-- official link -->`
-- F1 2020                       `<!-- official link -->`
-- F1 2021                       `<!-- official link / dead document-->`
-- F1 2022                       `<!-- official link / official document -->`
-- F1 2023                       `<!-- official link / official document -->`
-- F1 2024                       `<!-- official link / official document -->`
-- F1 2025 (untested)            `<!-- official link / official document -->`
-- F1 2026 (2025 dlc) (untested) `<!-- official link / official document -->`
-- Forza Horizon 4               `<!-- github link -->`
-- Forza Horizon 5               `<!-- pastebin link -->`
-- Forza Horizon 6               `<!-- official link -->`
-- Forza Motorsport 7 (untested) `<!-- official link -->`
-- Forza Motorsport 8            `<!-- official link -->`
-- Gran Turismo 7                `<!-- github link -->`
-- Project Cars                  `<!-- official link -->`
-- Project Cars 2 			    `<!-- github link -->`
+- Assetto Corsa                 <!-- official link / official document -->
+- BeamNG Drive                  <!-- official link -->
+- F1 2016 (untested)            <!-- official link -->
+- F1 2017                       <!-- official link -->
+- F1 2018                       <!-- official link -->
+- F1 2019                       <!-- official link -->
+- F1 2020                       <!-- official link -->
+- F1 2021                       <!-- official link / dead document-->
+- F1 2022                       <!-- official link / official document -->
+- F1 2023                       <!-- official link / official document -->
+- F1 2024                       <!-- official link / official document -->
+- F1 2025 (untested)            <!-- official link / official document -->
+- F1 2026 (2025 dlc) (untested) <!-- official link / official document -->
+- Forza Horizon 4               <!-- github link -->
+- Forza Horizon 5               <!-- pastebin link -->
+- Forza Horizon 6               <!-- official link -->
+- Forza Motorsport 7 (untested) <!-- official link -->
+- Forza Motorsport 8            <!-- official link -->
+- Gran Turismo 7                <!-- github link -->
+- Project Cars                  <!-- official link -->
+- Project Cars 2 			    <!-- github link -->
 
 ### Shared Memory
 
-- Assetto Corsa				              `<!-- official link / official document -->`
-- Assetto Corsa Competizione (untested) `<!-- official link / official document -->`
-- Assetto Corsa Evo (untested)          `<!-- official link / official document -->`
-- Euro Truck Simulator 2 				     `<!-- github link -->`
+- Assetto Corsa                             <!-- official link / official document -->
+- Assetto Corsa Competizione (untested)     <!-- official link / official document -->
+- Assetto Corsa Evo (untested)              <!-- official link / official document -->
+- Euro Truck Simulator 2 				    <!-- github link -->
+- Project Cars                              <!-- official link -->
 
 ## Troubleshooting
 
@@ -427,7 +428,7 @@ Debugging guides available in the `Supporting Docs/` folder:
 Documentation and links to packet structures in the [`Supporting Docs/`](./Supporting%20Docs/) folder:
 
 - Assetto Corsa UDP - Link to [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
-- Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/)
+- Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/) (Download PDF)
 - Assetto Corsa SM - Link to [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/)
 - Assetto Corsa Competizione - Link to [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)
 - Assetto Corsa EVO - Link to [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)

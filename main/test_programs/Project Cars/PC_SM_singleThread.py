@@ -18,7 +18,7 @@ for packet, packetID, headerPacket in telemetry.GetTelemetry():
     packetName = packet.__name__
 
     if packetID == 0:
-        speedPacket = packet.sSpeed
+        speedPacket = packet.mSpeed
         speedValue = round(speedPacket * 3.6, 2)
 
         print(f"{speedValue} KPH")
