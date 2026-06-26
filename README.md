@@ -362,35 +362,35 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ### UDP
 
-- Assetto Corsa                 <!-- official link / official document -->
-- BeamNG Drive                  <!-- official link -->
-- F1 2016 (untested)            <!-- official link -->
-- F1 2017                       <!-- official link -->
-- F1 2018                       <!-- official link -->
-- F1 2019                       <!-- official link -->
-- F1 2020                       <!-- official link -->
-- F1 2021                       <!-- official link / dead document-->
-- F1 2022                       <!-- official link / official document -->
-- F1 2023                       <!-- official link / official document -->
-- F1 2024                       <!-- official link / official document -->
-- F1 2025 (untested)            <!-- official link / official document -->
-- F1 2026 (2025 dlc) (untested) <!-- official link / official document -->
-- Forza Horizon 4               <!-- github link -->
-- Forza Horizon 5               <!-- pastebin link -->
-- Forza Horizon 6               <!-- official link -->
-- Forza Motorsport 7 (untested) <!-- official link -->
-- Forza Motorsport 8            <!-- official link -->
-- Gran Turismo 7                <!-- github link -->
-- Project Cars                  <!-- official link -->
-- Project Cars 2 			    <!-- github link -->
+- Assetto Corsa						<!-- official link / official document -->
+- BeamNG Drive						<!-- official link -->
+- F1 2016 (untested)				<!-- official link -->
+- F1 2017							<!-- official link -->
+- F1 2018							<!-- official link -->
+- F1 2019							<!-- official link -->
+- F1 2020							<!-- official link -->
+- F1 2021							<!-- official link / dead document-->
+- F1 2022							<!-- official link / official document -->
+- F1 2023							<!-- official link / official document -->
+- F1 2024							<!-- official link / official document -->
+- F1 2025 (untested)				<!-- official link / official document -->
+- F1 2026 (2025 dlc) (untested)		<!-- official link / official document -->
+- Forza Horizon 4					<!-- github link -->
+- Forza Horizon 5					<!-- pastebin link -->
+- Forza Horizon 6					<!-- official link -->
+- Forza Motorsport 7 (untested)		<!-- official link -->
+- Forza Motorsport 8				<!-- official link -->
+- Gran Turismo 7					<!-- github link -->
+- Project Cars						<!-- official link -->
+- Project Cars 2					<!-- github link -->
 
 ### Shared Memory
 
-- Assetto Corsa                             <!-- official link / official document -->
-- Assetto Corsa Competizione (untested)     <!-- official link / official document -->
-- Assetto Corsa Evo (untested)              <!-- official link / official document -->
-- Euro Truck Simulator 2 				    <!-- github link -->
-- Project Cars                              <!-- official link -->
+- Assetto Corsa								<!-- official link / official document -->
+- Assetto Corsa Competizione (untested)		<!-- official link / official document -->
+- Assetto Corsa Evo (untested)				<!-- official link / official document -->
+- Euro Truck Simulator 2					<!-- github link -->
+- Project Cars (untested)					<!-- official link -->
 
 ## Troubleshooting
 
@@ -419,7 +419,7 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 - [Data Output from F1 25 v3.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf) - Packet structures and data output for F1 2025 version 3 (official release)
 - [Data Output from F1 25 2026 Season Pack.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf) - Packet structures and data output for F1 2026 (official release)
 
-Debugging guides available in the `Supporting Docs/` folder:
+Debugging guides available in the [`Supporting Docs/`](./Supporting%20Docs/) folder:
 
 - [forza debug.txt](./Supporting%20Docs/forza%20debug.txt) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
 
