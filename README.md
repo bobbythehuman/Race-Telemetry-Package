@@ -364,6 +364,8 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 - Assetto Corsa						<!-- official link / official document -->
 - BeamNG Drive						<!-- official link -->
+- Dirt 4 (untested)					<!-- official link -->
+- Dirt Rally (untested)				<!-- official link -->
 - F1 2016 (untested)				<!-- official link -->
 - F1 2017							<!-- official link -->
 - F1 2018							<!-- official link -->
@@ -433,6 +435,9 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - Assetto Corsa Competizione - Link to [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)
 - Assetto Corsa EVO - Link to [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)
 - Beamng.drive - Link to [Protocols](https://documentation.beamng.com/modding/protocols/) (official release)
+- Dirt 4 - Link to [Configuring UDP Output](https://www.scribd.com/document/350826037/UDP-output-setup)
+- Dirt 4 - Link to [Setting up UDP output](https://web.archive.org/web/20181117092858/http://forums.codemasters.com/discussion/52950/setting-up-udp-output-for-dirt-4)
+- Dirt Rally - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
 - ETS2 - Link to [truckermudgen github](https://github.com/truckermudgeon/scs-sdk-plugin) for scs-sdk-plugin, including instructions for installation
 - F1 2016 - Web Archive link to [F1 2016 D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information)
 - F1 2017 - Web Archive link to [F1 2017 D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/)
@@ -459,9 +464,8 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 ### Other Links
 
 - EA Sports WRC 2023 - Link to [How to use User Datagram Protocol (UDP) on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068)
-- Dirt Rally - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
 - Dirt 4 - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
-- Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
+<!-- - Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0) -->
 - Project cars 3 - might be the same as project cars 2
 - Le Mans Ultimate - Link to [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)
 - Race Room - Link to [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)
