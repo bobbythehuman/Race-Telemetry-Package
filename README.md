@@ -451,15 +451,15 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - F1 2024 - Link to [F1 24 UDP Specification](https://forums.ea.com/discussions/f1-24-general-discussion-en/f1-24-udp-specification/8369125)
 - F1 2025 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
 - F1 2026 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
-- Forza Horizon 4 - Link to [richstokes GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat) - Forza-data-tools
-- Forza Horizon 5 - Link to [forza horizon 5 data out format](https://pastebin.com/GFbbzbg3) - pastebin
+- Forza Horizon 4 - Link to [richstokes GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat) Forza-data-tools
+- Forza Horizon 5 - Link to [forza horizon 5 data out format](https://pastebin.com/GFbbzbg3) pastebin
 - Forza Horizon 6 - Link to [Forza Horizon 6 &#34;Data Out&#34; Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)
 - Forza Motorsport 7 - Link to [Forza Motorsport 7 ‘Data Out’ feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013)
 - Forza Motorsport 8 - Link to [Data Out feature in Forza Motorsport](https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333/2)
-- Gran Turismo 7 - Link to [MacManley Github](https://github.com/MacManley/gt7-udp) - gt7-udp
+- Gran Turismo 7 - Link to [MacManley Github](https://github.com/MacManley/gt7-udp) gt7-udp
 - Project Cars UDP - Link to [Companion App - UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming)
 - Project Cars SM - Link to [Shared Memory (API) App](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)
-- Project Cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) - Project Cars 2 UDP
+- Project Cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) Project Cars 2 UDP
 
 ### Other Links
 
@@ -469,6 +469,6 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 - Project cars 3 - might be the same as project cars 2
 - Le Mans Ultimate - Link to [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)
 - Race Room - Link to [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)
-- IRacing - Link to [kutu GitHub](https://github.com/kutu/pyirsdk) - pyirsdk
-- Richard Burns Rally - Link to [groybe GitHub](https://github.com/groybe/rbr-udp-telem) - rbr-udp-telem
-- kartkraft - Link to [motorsportgames GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs) - kartkraft-telemetry
+- IRacing - Link to [kutu GitHub](https://github.com/kutu/pyirsdk) pyirsdk - Currently unsupported due to dynamic packet structure
+- Richard Burns Rally - Link to [groybe GitHub](https://github.com/groybe/rbr-udp-telem) rbr-udp-telem
+- kartkraft - Link to [motorsportgames GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs) kartkraft-telemetry
