@@ -1,5 +1,8 @@
 **/__pycache__/*
 .vscode/*
+dist/*
+**/RaceTelemetry_bobbythehuman.egg-info/*
+.pypirc
 
 Packaged_Program/*
 
