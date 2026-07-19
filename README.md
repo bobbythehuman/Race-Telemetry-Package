@@ -403,30 +403,30 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ## Game Specific Notes
 
-- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](<./Supporting%20Docs/forza%20debug.txt>) in supporting docs)
+- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](<./Supporting_Docs/forza%20debug.txt>) in supporting docs)
 - Euro Truck Simulator 2 requires a 'scs-sdk-plugin' to be installed in the plugins folder, see support docs for more details
 
 ## Support Documentation
 
 ### Documents
 
-- [ACSharedMemoryDocumentation.pdf](<./Supporting%20Docs/ACSharedMemoryDocumentation.pdf>) - Assetto Corsa shared memory documentation(official release)
-- [ACRemoteTelemetryDocumentation.pdf](<./Supporting%20Docs/ACRemoteTelemetryDocumentation.pdf>) - Assetto Corsa (UDP) remote telemetry documentation(official release)
-- [ACCSharedMemoryDocumentationV1.8.12.pdf](<./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf>) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
-- [ACE_SharedFileOut_Documentation_V1.pdf](<./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf>) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
-- [Data Output from F1 22 v16.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2022%20v16.docx>) - Packet structures and data output for F1 2022 version 16 (official release)
-- [Data Output from F1 23 v29x3.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2023%20v29x3.docx>) - Packet structures and data output for F1 2023 version 29x3 (official release)
-- [Data Output from F1 24 v27.2x.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx>) - Packet structures and data output for F1 2024 version 27.2x (official release)
-- [Data Output from F1 25 v3.pdf](<./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf>) - Packet structures and data output for F1 2025 version 3 (official release)
-- [Data Output from F1 25 2026 Season Pack.pdf](<./Supporting%20Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf>) - Packet structures and data output for F1 2026 (official release)
+- [ACSharedMemoryDocumentation.pdf](./Supporting_Docs/ACSharedMemoryDocumentation.pdf) - Assetto Corsa shared memory documentation(official release)
+- [ACRemoteTelemetryDocumentation.pdf](./Supporting_Docs/ACRemoteTelemetryDocumentation.pdf) - Assetto Corsa (UDP) remote telemetry documentation(official release)
+- [ACCSharedMemoryDocumentationV1.8.12.pdf](./Supporting_Docs/ACCSharedMemoryDocumentationV1.8.12.pdf) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
+- [ACE_SharedFileOut_Documentation_V1.pdf](./Supporting_Docs/ACE_SharedFileOut_Documentation_v1.pdf) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
+- [Data Output from F1 22 v16.docx](<./Supporting_Docs/Data%20Output%20from%20F1%2022%20v16.docx>) - Packet structures and data output for F1 2022 version 16 (official release)
+- [Data Output from F1 23 v29x3.docx](<./Supporting_Docs/Data%20Output%20from%20F1%2023%20v29x3.docx>) - Packet structures and data output for F1 2023 version 29x3 (official release)
+- [Data Output from F1 24 v27.2x.docx](<./Supporting_Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx>) - Packet structures and data output for F1 2024 version 27.2x (official release)
+- [Data Output from F1 25 v3.pdf](<./Supporting_Docs/Data%20Output%20from%20F1%2025%20v3.pdf>) - Packet structures and data output for F1 2025 version 3 (official release)
+- [Data Output from F1 25 2026 Season Pack.pdf](<./Supporting_Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf>) - Packet structures and data output for F1 2026 (official release)
 
-Debugging guides available in the [`Supporting Docs/`](<./Supporting%20Docs/>) folder:
+Debugging guides available in the [`Supporting Docs/`](./Supporting_Docs/) folder:
 
-- [forza debug.txt](<./Supporting%20Docs/forza%20debug.txt>) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
+- [forza debug.txt](<./Supporting_Docs/forza%20debug.txt>) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
 
 ### Links
 
-Documentation and links to packet structures in the [`Supporting Docs/`](<./Supporting%20Docs/>) folder:
+Documentation and links to packet structures in the [`Supporting Docs/`](./Supporting_Docs/) folder:
 
 - Assetto Corsa UDP - Link to [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
 - Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/) (Download PDF)
@@ -464,9 +464,7 @@ Documentation and links to packet structures in the [`Supporting Docs/`](<./Supp
 
 - EA Sports WRC 2023 - Link to [How to use User Datagram Protocol (UDP) on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068)
 - Dirt 4 - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
-
-<!-- - Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0) -->
-
+- Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=293667394#gid=293667394)
 - Project cars 3 - might be the same as project cars 2
 - Le Mans Ultimate - Link to [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)
 - Race Room - Link to [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)

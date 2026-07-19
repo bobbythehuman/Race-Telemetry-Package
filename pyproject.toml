@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "RaceTelemetry_bobbythehuman" # this is the PyPI name (can differ from import name)
-version = "v4.3.6-2"    # [major server] . [minor server] . [data structure version] - [package version]
+version = "v4.3.6-3"    # [major server] . [minor server] . [data structure version] - [package version]
 authors = [{ name = "bobbythehuman" }]
 description = "A telemetry package that can extract UDP and Shared Memory data from most racing games."
 readme = "README_PyPI.md"

@@ -9,5 +9,9 @@ if hosting from microsoft store/ xbox pc:
 
     FM8 - '-n=Microsoft.ForzaMotorsport_8wekyb3d8bbwe'
     FM7 - '-n=microsoft.apollobasegame_8wekyb3d8bbwe'
+
+    so for FH5:
+    `CheckNetIsolation.exe LoopbackExempt -a -n=microsoft.624F8B84B80_8wekyb3d8bbwe`
+
     check wireshark:
         loop back traffic capture
