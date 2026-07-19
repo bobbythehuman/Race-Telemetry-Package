@@ -27,7 +27,7 @@ Data is stored in `CentralStorage` with thread-safe locking mechanisms. Worker t
 
 The single-threaded mode provides a simple, blocking function that listens for UDP packets and returns decoded telemetry data. This is suitable for applications that don't require concurrent processing or real-time worker threads.
 
-Located in [`server.py`](main/support/server.py), the `telemetryManager.GetTelemetry()` function:
+Located in [`main.py`](src/RaceTelemetry/main.py), the `telemetryManager.GetTelemetry()` function:
 
 - Blocks until a packet is received
 - No threading overhead, simpler for basic usage
@@ -36,7 +36,7 @@ Located in [`server.py`](main/support/server.py), the `telemetryManager.GetTelem
 
 The multi-threaded mode runs a full telemetry server with separate threads for network listening and data processing. This allows for real-time data processing while continuously receiving new packets.
 
-Located in [`server.py`](main/support/server.py), the `telemetryManager.StartTelemetry()` class:
+Located in [`main.py`](src/RaceTelemetry/main.py), the `telemetryManager.StartTelemetry()` class:
 
 - Starts a network listener thread that continuously receives UDP data
 - Provides a thread-safe central storage system (`CentralStorage`) for data
@@ -53,12 +53,12 @@ Located in [`server.py`](main/support/server.py), the `telemetryManager.StartTel
 
 ### Single-Threaded Setup
 
-For basic telemetry extraction without threading: `<br>`
-See [`test_programs`](main/test_programs) for more single thread examples.
+For basic telemetry extraction without threading:
+See [`tests/Game_Specific`](tests/Game_Specific) for more single thread examples.
 
 ```python
-from data_structures.f1_2024_struct import MetaData
-from support.server import telemetryManager
+from RaceTelemetry import telemetryManager
+from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Initialize the class
 telemetry = telemetryManager()
@@ -83,12 +83,12 @@ for packet, packetID, headerPacket in telemetry.GetTelemetry():
 
 ### Multi-Threaded Setup
 
-For real-time telemetry processing with multiple threads: `<br>`
-See [`test_programs`](main/test_programs) for more multi thread examples.
+For real-time telemetry processing with multiple threads:
+See [`tests/Game_Specific`](tests/Game_Specific) for more multi thread examples.
 
 ```python
-from data_structures.f1_2024_struct import MetaData
-from support.server import telemetryManager
+from RaceTelemetry import telemetryManager
+from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Define a worker thread function
 def my_worker_thread(worker_id: int, ro_storage, stop_event):
@@ -121,7 +121,7 @@ activeThreads.StartTelemetry()
 | Systax             | Parameters                                                                                                                                                                                                 | Description                                                                                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | telemetryManager() | None                                                                                                                                                                                                       | Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.                                                                             |
-| .updateMeta()      | `MetaData` (class): see [Adding and Using a New Packet Structure](#adding-and-using-a-new-packet-structure) for details                                                                                     | Apply game-specific metadata to configure packet structures, ports, and data handling.<br />**Must be called before starting telemetry.**                                                          |
+| .updateMeta()      | `MetaData` (class): see [Adding and Using a New Packet Structure](#adding-and-using-a-new-packet-structure) for details                                                                                   | Apply game-specific metadata to configure packet structures, ports, and data handling.<br />**Must be called before starting telemetry.**                                                          |
 | .updateLocalIP()   | `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`                                                                                                                                                   | Set the local IP address that the telemetry server listens on for incoming packets.                                                                                                                      |
 | .updateSendIP()    | `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`                                                                                                                                                   | Set the destination IP address for sending heartbeats and handshake packets.                                                                                                                             |
 | .addWorkerThread() | `mainFunc` (callable): A function with the signature: <br />``def worker_function(worker_id: int, ro_storage, stop_event):``                                                                             | Register a worker thread function to process telemetry data concurrently. Worker threads receive read-only snapshots of the data, ensuring thread safety.                                                |
@@ -134,8 +134,6 @@ activeThreads.StartTelemetry()
 ## Adding and Using a New Packet Structure
 
 ### Step 1: Create the Packet Structure File
-
-Create a new file in `data_structures/` following the naming convention `{game}_struct.py`.
 
 Example structure:
 
@@ -333,8 +331,9 @@ class MetaData:
 In your main script, import the new metadata and use it with either mode:
 
 ```python
-from data_structures.your_game_struct import MetaData as YourGameMetaData
-from support.server import telemetryManager
+from RaceTelemetry import telemetryManager
+
+from your_game_struct import MetaData
 
 ## Setup for both modes
 activeThreads = telemetryManager()
@@ -362,37 +361,37 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ### UDP
 
-- Assetto Corsa						<!-- official link / official document -->
-- BeamNG Drive						<!-- official link -->
-- Dirt 4 (untested)					<!-- official link -->
-- Dirt Rally (untested)				<!-- official link -->
-- F1 2016 (untested)				<!-- official link -->
-- F1 2017							<!-- official link -->
-- F1 2018							<!-- official link -->
-- F1 2019							<!-- official link -->
-- F1 2020							<!-- official link -->
-- F1 2021							<!-- official link / dead document-->
-- F1 2022							<!-- official link / official document -->
-- F1 2023							<!-- official link / official document -->
-- F1 2024							<!-- official link / official document -->
-- F1 2025 (untested)				<!-- official link / official document -->
-- F1 2026 (2025 dlc) (untested)		<!-- official link / official document -->
-- Forza Horizon 4					<!-- github link -->
-- Forza Horizon 5					<!-- pastebin link -->
-- Forza Horizon 6					<!-- official link -->
-- Forza Motorsport 7 (untested)		<!-- official link -->
-- Forza Motorsport 8				<!-- official link -->
-- Gran Turismo 7					<!-- github link -->
-- Project Cars						<!-- official link -->
-- Project Cars 2					<!-- github link -->
+- Assetto Corsa
+- BeamNG Drive
+- Dirt 4 (untested)
+- Dirt Rally (untested)
+- F1 2016 (untested)
+- F1 2017
+- F1 2018
+- F1 2019
+- F1 2020
+- F1 2021
+- F1 2022
+- F1 2023
+- F1 2024
+- F1 2025 (untested)
+- F1 2026 (2025 dlc) (untested)
+- Forza Horizon 4
+- Forza Horizon 5
+- Forza Horizon 6
+- Forza Motorsport 7 (untested)
+- Forza Motorsport 8
+- Gran Turismo 7
+- Project Cars
+- Project Cars 2
 
 ### Shared Memory
 
-- Assetto Corsa								<!-- official link / official document -->
-- Assetto Corsa Competizione (untested)		<!-- official link / official document -->
-- Assetto Corsa Evo (untested)				<!-- official link / official document -->
-- Euro Truck Simulator 2					<!-- github link -->
-- Project Cars (untested)					<!-- official link -->
+- Assetto Corsa
+- Assetto Corsa Competizione (untested)
+- Assetto Corsa Evo (untested)
+- Euro Truck Simulator 2
+- Project Cars (untested)
 
 ## Troubleshooting
 
@@ -404,30 +403,30 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ## Game Specific Notes
 
-- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](./Supporting%20Docs/forza%20debug.txt) in supporting docs)
+- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](<./Supporting%20Docs/forza%20debug.txt>) in supporting docs)
 - Euro Truck Simulator 2 requires a 'scs-sdk-plugin' to be installed in the plugins folder, see support docs for more details
 
 ## Support Documentation
 
 ### Documents
 
-- [ACSharedMemoryDocumentation.pdf](./Supporting%20Docs/ACSharedMemoryDocumentation.pdf) - Assetto Corsa shared memory documentation(official release)
-- [ACRemoteTelemetryDocumentation.pdf](./Supporting%20Docs/ACRemoteTelemetryDocumentation.pdf) - Assetto Corsa (UDP) remote telemetry documentation(official release)
-- [ACCSharedMemoryDocumentationV1.8.12.pdf](./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
-- [ACE_SharedFileOut_Documentation_V1.pdf](./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
-- [Data Output from F1 22 v16.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2022%20v16.docx) - Packet structures and data output for F1 2022 version 16 (official release)
-- [Data Output from F1 23 v29x3.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2023%20v29x3.docx) - Packet structures and data output for F1 2023 version 29x3 (official release)
-- [Data Output from F1 24 v27.2x.docx](./Supporting%20Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx) - Packet structures and data output for F1 2024 version 27.2x (official release)
-- [Data Output from F1 25 v3.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf) - Packet structures and data output for F1 2025 version 3 (official release)
-- [Data Output from F1 25 2026 Season Pack.pdf](./Supporting%20Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf) - Packet structures and data output for F1 2026 (official release)
+- [ACSharedMemoryDocumentation.pdf](<./Supporting%20Docs/ACSharedMemoryDocumentation.pdf>) - Assetto Corsa shared memory documentation(official release)
+- [ACRemoteTelemetryDocumentation.pdf](<./Supporting%20Docs/ACRemoteTelemetryDocumentation.pdf>) - Assetto Corsa (UDP) remote telemetry documentation(official release)
+- [ACCSharedMemoryDocumentationV1.8.12.pdf](<./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf>) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
+- [ACE_SharedFileOut_Documentation_V1.pdf](<./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf>) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
+- [Data Output from F1 22 v16.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2022%20v16.docx>) - Packet structures and data output for F1 2022 version 16 (official release)
+- [Data Output from F1 23 v29x3.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2023%20v29x3.docx>) - Packet structures and data output for F1 2023 version 29x3 (official release)
+- [Data Output from F1 24 v27.2x.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx>) - Packet structures and data output for F1 2024 version 27.2x (official release)
+- [Data Output from F1 25 v3.pdf](<./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf>) - Packet structures and data output for F1 2025 version 3 (official release)
+- [Data Output from F1 25 2026 Season Pack.pdf](<./Supporting%20Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf>) - Packet structures and data output for F1 2026 (official release)
 
-Debugging guides available in the [`Supporting Docs/`](./Supporting%20Docs/) folder:
+Debugging guides available in the [`Supporting Docs/`](<./Supporting%20Docs/>) folder:
 
-- [forza debug.txt](./Supporting%20Docs/forza%20debug.txt) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
+- [forza debug.txt](<./Supporting%20Docs/forza%20debug.txt>) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
 
 ### Links
 
-Documentation and links to packet structures in the [`Supporting Docs/`](./Supporting%20Docs/) folder:
+Documentation and links to packet structures in the [`Supporting Docs/`](<./Supporting%20Docs/>) folder:
 
 - Assetto Corsa UDP - Link to [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
 - Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/) (Download PDF)
@@ -465,7 +464,9 @@ Documentation and links to packet structures in the [`Supporting Docs/`](./Suppo
 
 - EA Sports WRC 2023 - Link to [How to use User Datagram Protocol (UDP) on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068)
 - Dirt 4 - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
+
 <!-- - Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0) -->
+
 - Project cars 3 - might be the same as project cars 2
 - Le Mans Ultimate - Link to [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)
 - Race Room - Link to [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)

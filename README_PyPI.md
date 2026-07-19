@@ -1,4 +1,4 @@
-# Race-Telemetry-Package
+    # Race-Telemetry-Package
 
 A single telemetry package that can extract UDP and shared memory data from multiple racing games including:
 Assetto Corsa, BeamNG Drive, F1 2016 to F1 2026, Forza Horizon, Forza Motorsport, Gran Turismo, Project Cars 2, and more.
@@ -23,7 +23,7 @@ The multi-threaded system uses the following architecture:
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.9+
 - On the same local network as the gaming device (or loopback for same device)
 - For UDP telemetry: Game configured to send telemetry data to the correct IP and port
 - For shared memory telemetry: Game configured to write telemetry data to shared memory (if supported)
@@ -36,8 +36,8 @@ This is suitable for applications that don't require concurrent processing or re
 For basic telemetry extraction without threading:
 
 ```python
-from data_structures.f1_2024_struct import MetaData
-from support.server import telemetryManager
+from RaceTelemetry import telemetryManager
+from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Initialize the class
 telemetry = telemetryManager()
@@ -68,8 +68,8 @@ This allows for real-time data processing while continuously receiving new packe
 For real-time telemetry processing with multiple threads:
 
 ```python
-from data_structures.f1_2024_struct import MetaData
-from support.server import telemetryManager
+from RaceTelemetry import telemetryManager
+from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Define a worker thread function
 def my_worker_thread(worker_id: int, ro_storage, stop_event):
@@ -115,8 +115,6 @@ activeThreads.StartTelemetry()
 ## Adding and Using a New Packet Structure
 
 ### Step 1: Create the Packet Structure File
-
-Create a new file in `data_structures/` following the naming convention `{game}_struct.py`.
 
 Example structure:
 
@@ -314,8 +312,9 @@ class MetaData:
 In your main script, import the new metadata and use it with either mode:
 
 ```python
-from data_structures.your_game_struct import MetaData as YourGameMetaData
-from support.server import telemetryManager
+from RaceTelemetry import telemetryManager
+
+from your_game_struct import MetaData
 
 ## Setup for both modes
 activeThreads = telemetryManager()
@@ -385,73 +384,5 @@ The system automatically handles packet decoding based on the `packetInfo` dicti
 
 ## Game Specific Notes
 
-- For Microsoft Store versions of Forza games, ensure loopback is configured correctly (see [forza debug.txt](<./Supporting_Docs/forza debug.txt>) in supporting docs)
+- For Microsoft Store versions of Forza games, ensure loopback is configured correctly
 - Euro Truck Simulator 2 requires a 'scs-sdk-plugin' to be installed in the plugins folder, see support docs for more details
-
-## Support Documentation
-
-### Documents
-
-- [ACSharedMemoryDocumentation.pdf](<./Supporting%20Docs/ACSharedMemoryDocumentation.pdf>) - Assetto Corsa shared memory documentation(official release)
-- [ACRemoteTelemetryDocumentation.pdf](<./Supporting%20Docs/ACRemoteTelemetryDocumentation.pdf>) - Assetto Corsa (UDP) remote telemetry documentation(official release)
-- [ACCSharedMemoryDocumentationV1.8.12.pdf](<./Supporting%20Docs/ACCSharedMemoryDocumentationV1.8.12.pdf>) - Assetto Corsa Competizione shared memory documentation for version 1.8.12 (official release)
-- [ACE_SharedFileOut_Documentation_V1.pdf](<./Supporting%20Docs/ACE_SharedFileOut_Documentation_v1.pdf>) - Assetto Corsa Evo shared memory documentation for version 1 (official release)
-- [Data Output from F1 22 v16.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2022%20v16.docx>) - Packet structures and data output for F1 2022 version 16 (official release)
-- [Data Output from F1 23 v29x3.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2023%20v29x3.docx>) - Packet structures and data output for F1 2023 version 29x3 (official release)
-- [Data Output from F1 24 v27.2x.docx](<./Supporting%20Docs/Data%20Output%20from%20F1%2024%20v27.2x.docx>) - Packet structures and data output for F1 2024 version 27.2x (official release)
-- [Data Output from F1 25 v3.pdf](<./Supporting%20Docs/Data%20Output%20from%20F1%2025%20v3.pdf>) - Packet structures and data output for F1 2025 version 3 (official release)
-- [Data Output from F1 25 2026 Season Pack.pdf](<./Supporting%20Docs/Data%20Output%20from%20F1%2025%202026%20Season%20Pack.pdf>) - Packet structures and data output for F1 2026 (official release)
-
-Debugging guides available in the [`Supporting Docs/`](<./Supporting%20Docs/>) folder:
-
-- [forza debug.txt](<./Supporting%20Docs/forza%20debug.txt>) - Debugging setup for Forza games including local loopback configuration for Microsoft Store versions
-
-### Links
-
-Documentation and links to packet structures in the [`Supporting Docs/`](<./Supporting%20Docs/>) folder:
-
-- Assetto Corsa UDP - Link to [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official release)
-- Assetto Corsa UDP - Link to [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/) (Download PDF)
-- Assetto Corsa SM - Link to [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/)
-- Assetto Corsa Competizione - Link to [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)
-- Assetto Corsa EVO - Link to [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)
-- Beamng.drive - Link to [Protocols](https://documentation.beamng.com/modding/protocols/) (official release)
-- Dirt 4 - Link to [Configuring UDP Output](https://www.scribd.com/document/350826037/UDP-output-setup)
-- Dirt 4 - Link to [Setting up UDP output](https://web.archive.org/web/20181117092858/http://forums.codemasters.com/discussion/52950/setting-up-udp-output-for-dirt-4)
-- Dirt Rally - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
-- ETS2 - Link to [truckermudgen github](https://github.com/truckermudgeon/scs-sdk-plugin) for scs-sdk-plugin, including instructions for installation
-- F1 2016 - Web Archive link to [F1 2016 D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information)
-- F1 2017 - Web Archive link to [F1 2017 D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/)
-- F1 2018 - Web Archive link to [F1 2018 UDP Specification](https://web.archive.org/web/20230208110311/https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/)
-- F1 2019 - Web Archive link to [F1 2019 UDP Specification](https://web.archive.org/web/20220930165800/https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/)
-- F1 2020 - Web Archive link to [F1 2020 UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/)
-- F1 2021 - Web Archive link to [F1 2021 UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/) (dead download link)
-- F1 2021 - Link to [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)
-- F1 2022 - Link to [F1 22 UDP Specification](https://forums.ea.com/discussions/f1-games-franchise-discussion-en/f1-22-udp-specification/8418392)
-- F1 2023 - Link to [F1 23 UDP Specification](https://forums.ea.com/discussions/f1-23-en/f1-23-udp-specification/8390745)
-- F1 2024 - Link to [F1 24 UDP Specification](https://forums.ea.com/discussions/f1-24-general-discussion-en/f1-24-udp-specification/8369125)
-- F1 2025 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
-- F1 2026 - Link to [F1®25: 2026 Season Pack UDP SPECIFICATION](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)
-- Forza Horizon 4 - Link to [richstokes GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat) Forza-data-tools
-- Forza Horizon 5 - Link to [forza horizon 5 data out format](https://pastebin.com/GFbbzbg3) pastebin
-- Forza Horizon 6 - Link to [Forza Horizon 6 &#34;Data Out&#34; Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)
-- Forza Motorsport 7 - Link to [Forza Motorsport 7 ‘Data Out’ feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013)
-- Forza Motorsport 8 - Link to [Data Out feature in Forza Motorsport](https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333/2)
-- Gran Turismo 7 - Link to [MacManley Github](https://github.com/MacManley/gt7-udp) gt7-udp
-- Project Cars UDP - Link to [Companion App - UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming)
-- Project Cars SM - Link to [Shared Memory (API) App](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)
-- Project Cars 2 - Link to [MacManley GitHub](https://github.com/MacManley/project-cars-2-udp) Project Cars 2 UDP
-
-### Other Links
-
-- EA Sports WRC 2023 - Link to [How to use User Datagram Protocol (UDP) on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068)
-- Dirt 4 - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)
-
-<!-- - Project cars - Link to [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0) -->
-
-- Project cars 3 - might be the same as project cars 2
-- Le Mans Ultimate - Link to [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)
-- Race Room - Link to [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)
-- IRacing - Link to [kutu GitHub](https://github.com/kutu/pyirsdk) pyirsdk - Currently unsupported due to dynamic packet structure
-- Richard Burns Rally - Link to [groybe GitHub](https://github.com/groybe/rbr-udp-telem) rbr-udp-telem
-- kartkraft - Link to [motorsportgames GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs) kartkraft-telemetry
