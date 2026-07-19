@@ -3,13 +3,15 @@ line-length = 150
 include = '\.pyi?$'
 force-exclude = '''.*data_structures.*'''
 
+
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "RaceTelemetry_bobbythehuman" # this is the PyPI name (can differ from import name)
-version = "v4.3.6"
+version = "v4.3.6-2"    # [major server] . [minor server] . [data structure version] - [package version]
 authors = [{ name = "bobbythehuman" }]
 description = "A telemetry package that can extract UDP and Shared Memory data from most racing games."
 readme = "README_PyPI.md"
@@ -20,9 +22,7 @@ classifiers = [
 ]
 license = "LGPL-2.1"
 license-files = ["LICENSE"]
-# dependencies = [
-#     # e.g. "requests>=2.28",
-# ]
+
 
 [project.urls]
 Homepage = "https://github.com/bobbythehuman/Race-Telemetry-Package"

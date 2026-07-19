@@ -220,7 +220,7 @@ class TelemetryData(DataTypes.STRUCTURE):
     ]
 ```
 
-Before startiing the telemetry, set the enum mode in your main script:
+Before starting the telemetry, set the enum mode in your main script:
 
 ```python
 activeThreads = telemetryManager()
@@ -243,18 +243,18 @@ activeThreads.StartTelemetry()
 
 In your main script, import the new metadata:
 
-| Syntax            | Type                       | Description                                              |
-| ----------------- | -------------------------- | -------------------------------------------------------- |
-| port              | Integer                    | UDP port data is received on                             |
-| heartBeatPort     | Integer                    | UDP port to send a heart beat to                         |
-| heartBeatFunc     | Function                   | Heart beat function                                      |
-| handShakePort     | Integer                    | UDP port to send a hand shake to                         |
-| handShakeFunc     | Tuple [Function, Function] | Tuple containing start and stop hand shake functions     |
-| decrytionFunc     | Function                   | Data decryption function                                 |
-| headerInfo        | Type                       | The header struct class (if protocol uses header).       |
-| packetIDAttribute | String                     | An attribute in the header packet defining the packet ID |
-| sharedMemoryName  | String                     | dict[String, String]                                     |
-| packetInfo        | Dict [Int, List [Type] ]   | Game packet mapping - See more below                     |
+| Syntax            | Type                       | Description                                                                                        |
+| ----------------- | -------------------------- | -------------------------------------------------------------------------------------------------- |
+| port              | Integer                    | UDP port data is received on                                                                       |
+| heartBeatPort     | Integer                    | UDP port to send a heart beat to                                                                   |
+| heartBeatFunc     | Function                   | Heart beat function                                                                                |
+| handShakePort     | Integer                    | UDP port to send a hand shake to                                                                   |
+| handShakeFunc     | Tuple [Function, Function] | Tuple containing start and stop hand shake functions                                               |
+| decrytionFunc     | Function                   | Data decryption function                                                                           |
+| headerInfo        | Type                       | The header struct class (if protocol uses header).                                                 |
+| packetIDAttribute | String                     | An attribute in the header packet defining the packet ID                                           |
+| sharedMemoryName  | String or Dict[Str, Str]   | Name of shared memory segment or a dictionary, with the key as packet name and value as SM segment |
+| packetInfo        | Dict [Int, List [Type] ]   | Game packet mapping - See more below                                                               |
 
 #### PacketInfo
 
