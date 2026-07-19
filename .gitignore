@@ -2,6 +2,7 @@
 .vscode/*
 dist/*
 **/RaceTelemetry_bobbythehuman.egg-info/*
+**/RaceTelemetry.egg-info/*
 .pypirc
 
 Packaged_Program/*
