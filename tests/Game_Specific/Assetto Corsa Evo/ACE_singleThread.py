@@ -1,12 +1,5 @@
-import sys
-from pathlib import Path
-
-# Add parent directory to path so imports work when running this file directly
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from data_structures.ACE_struct import MetaData
-from support.server import telemetryManager
-
+from RaceTelemetry import telemetryManager
+from RaceTelemetry.data_structures.ACE_struct import MetaData
 
 telemetry = telemetryManager()
 telemetry.isMultiThreaded(False)
@@ -35,4 +28,3 @@ for packet, packetID, headerPacket in telemetry.GetTelemetry():
         session = packet.session_name
         track = packet.track_configuration
         print(f"Session: {session}\t\t Track: {track}")
-
