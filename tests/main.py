@@ -22,7 +22,7 @@ from data_structures.FH4_struct import MetaData as FH4MetaData
 from data_structures.FH5_struct import MetaData as FH5MetaData
 from data_structures.FM7_struct import MetaData as FM7MetaData
 from data_structures.FM8_struct import MetaData as FM8MetaData
-from main.data_structures.AC_UDP_struct import MetaData as ACMetaData
+from data_structures.AC_UDP_struct import MetaData as ACMetaData
 
 # from data_structures.GT7_struct import MetaData as GT7MetaData
 

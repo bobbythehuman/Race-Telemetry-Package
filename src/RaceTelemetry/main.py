@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Generator, Tuple, Type, Any, Optional
 from datetime import datetime
 
-from support.digestion import dynamic_ingest
+from .digestion import dynamic_ingest
 
 
 # ---------------------------------------------------------------------------
