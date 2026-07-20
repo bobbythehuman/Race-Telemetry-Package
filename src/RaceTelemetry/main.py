@@ -36,7 +36,7 @@ class CentralStorage:
                     self.allData[packetName] = []
                     self.lastestData[packetName] = None
 
-    def _write(self, packetID: int, data) -> None:
+    def _write(self, data) -> None:
         """Called only by the network thread."""
         with self._lock:
             if data:
@@ -526,4 +526,4 @@ class telemetryManager:
 
         for packet, packetID, headerPacket in self.GetTelemetry():
             # print(f"[NTWK] [Info]\tReceived packet ID {packetID}")
-            self.activeStorage._write(packetID, packet)
+            self.activeStorage._write(packet)
