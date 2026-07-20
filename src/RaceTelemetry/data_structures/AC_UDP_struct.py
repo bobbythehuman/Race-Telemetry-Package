@@ -1,8 +1,9 @@
 import ctypes
-from enum import Enum
+
 
 # source
 # https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

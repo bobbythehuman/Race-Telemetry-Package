@@ -1,8 +1,9 @@
 import ctypes
-from enum import Enum
+
 
 # should be the same data as FH5, FM7 and FM8
 # see 'forza debug.txt' for setup help
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

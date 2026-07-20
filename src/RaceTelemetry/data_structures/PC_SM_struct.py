@@ -1,9 +1,9 @@
 import ctypes
-from enum import Enum, Flag, IntEnum
+from enum import Flag, IntEnum
 
-'''
-https://web.archive.org/web/20180111115813/http://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&highlight=shared+memory+api
-'''
+
+# https://web.archive.org/web/20180111115813/http://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&highlight=shared+memory+api
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

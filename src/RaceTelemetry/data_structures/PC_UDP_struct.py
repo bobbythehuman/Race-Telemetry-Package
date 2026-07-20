@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, Flag, IntEnum
+from enum import Flag, IntEnum
 
 '''
 udp

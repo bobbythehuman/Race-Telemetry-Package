@@ -1,8 +1,10 @@
 import ctypes
-from enum import Enum, Flag
+from enum import Flag
+
 
 # source
 # https://documentation.beamng.com/modding/protocols/
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

@@ -1,9 +1,10 @@
 import ctypes
-from enum import Enum, IntEnum
+
 
 # source
 # https://github.com/truckermudgeon/scs-sdk-plugin
 # https://github.com/truckermudgeon/scs-sdk-plugin/blob/master/scs-telemetry/inc/scs-telemetry-common.hpp
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

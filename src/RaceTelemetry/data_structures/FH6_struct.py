@@ -1,8 +1,9 @@
 import ctypes
-from enum import Enum
+
 
 # source
 # https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

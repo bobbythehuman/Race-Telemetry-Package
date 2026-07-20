@@ -1,8 +1,9 @@
 import ctypes
-from enum import Enum, IntEnum
+
 
 # https://www.scribd.com/document/350826037/UDP-output-setup
 # https://web.archive.org/web/20181117092858/http://forums.codemasters.com/discussion/52950/setting-up-udp-output-for-dirt-4
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

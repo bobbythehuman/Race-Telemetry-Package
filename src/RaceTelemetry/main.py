@@ -4,7 +4,7 @@ import mmap
 
 import threading
 from dataclasses import dataclass
-from typing import Generator, Tuple, Type, Any, Optional
+from typing import Generator, Tuple, Type, Any
 from datetime import datetime
 
 from .digestion import dynamic_ingest

@@ -1,8 +1,10 @@
 import ctypes
-from enum import Enum, Flag, StrEnum
+from enum import Flag, StrEnum
+
 
 # source
 # https://github.com/MacManley/gt7-udp
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

@@ -1,9 +1,11 @@
 import ctypes
-from enum import Enum, IntEnum
+from enum import IntEnum
+
 
 # source
 # https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/
 # https://docs.google.com/document/d/1WzqMLkW2o_C0LGcvdMRelAV31ZIifux0CSHD9k6ddz0/edit?tab=t.0
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure

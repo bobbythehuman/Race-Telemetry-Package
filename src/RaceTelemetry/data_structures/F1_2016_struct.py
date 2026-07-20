@@ -1,5 +1,5 @@
 import ctypes
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 
 class DataTypes:

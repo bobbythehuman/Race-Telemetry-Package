@@ -1,8 +1,9 @@
 import ctypes
-from enum import Enum
+
 
 # source
 # https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013
+
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
