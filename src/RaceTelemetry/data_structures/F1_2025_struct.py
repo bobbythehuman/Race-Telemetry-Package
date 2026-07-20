@@ -1,5 +1,19 @@
 import ctypes
-from enum import Flag, IntEnum, StrEnum
+from enum import Flag, IntEnum
+from sys import version_info
+
+
+if version_info < (3, 11):
+    from enum import Enum
+    BaseStrEnum = str, Enum  # tuple of bases for older versions
+    
+    raise RuntimeError(
+        "StrEnum requires Python 3.11 or higher "
+        f"(you're running {version_info.major}.{version_info.minor})"
+    )
+else:
+    from enum import StrEnum
+    BaseStrEnum = StrEnum  # use StrEnum directly for Python 3.11 and above
 
 
 class DataTypes:
@@ -503,7 +517,7 @@ class NATIONALITY_ID(IntEnum):
     Bosnian = 89
     Filipino = 90
 
-class EVENT_STRING_CODE(StrEnum):
+class EVENT_STRING_CODE(*BaseStrEnum):
     Session_Started = "SSTA"
     Session_Ended = "SEND"
     Fastest_Lap = "FTLP"

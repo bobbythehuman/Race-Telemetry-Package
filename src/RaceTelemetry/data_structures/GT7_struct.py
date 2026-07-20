@@ -1,6 +1,27 @@
 import ctypes
 from enum import Flag, StrEnum
+import struct
+from sys import version_info
 
+
+# pip install pycryptodome
+try:
+    from Crypto.Cipher import Salsa20 as s20
+except ImportError:
+    print("Cant use GT7 struct! Install pycryptodome. 'pip install pycryptodome'")
+
+
+if version_info < (3, 11):
+    from enum import Enum
+    BaseStrEnum = str, Enum  # tuple of bases for older versions
+    
+    raise RuntimeError(
+        "StrEnum requires Python 3.11 or higher "
+        f"(you're running {version_info.major}.{version_info.minor})"
+    )
+else:
+    from enum import StrEnum
+    BaseStrEnum = StrEnum  # use StrEnum directly for Python 3.11 and above
 
 # source
 # https://github.com/MacManley/gt7-udp
@@ -26,7 +47,7 @@ class DataTypes:
 ### * Enums
 # There is a really long list for Car list
 
-class SURFACE_TYPE(StrEnum):
+class SURFACE_TYPE(*BaseStrEnum):
     Curb_Kerb = "C"
     Dirt = "D"
     Grass = "G"
@@ -348,13 +369,6 @@ def heartBeat(socket, destination: tuple[int, int], msg = b'C'):
     # else packetVersion = A 
 
 ### * Decryption
-
-# pip install pycryptodome
-try:
-    from Crypto.Cipher import Salsa20 as s20
-except:
-    print("Cant use GT7 struct! Install pycryptodome. 'pip install pycryptodome'")
-import struct
 
 def decrypt_data(raw: bytes) -> bytes:
     def detect_packet_version(data: bytes) -> str:
