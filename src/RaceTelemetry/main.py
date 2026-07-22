@@ -6,6 +6,7 @@ import threading
 from dataclasses import dataclass
 from typing import Generator, Tuple, Type, Any
 from datetime import datetime
+import re
 
 from .digestion import dynamic_ingest
 
@@ -114,6 +115,9 @@ class telemetryManager:
         Call this to update the local IP address the server listens on.
         Default is "0.0.0.0"
         '''
+        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
+            raise ValueError(f"[NTWK] [Error]\tInvalid IP address: {ip}")
+        
         self.IP = ip
 
     def updateSendIP(self, ip: str) -> None:
@@ -121,6 +125,9 @@ class telemetryManager:
         Call this to update the destination IP address for handshakes and heartbeats.
         Default is None, which will cause an error if handshakes or heartbeats are enabled.
         '''
+        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
+            raise ValueError(f"[NTWK] [Error]\tInvalid IP address: {ip}")
+        
         self.destinationIP = ip
 
     def addWorkerThread(self, mainFunc) -> None:
@@ -128,6 +135,9 @@ class telemetryManager:
         Call this to add a worker thread to access the data. 
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
         '''
+        if not callable(mainFunc):
+            raise ValueError("[MAIN] [Error]\tWorker function must be callable.")
+        
         self.threadCount += 1
         # readOnlyStorage may need updating when metadata gets updated
         workerThread = threading.Thread(
@@ -139,11 +149,17 @@ class telemetryManager:
 
     def manualStop(self, target: bool) -> None:
         """Manually stop the program"""
+        if not isinstance(target, bool):
+            raise ValueError("[MAIN] [Error]\tManual stop target must be a boolean.")
+        
         self.manuallyStopped = target
         self.__triggerStop(target)
 
     def isMultiThreaded(self, target: bool = True) -> None:
         '''Currently does nothing'''
+        if not isinstance(target, bool):
+            raise ValueError("[MAIN] [Error]\tMulti-threaded target must be a boolean.")
+        
         self.multiThreaded = target
 
     def isSharedMemory(self, target: bool = False) -> None:
@@ -151,6 +167,9 @@ class telemetryManager:
         Call this to set whether to use shared memory or UDP for telemetry.
         Default is False (UDP).
         '''
+        if not isinstance(target, bool):
+            raise ValueError("[MAIN] [Error]\tShared memory target must be a boolean.")
+        
         self.sharedMemory = target
 
     def setEnumMode(self, target: int = 0) -> None:
@@ -162,6 +181,11 @@ class telemetryManager:
         1: Convert fields with to the raw value
         2: Convert fields to their enum type
         '''
+        if not isinstance(target, int):
+            raise ValueError("[MAIN] [Error]\tEnum mode must be an integer.")
+        if target not in [0, 1, 2]:
+            raise ValueError("[MAIN] [Error]\tEnum mode must be 0, 1, or 2.")
+        
         self.enumMode = target
 
     # Misc packet functions
