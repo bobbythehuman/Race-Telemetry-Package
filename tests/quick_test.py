@@ -7,7 +7,7 @@ def displaySpeed(worker_id: int, ro_storage, stop_event):
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
 
-        data = snapshot.get("lastestData")
+        data = snapshot.get("latestData")
         if data:
             telemetry = data.get("TelemetryData")
             if telemetry:
