@@ -26,7 +26,7 @@ class CentralStorage:
         self._lock = threading.RLock()
 
         self.allData = {}
-        self.lastestData = {}
+        self.latestData = {}
 
         packetNames = MetaData.packetInfo.items()
         for packetID, packetInfo in packetNames:
@@ -34,7 +34,7 @@ class CentralStorage:
                 packetName = packetStruct.__name__
                 if packetName not in self.allData:
                     self.allData[packetName] = []
-                    self.lastestData[packetName] = None
+                    self.latestData[packetName] = None
 
     def _write(self, data) -> None:
         """Called only by the network thread."""
@@ -43,14 +43,14 @@ class CentralStorage:
                 packetName = data.__name__
 
                 self.allData[packetName].append(data)
-                self.lastestData[packetName] = data
+                self.latestData[packetName] = data
 
     def snapshot(self) -> dict[str, Any]:
         """Return a consistent, immutable snapshot for worker threads."""
         with self._lock:
             return {
                 "allData": self.allData.copy(),
-                "lastestData": self.lastestData.copy(),
+                "latestData": self.latestData.copy(),
             }
 
 
