@@ -42,7 +42,7 @@ def unpackArray(packet) -> list | str:
             
     return value
 
-def applyEnum(value, enumType, enumMode: int):
+def applyEnum(value, enumType, enumMode: int = 0):
     '''
     Receives a value and converts it into an Enum then returns a value depending on enumMode.
     '''
@@ -82,11 +82,11 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
             inverseEnums.setdefault(x, []).append(k)
 
     for source_attr, value in attrs.items():
-        if isinstance(value, int):
+        if isinstance(value, bool):
+            pass
+        elif isinstance(value, int):
             pass
         elif isinstance(value, str):
-            pass
-        elif isinstance(value, bool):
             pass
         
         elif isinstance(value, float):
@@ -97,13 +97,16 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
 
         elif isinstance(value, ctypes.Array):
             value = unpackArray(value)
+        
+        elif value is None:
+            pass
             
         else:
             # print("Unrecognised type or assuming it is a class")
             value = dynamic_ingest(value)
         
-        enum_type = None
         if source_attr in inverseEnums:
+            enum_type = None
             all_enum_type = inverseEnums[source_attr]
             if len(all_enum_type) > 1:
                 raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")

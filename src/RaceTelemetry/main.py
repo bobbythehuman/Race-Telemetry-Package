@@ -89,16 +89,16 @@ class telemetryManager:
         self.workersAreWorking = False
         self.threadCount = 0
         self.multiThreaded = True
-        
+
         self.sharedMemory = False
         self.sharedMemoryName = None
         self.sharedMemorySize = None
-        
+
         self.enumMode = 0
-        
+
     # User controlled functions
 
-    def updateMeta(self, MetaData):
+    def updateMeta(self, MetaData) -> None:
         '''
         Call this to update the metadata and reset storage.
         Must be called at least once before starting threads.
@@ -109,21 +109,21 @@ class telemetryManager:
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
         self.__unpackMetaData()
 
-    def updateLocalIP(self, ip: str):
+    def updateLocalIP(self, ip: str) -> None:
         '''
         Call this to update the local IP address the server listens on.
         Default is "0.0.0.0"
         '''
         self.IP = ip
 
-    def updateSendIP(self, ip: str):
+    def updateSendIP(self, ip: str) -> None:
         '''
         Call this to update the destination IP address for handshakes and heartbeats.
         Default is None, which will cause an error if handshakes or heartbeats are enabled.
         '''
         self.destinationIP = ip
 
-    def addWorkerThread(self, mainFunc):
+    def addWorkerThread(self, mainFunc) -> None:
         '''
         Call this to add a worker thread to access the data. 
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
@@ -137,22 +137,23 @@ class telemetryManager:
         )
         self.workerThreads.update({self.threadCount: workerThread})
 
-    def manualStop(self, target: bool):
-        """Manually stop the program by entering q to stop"""
+    def manualStop(self, target: bool) -> None:
+        """Manually stop the program"""
         self.manuallyStopped = target
+        self.__triggerStop(target)
 
-    def isMultiThreaded(self, target: bool = True):
+    def isMultiThreaded(self, target: bool = True) -> None:
         '''Currently does nothing'''
         self.multiThreaded = target
 
-    def isSharedMemory(self, target: bool = False):
+    def isSharedMemory(self, target: bool = False) -> None:
         '''
         Call this to set whether to use shared memory or UDP for telemetry.
         Default is False (UDP).
         '''
         self.sharedMemory = target
-    
-    def setEnumMode(self, target: int = 0):
+
+    def setEnumMode(self, target: int = 0) -> None:
         '''
         Call this to set the enum mode for handling enum values.
         Default is 0 (no special handling).
@@ -165,12 +166,12 @@ class telemetryManager:
 
     # Misc packet functions
 
-    def __metaDataCheck(self, name: str, value: Any = None):
+    def __metaDataCheck(self, name: str, value: Any = None) -> Any:
         '''
         Helper function to check if metadata has the attribute, and return it if it does.
         Otherwise return the provided default value.
         '''
-        
+
         if hasattr(self.ACTIVE_METADATA, name):
             return getattr(self.ACTIVE_METADATA, name)
             # _heartBeatPort = self.ACTIVE_METADATA.value
@@ -178,7 +179,7 @@ class telemetryManager:
             return value
             # _heartBeatPort = None
 
-    def __unpackMetaData(self):
+    def __unpackMetaData(self) -> None:
         '''
         Helper function to unpack metadata attributes into class attributes for easy access
         '''
@@ -194,47 +195,48 @@ class telemetryManager:
 
         self.headerPacket = self.__metaDataCheck("headerInfo")
         self.packetIDAttr = self.__metaDataCheck("packetIDAttribute")
-        
+
         self.allSharedMemoryNames = self.__metaDataCheck("allSharedMemoryNames")
 
         self.packetInfo = self.__metaDataCheck("packetInfo", [])
 
-    def __getPacketSize(self, packet):
+    def __getPacketSize(self, packet) -> int:
         '''Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction.'''
         size = ctypes.sizeof(packet)
         return size
-    
-    def __getMaxPacketSize(self):
+
+    def __getMaxPacketSize(self) -> int:
         '''Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata.'''
-        maxSize = 0
+        allSizes = []
         for packetID, packetInfo in self.packetInfo.items():
             for packetStruct in packetInfo:
                 packetSize = self.__getPacketSize(packetStruct)
-                if packetSize > maxSize:
-                    maxSize = packetSize
-        return maxSize
-    
+                allSizes.append(packetSize)
+        return max(allSizes) if allSizes else 0
+
     # Misc thread function
 
-    def __wait(self, time: float):
+    def __wait(self, time: float) -> None:
         '''
         Helper function to wait while still checking for stop_event
         '''
         self.stop_event.wait(time)
 
-    def __triggerStop(self):
+    def __triggerStop(self, mode: bool = True) -> None:
         '''
-        Helper function to trigger the stop event and set manuallyStopped to True
+        Helper function to toggle the stop event and set manuallyStopped to True
         '''
-        if self.stop_event:
+        if self.stop_event and mode:
             self.stop_event.set()
-        self.manuallyStopped = True
+        else:
+            self.stop_event.clear()
+        self.manuallyStopped = mode
 
     def __isStillActive(self) -> bool:
         '''
         Helper function to check if the program should still be running
         '''
-        return self.stop_event.is_set() or self.manuallyStopped
+        return not self.stop_event.is_set() and not self.manuallyStopped
 
     # Start and Stop functions
 
@@ -261,13 +263,13 @@ class telemetryManager:
 
         self.workersAreWorking = True
 
-    def __waitForStopSignal(self):
+    def __waitForStopSignal(self) -> None:
         '''
         Helper function to wait for a stop signal (either Ctrl+C or manual stop) while keeping the main thread alive
         '''
         endProgram = ""
         try:
-            while not self.__isStillActive():
+            while self.__isStillActive():
                 self.__wait(0.5)
 
                 if self.manuallyStopped:
@@ -282,7 +284,7 @@ class telemetryManager:
             print("[MAIN] [INFO]\tStopping all threads\n")
             self.__stopThreads()
 
-    def __stopThreads(self):
+    def __stopThreads(self) -> None:
         '''
         Helper function to stop all threads gracefully by triggering the stop event and joining threads with a timeout
         '''
@@ -302,7 +304,7 @@ class telemetryManager:
         self.workersAreWorking = False
         print("\n[MAIN] [INFO]\tAll threads stopped. Exiting.")
 
-    def StartTelemetry(self):
+    def StartTelemetry(self) -> None:
         '''
         Call this to start the network and worker threads.
         Will run until a stop signal is received (either Ctrl+C or manual stop).
@@ -339,10 +341,10 @@ class telemetryManager:
         if len(possiblePacketStruct) == len(packetSizes):
             print(f"[Warning]\tNo matching packet size [{packetSizes}] for received data length {dataLength}")
             packet = None
-        
+
         # do enum check here
         # do enum convert
-        
+
         return packet
 
     def __retrieve_packet(self, data: bytes) -> tuple[type | None, int, Any]:
@@ -417,7 +419,7 @@ class telemetryManager:
         '''
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         '''
-        
+
         UDP_IP = self.IP
         UDP_PORT = self.mainPort
         # HEARTBEAT_INTERVAL = 5
@@ -439,7 +441,7 @@ class telemetryManager:
             self.handShakeFunc[0](sock, handShakeDestination)
 
         print("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
-        while not self.__isStillActive():
+        while self.__isStillActive():
             yield self.__process_loop(sock, PACKET_COUNTER)
 
         if self.handShakeFunc:
@@ -448,7 +450,7 @@ class telemetryManager:
         print("[NTWK] [Info]\tServer shutting down.")
 
     # Main shared memory packet function
-    
+
     def get_shared_packets(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
         allSharedMemoryNames = self.allSharedMemoryNames
 
@@ -475,8 +477,8 @@ class telemetryManager:
             print(f"[NTWK] [Info]\tServer started for {SMNames} with sizes {[size for size in sharedMemoryInfo.values()]} bytes")
         else:
             raise ValueError("[NTWK] [Error]\tShared memory name must be a string or a dict mapping packet names to shared memory names.")
-        
-        while not self.__isStillActive():
+
+        while self.__isStillActive():
             try:
                 SMRawData = []
                 for SMMap, SMSize in sharedMemoryInfo.items():
@@ -499,9 +501,9 @@ class telemetryManager:
                     if not non_zeros:
                         continue
                     packet, packetID, headerPacket = self.__retrieve_packet(SMData)
-                
+
                     yield packet, packetID, headerPacket
-        
+
         for SMMap in sharedMemoryInfo.keys():
             SMMap.close()
         print("[NTWK] [Info]\tServer shutting down.")
