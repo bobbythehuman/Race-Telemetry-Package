@@ -1,7 +1,6 @@
 import ctypes
 import socket
 import mmap
-from types import MethodType
 import warnings
 
 import threading
