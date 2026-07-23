@@ -1,6 +1,7 @@
 import ctypes
 import socket
 import mmap
+import warnings
 
 import threading
 from dataclasses import dataclass
@@ -67,7 +68,6 @@ class ReadOnlyStorage:
     def snapshot(self) -> dict[str, Any]:
         return self._storage.snapshot()
 
-
 # ---------------------------------------------------------------------------
 # Manages Threads
 # ---------------------------------------------------------------------------
@@ -110,34 +110,39 @@ class telemetryManager:
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
         self.__unpackMetaData()
 
-    def updateLocalIP(self, ip: str) -> None:
+    def updateLocalIP(self, ip: str) -> bool:
         '''
         Call this to update the local IP address the server listens on.
         Default is "0.0.0.0"
         '''
         if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
-            raise ValueError(f"[NTWK] [Error]\tInvalid IP address: {ip}")
-        
+            warnings.warn(f"[NTWK] [Error]\tInvalid IP address: {ip}")
+            return False
+            
         self.IP = ip
+        return True
 
-    def updateSendIP(self, ip: str) -> None:
+    def updateSendIP(self, ip: str) -> bool:
         '''
         Call this to update the destination IP address for handshakes and heartbeats.
         Default is None, which will cause an error if handshakes or heartbeats are enabled.
         '''
         if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
-            raise ValueError(f"[NTWK] [Error]\tInvalid IP address: {ip}")
-        
-        self.destinationIP = ip
+            warnings.warn(f"[NTWK] [Error]\tInvalid IP address: {ip}")
+            return False
 
-    def addWorkerThread(self, mainFunc) -> None:
+        self.destinationIP = ip
+        return True
+
+    def addWorkerThread(self, mainFunc) -> bool:
         '''
         Call this to add a worker thread to access the data. 
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
         '''
         if not callable(mainFunc):
-            raise ValueError("[MAIN] [Error]\tWorker function must be callable.")
-        
+            warnings.warn(f"[MAIN] [Error]\tWorker function must be callable.")
+            return False
+
         self.threadCount += 1
         # readOnlyStorage may need updating when metadata gets updated
         workerThread = threading.Thread(
@@ -146,33 +151,40 @@ class telemetryManager:
             daemon=True,
         )
         self.workerThreads.update({self.threadCount: workerThread})
+        return True
 
-    def manualStop(self, target: bool) -> None:
+    def manualStop(self, target: bool) -> bool:
         """Manually stop the program"""
         if not isinstance(target, bool):
-            raise ValueError("[MAIN] [Error]\tManual stop target must be a boolean.")
-        
+            warnings.warn(f"[MAIN] [Error]\tManual stop target must be a boolean.")
+            return False
+
         self.manuallyStopped = target
         self.__triggerStop(target)
+        return True
 
-    def isMultiThreaded(self, target: bool = True) -> None:
+    def isMultiThreaded(self, target: bool = True) -> bool:
         '''Currently does nothing'''
         if not isinstance(target, bool):
-            raise ValueError("[MAIN] [Error]\tMulti-threaded target must be a boolean.")
-        
-        self.multiThreaded = target
+            warnings.warn(f"[MAIN] [Error]\tMulti-threaded target must be a boolean.")
+            return False
 
-    def isSharedMemory(self, target: bool = False) -> None:
+        self.multiThreaded = target
+        return True
+
+    def isSharedMemory(self, target: bool = False) -> bool:
         '''
         Call this to set whether to use shared memory or UDP for telemetry.
         Default is False (UDP).
         '''
         if not isinstance(target, bool):
-            raise ValueError("[MAIN] [Error]\tShared memory target must be a boolean.")
-        
-        self.sharedMemory = target
+            warnings.warn(f"[MAIN] [Error]\tShared memory target must be a boolean.")
+            return False
 
-    def setEnumMode(self, target: int = 0) -> None:
+        self.sharedMemory = target
+        return True
+
+    def setEnumMode(self, target: int = 0) -> bool:
         '''
         Call this to set the enum mode for handling enum values.
         Default is 0 (no special handling).
@@ -182,11 +194,14 @@ class telemetryManager:
         2: Convert fields to their enum type
         '''
         if not isinstance(target, int):
-            raise ValueError("[MAIN] [Error]\tEnum mode must be an integer.")
+            warnings.warn(f"[MAIN] [Error]\tEnum mode must be an integer.")
+            return False
         if target not in [0, 1, 2]:
-            raise ValueError("[MAIN] [Error]\tEnum mode must be 0, 1, or 2.")
-        
+            warnings.warn(f"[MAIN] [Error]\tEnum mode must be 0, 1, or 2.")
+            return False
+
         self.enumMode = target
+        return True
 
     # Misc packet functions
 
