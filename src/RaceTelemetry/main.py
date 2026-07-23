@@ -1,6 +1,7 @@
 import ctypes
 import socket
 import mmap
+from types import MethodType
 import warnings
 
 import threading
@@ -115,10 +116,14 @@ class telemetryManager:
         Call this to update the local IP address the server listens on.
         Default is "0.0.0.0"
         '''
-        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
-            warnings.warn(f"[NTWK] [Error]\tInvalid IP address: {ip}")
+        if not isinstance(ip, str):
+            warnings.warn("[NTWK] [Warning]\tInvalid IP address")
             return False
-            
+
+        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
+            warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
+            return False
+
         self.IP = ip
         return True
 
@@ -127,8 +132,12 @@ class telemetryManager:
         Call this to update the destination IP address for handshakes and heartbeats.
         Default is None, which will cause an error if handshakes or heartbeats are enabled.
         '''
+        if not isinstance(ip, str):
+            warnings.warn("[NTWK] [Warning]\tInvalid IP address")
+            return False
+
         if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
-            warnings.warn(f"[NTWK] [Error]\tInvalid IP address: {ip}")
+            warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
             return False
 
         self.destinationIP = ip
@@ -140,7 +149,11 @@ class telemetryManager:
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
         '''
         if not callable(mainFunc):
-            warnings.warn(f"[MAIN] [Error]\tWorker function must be callable.")
+            warnings.warn(f"[MAIN] [Warning]\tWorker function must be callable.")
+            return False
+
+        if isinstance(mainFunc, type):
+            warnings.warn(f"[MAIN] [Warning]\tWorker function must not class initialisation.")
             return False
 
         self.threadCount += 1
@@ -156,7 +169,7 @@ class telemetryManager:
     def manualStop(self, target: bool) -> bool:
         """Manually stop the program"""
         if not isinstance(target, bool):
-            warnings.warn(f"[MAIN] [Error]\tManual stop target must be a boolean.")
+            warnings.warn(f"[MAIN] [Warning]\tManual stop target must be a boolean.")
             return False
 
         self.manuallyStopped = target
@@ -166,7 +179,7 @@ class telemetryManager:
     def isMultiThreaded(self, target: bool = True) -> bool:
         '''Currently does nothing'''
         if not isinstance(target, bool):
-            warnings.warn(f"[MAIN] [Error]\tMulti-threaded target must be a boolean.")
+            warnings.warn(f"[MAIN] [Warning]\tMulti-threaded target must be a boolean.")
             return False
 
         self.multiThreaded = target
@@ -178,7 +191,7 @@ class telemetryManager:
         Default is False (UDP).
         '''
         if not isinstance(target, bool):
-            warnings.warn(f"[MAIN] [Error]\tShared memory target must be a boolean.")
+            warnings.warn(f"[MAIN] [Warning]\tShared memory target must be a boolean.")
             return False
 
         self.sharedMemory = target
@@ -194,10 +207,10 @@ class telemetryManager:
         2: Convert fields to their enum type
         '''
         if not isinstance(target, int):
-            warnings.warn(f"[MAIN] [Error]\tEnum mode must be an integer.")
+            warnings.warn(f"[MAIN] [Warning]\tEnum mode must be an integer.")
             return False
         if target not in [0, 1, 2]:
-            warnings.warn(f"[MAIN] [Error]\tEnum mode must be 0, 1, or 2.")
+            warnings.warn(f"[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
             return False
 
         self.enumMode = target
