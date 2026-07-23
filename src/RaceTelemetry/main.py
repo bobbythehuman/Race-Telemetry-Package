@@ -153,7 +153,7 @@ class telemetryManager:
             return False
 
         if isinstance(mainFunc, type):
-            warnings.warn(f"[MAIN] [Warning]\tWorker function must not class initialisation.")
+            warnings.warn(f"[MAIN] [Warning]\tWorker function must not be a class initialisation.")
             return False
 
         self.threadCount += 1

@@ -58,7 +58,23 @@ echo Clean complete.
 echo.
 
 REM ---------------------------------------------
-REM 3. Build the package
+REM 3. Run tests before building
+REM ---------------------------------------------
+echo Running pytest checks...
+pytest .\tests\test_main.py .\tests\test_digestion.py --disable-warnings
+
+if errorlevel 1 (
+    echo.
+    echo Pytest failed. Build aborted.
+    pause
+    exit /b 1
+)
+
+echo Pytest checks passed.
+echo.
+
+REM ---------------------------------------------
+REM 4. Build the package
 REM ---------------------------------------------
 echo Building package...
 python -m build
@@ -76,7 +92,7 @@ dir /b dist
 echo.
 
 REM ---------------------------------------------
-REM 4. Wait for user confirmation before uploading
+REM 5. Wait for user confirmation before uploading
 REM ---------------------------------------------
 echo You are about to upload to: %TARGET_NAME%
 set /p CONFIRM="Proceed with upload? (Y/N): "
