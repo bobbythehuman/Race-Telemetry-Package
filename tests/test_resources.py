@@ -1,5 +1,6 @@
 import ctypes
 import enum
+from tracemalloc import stop
 
 # ---------------------------------------------------------------------------
 # CentralStorage
@@ -139,3 +140,25 @@ class metaData:
         0: (testPacket1, testPacket2),
         1: (HeaderPacket,),
     }
+
+# ---------------------------------------------------------------------------
+# TelemetryManager - Tests for addWorkerThread method
+# ---------------------------------------------------------------------------
+
+def func1():
+    print("FUNC1")
+    
+def func2(argInput):
+    pass
+
+def func3(worker_id, ro_storage, stop_event):
+    print(worker_id)
+    a = ro_storage
+    b = stop_event
+
+def func4(worker_id, ro_storage, stop_event, argInput):
+    pass
+
+class workerClass:
+    def workerFunc(self):
+        pass

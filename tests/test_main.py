@@ -8,6 +8,7 @@ Run with:
 
 import ctypes
 import enum
+import warnings
 
 import pytest
 
@@ -25,6 +26,11 @@ from .test_resources import (
     header_packet_byte,
     header_unpacked_packet,
     subheader_unpacked_packet,
+    func1,
+    func2,
+    func3,
+    func4,
+    workerClass,
 )
 
 # ---------------------------------------------------------------------------
@@ -32,7 +38,6 @@ from .test_resources import (
 # ---------------------------------------------------------------------------
 
 storage = CentralStorage(metaData)
-
 
 class TestCentralStorage:
 
@@ -62,7 +67,7 @@ class TestReadOnlyStorage:
 
 
 # ---------------------------------------------------------------------------
-# TelemetryManager
+# TelemetryManager - Base functionality
 # ---------------------------------------------------------------------------
 
 
@@ -139,6 +144,10 @@ class TestTelemetryManager:
         assert constructed_packet2 == None
 
 
+# ---------------------------------------------------------------------------
+# TelemetryManager - Packets
+# ---------------------------------------------------------------------------
+
 telemetry = telemetryManager()
 telemetry.updateMeta(metaData)
 
@@ -165,6 +174,133 @@ class TestRetrievePacket:
         assert constructed_packet.ulong_val == 123456
         assert constructed_packet.ulonglong_val == 12345678901234
         assert constructed_packet.size_val == 999
+
+
+# ---------------------------------------------------------------------------
+# TelemetryManager - User Inputs
+# ---------------------------------------------------------------------------
+
+telemetry = telemetryManager()
+telemetry.updateMeta(metaData)
+warnings.filterwarnings("ignore")
+
+class TestUserInputs:
+
+    def test_update_local_ip_valid(self):
+        # Test invalid IP addresses
+        assert False == telemetry.updateLocalIP(5)
+        assert False == telemetry.updateLocalIP(-8)
+        assert False == telemetry.updateLocalIP(2.7)
+        assert False == telemetry.updateLocalIP("invalid_ip")
+        assert False == telemetry.updateLocalIP("256.100.50.25")
+        assert False == telemetry.updateLocalIP("256.256.256.256")
+        assert False == telemetry.updateLocalIP("192.168.1")
+        assert False == telemetry.updateLocalIP("1.2.3.4.5")
+        assert False == telemetry.updateLocalIP("192.1")
+        assert False == telemetry.updateLocalIP(False)
+        assert False == telemetry.updateLocalIP(testPacket1)
+
+        # test valid IP address
+        assert True == telemetry.updateLocalIP("1.1.1.1")
+        assert True == telemetry.updateLocalIP("192.168.1.1")
+        assert True == telemetry.updateLocalIP("192.168.68.1")
+        assert True == telemetry.updateLocalIP("255.255.255.255")
+
+    def test_update_send_ip_valid(self):
+        # Test invalid IP addresses
+        assert False == telemetry.updateSendIP(5)
+        assert False == telemetry.updateSendIP(-8)
+        assert False == telemetry.updateSendIP(2.7)
+        assert False == telemetry.updateSendIP("invalid_ip")
+        assert False == telemetry.updateSendIP("256.100.50.25")
+        assert False == telemetry.updateSendIP("256.256.256.256")
+        assert False == telemetry.updateSendIP("192.168.1")
+        assert False == telemetry.updateSendIP("1.2.3.4.5")
+        assert False == telemetry.updateSendIP("192.1")
+        assert False == telemetry.updateSendIP(False)
+        assert False == telemetry.updateSendIP(testPacket1)
+
+        # test valid IP address
+        assert True == telemetry.updateSendIP("1.1.1.1")
+        assert True == telemetry.updateSendIP("192.168.1.1")
+        assert True == telemetry.updateSendIP("192.168.68.1")
+        assert True == telemetry.updateSendIP("255.255.255.255")
+
+    def test_add_worker_thread(self):
+        assert False == telemetry.addWorkerThread(False)
+        assert False == telemetry.addWorkerThread(15)
+        assert False == telemetry.addWorkerThread(-45)
+        assert False == telemetry.addWorkerThread(3.6)
+        assert False == telemetry.addWorkerThread("1.1.1.1")
+        assert False == telemetry.addWorkerThread("hello")
+        assert False == telemetry.addWorkerThread(testPacket1)
+
+        assert True == telemetry.addWorkerThread(func1)
+        assert True == telemetry.addWorkerThread(func2)
+        assert True == telemetry.addWorkerThread(func3)
+        assert True == telemetry.addWorkerThread(func4)
+        assert True == telemetry.addWorkerThread(workerClass.workerFunc)
+
+    def test_manual_stop(self):
+        assert False == telemetry.manualStop(1)
+        assert False == telemetry.manualStop(0)
+        assert False == telemetry.manualStop(5)
+        assert False == telemetry.manualStop(-8)
+        assert False == telemetry.manualStop(2.7)
+        assert False == telemetry.manualStop("test")
+        assert False == telemetry.manualStop("1.1.1.1")
+        assert False == telemetry.manualStop(testPacket1)
+        assert False == telemetry.manualStop(func1)
+
+        assert True == telemetry.manualStop(False)
+        assert True == telemetry.manualStop(True)
+
+    def test_is_multi_thread(self):
+        assert False == telemetry.isMultiThreaded(1)
+        assert False == telemetry.isMultiThreaded(0)
+        assert False == telemetry.isMultiThreaded(5)
+        assert False == telemetry.isMultiThreaded(-8)
+        assert False == telemetry.isMultiThreaded(2.7)
+        assert False == telemetry.isMultiThreaded("test")
+        assert False == telemetry.isMultiThreaded("1.1.1.1")
+        assert False == telemetry.isMultiThreaded(testPacket1)
+        assert False == telemetry.isMultiThreaded(func1)
+
+        assert True == telemetry.isMultiThreaded(False)
+        assert True == telemetry.isMultiThreaded(True)
+
+    def test_is_shared_memory(self):
+        assert False == telemetry.isSharedMemory(1)
+        assert False == telemetry.isSharedMemory(0)
+        assert False == telemetry.isSharedMemory(5)
+        assert False == telemetry.isSharedMemory(-8)
+        assert False == telemetry.isSharedMemory(2.7)
+        assert False == telemetry.isSharedMemory("test")
+        assert False == telemetry.isSharedMemory("1.1.1.1")
+        assert False == telemetry.isSharedMemory(testPacket1)
+        assert False == telemetry.isSharedMemory(func1)
+
+        assert True == telemetry.isSharedMemory(False)
+        assert True == telemetry.isSharedMemory(True)
+
+    def test_enum_mode(self):
+        assert False == telemetry.setEnumMode(-8)
+        assert False == telemetry.setEnumMode(3)
+        assert False == telemetry.setEnumMode(-1)
+        assert False == telemetry.setEnumMode(2.7)
+        assert False == telemetry.setEnumMode("test")
+        assert False == telemetry.setEnumMode("1.1.1.1")
+        assert False == telemetry.setEnumMode(testPacket1)
+        assert False == telemetry.setEnumMode(func1)
+        
+        # False is considered 0, True is considered 1
+        assert True == telemetry.setEnumMode(False)
+        assert True == telemetry.setEnumMode(True)
+        
+        assert True == telemetry.setEnumMode(0)
+        assert True == telemetry.setEnumMode(1)
+        assert True == telemetry.setEnumMode(2)
+
 
 if __name__ == "__main__":
     import sys
