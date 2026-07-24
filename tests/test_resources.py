@@ -6,6 +6,7 @@ from tracemalloc import stop
 # CentralStorage
 # ---------------------------------------------------------------------------
 
+
 class testPacket1(ctypes.Structure):  # 4 bytes
     _fields_ = [
         ("field1", ctypes.c_int),
@@ -22,6 +23,7 @@ class testPacket2(ctypes.Structure):  # 8 bytes
 # ---------------------------------------------------------------------------
 # TelemetryManager - Tests for the __construct_packet method
 # ---------------------------------------------------------------------------
+
 
 class SubPacket(ctypes.LittleEndianStructure):
     _pack_ = 1
@@ -83,6 +85,7 @@ class FullPacket(ctypes.LittleEndianStructure):
         ("wchar_ptr", ctypes.c_wchar_p),
     ]
 
+
 full_packet_byte = b"\x01\xf4\x18\xfc`y\xfe\xff\xc0\x1d\xfe\xff5\xfb\x04\x8e\xe0\xfe\xff\xff\xd6\xff\xff\xff\xff\xff\xff\xff\xc8@\x9c\x00^\xd0\xb2@\xe2\x01\x00\xf2/\xces:\x0b\x00\x00\xe7\x03\x00\x00\x00\x00\x00\x00\xfb\xfa\xd0\x8a`\xea\x00l\xca\x88\x00(k\xee\x00\x00|\x1d\xaf\x93\x19\x83\x00\x00\x08\xc5\xa1\xd8\xcc\xf9\xd0\x0fI@iW\x14\x8b\n\xbf\x05@Z\x05\x7ff\x9e\xa0\xf6?ZW\x00hello\x00\x00\x00h\x00i\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00\x14\x00\x00\x00\x1e\x00\x00\x00(\x00\x00\x00\x07\x00\x01\x01\x00\x00\x02\x00\x01\x8d90\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
 full_unpacked_packet = FullPacket.from_buffer_copy(full_packet_byte)
@@ -141,23 +144,29 @@ class metaData:
         1: (HeaderPacket,),
     }
 
+
 # ---------------------------------------------------------------------------
 # TelemetryManager - Tests for addWorkerThread method
 # ---------------------------------------------------------------------------
 
+
 def func1():
     print("FUNC1")
-    
+
+
 def func2(argInput):
     pass
+
 
 def func3(worker_id, ro_storage, stop_event):
     print(worker_id)
     a = ro_storage
     b = stop_event
 
+
 def func4(worker_id, ro_storage, stop_event, argInput):
     pass
+
 
 class workerClass:
     def workerFunc(self):

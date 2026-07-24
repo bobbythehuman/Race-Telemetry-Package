@@ -8,7 +8,7 @@ Run with:
 
 import ctypes
 import enum
-
+from typing import Any
 import pytest
 
 from ..src.RaceTelemetry.digestion import (
@@ -108,11 +108,13 @@ class Colour(enum.IntEnum):
     GREEN = 1
     BLUE = 2
 
+
 class Tire(enum.StrEnum):
     FRONT_LEFT = "FL"
     FRONT_RIGHT = "FR"
     REAR_LEFT = "RL"
     REAR_RIGHT = "RR"
+
 
 class Button(enum.Flag):
     NONE = 0
@@ -121,73 +123,129 @@ class Button(enum.Flag):
     C = 4
     D = 8
 
+
 class TestApplyEnum:
 
-    def test_no_enum_type_returns_value_unchanged(self):
-        assert applyEnum(5, None, enumMode=0) == 5
-        assert applyEnum(5, None, enumMode=1) == 5
-        assert applyEnum(5, None, enumMode=2) == 5
-        assert applyEnum("FL", None, enumMode=0) == "FL"
-        assert applyEnum("FL", None, enumMode=1) == "FL"
-        assert applyEnum("FL", None, enumMode=2) == "FL"
+    @pytest.mark.parametrize(
+        "operand1, operand2, operand3, expected",
+        [
+            (5, None, 0, 5),
+            (5, None, 1, 5),
+            (5, None, 2, 5),
+            ("FL", None, 0, "FL"),
+            ("FL", None, 1, "FL"),
+            ("FL", None, 2, "FL"),
+        ],
+    )
+    def test_no_enum_type_returns_value_unchanged(
+        self,
+        operand1: Any,
+        operand2: Any,
+        operand3: Any,
+        expected: Any,
+    ):
+        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
 
-    def test_enum_mode_0_returns_enum_member(self):
-        assert applyEnum(1, Colour, enumMode=0) == Colour.GREEN
-        assert applyEnum(2, Colour, enumMode=0) == Colour.BLUE
-        assert applyEnum("FL", Tire, enumMode=0) == Tire.FRONT_LEFT
-        assert applyEnum("RR", Tire, enumMode=0) == Tire.REAR_RIGHT
-        assert applyEnum(2, Button, enumMode=0) == Button.B
-        assert applyEnum(8, Button, enumMode=0) == Button.D
-        assert applyEnum(6, Button, enumMode=0) == Button.B|Button.C
+    @pytest.mark.parametrize(
+        "operand1, operand2, operand3, expected",
+        [
+            (1, Colour, 0, Colour.GREEN),
+            (2, Colour, 0, Colour.BLUE),
+            ("FL", Tire, 0, Tire.FRONT_LEFT),
+            ("RR", Tire, 0, Tire.REAR_RIGHT),
+            (2, Button, 0, Button.B),
+            (8, Button, 0, Button.D),
+            (6, Button, 0, Button.B | Button.C),
+        ],
+    )
+    def test_enum_mode_0_returns_enum_member(
+        self,
+        operand1: Any,
+        operand2: Any,
+        operand3: Any,
+        expected: Any,
+    ):
+        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
 
-    def test_enum_mode_1_returns_enum_value(self):
-        assert applyEnum(1, Colour, enumMode=1) == 1
-        assert applyEnum(2, Colour, enumMode=1) == 2
-        assert applyEnum("FL", Tire, enumMode=1) == "FL"
-        assert applyEnum("RR", Tire, enumMode=1) == "RR"
-        assert applyEnum(2, Button, enumMode=1) == 2
-        assert applyEnum(8, Button, enumMode=1) == 8
-        assert applyEnum(6, Button, enumMode=1) == 6
+    @pytest.mark.parametrize(
+        "operand1, operand2, operand3, expected",
+        [
+            (1, Colour, 1, 1),
+            (2, Colour, 1, 2),
+            ("FL", Tire, 1, "FL"),
+            ("RR", Tire, 1, "RR"),
+            (2, Button, 1, 2),
+            (8, Button, 1, 8),
+            (6, Button, 1, 6),
+        ],
+    )
+    def test_enum_mode_1_returns_enum_value(
+        self,
+        operand1: Any,
+        operand2: Any,
+        operand3: Any,
+        expected: Any,
+    ):
+        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
 
-    def test_enum_mode_2_returns_enum_name(self):
-        assert applyEnum(1, Colour, enumMode=2) == "GREEN"
-        assert applyEnum(2, Colour, enumMode=2) == "BLUE"
-        assert applyEnum("FL", Tire, enumMode=2) == "FRONT_LEFT"
-        assert applyEnum("RR", Tire, enumMode=2) == "REAR_RIGHT"
-        assert applyEnum(2, Button, enumMode=2) == "B"
-        assert applyEnum(8, Button, enumMode=2) == "D"
-        assert applyEnum(6, Button, enumMode=2) == "B|C"
+    @pytest.mark.parametrize(
+        "operand1, operand2, operand3, expected",
+        [
+            (1, Colour, 2, "GREEN"),
+            (2, Colour, 2, "BLUE"),
+            ("FL", Tire, 2, "FRONT_LEFT"),
+            ("RR", Tire, 2, "REAR_RIGHT"),
+            (2, Button, 2, "B"),
+            (8, Button, 2, "D"),
+            (6, Button, 2, "B|C"),
+        ],
+    )
+    def test_enum_mode_2_returns_enum_name(
+        self,
+        operand1: Any,
+        operand2: Any,
+        operand3: Any,
+        expected: Any,
+    ):
+        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
 
-    def test_invalid_value_falls_back_to_original(self):
-        # test IntEnum with invalid value
-        assert applyEnum(-1, Colour, enumMode=0) == -1
-        assert applyEnum(-1, Colour, enumMode=1) == -1
-        assert applyEnum(-1, Colour, enumMode=2) == -1
-        assert applyEnum(99, Colour, enumMode=0) == 99
-        assert applyEnum(99, Colour, enumMode=1) == 99
-        assert applyEnum(99, Colour, enumMode=2) == 99
-        assert applyEnum("Red", Colour, enumMode=0) == "Red"
-        assert applyEnum("Red", Colour, enumMode=1) == "Red"
-        assert applyEnum("Red", Colour, enumMode=2) == "Red"
-
-        # test StrEnum with invalid value
-        assert applyEnum("FF", Tire, enumMode=0) == "FF"
-        assert applyEnum("FF", Tire, enumMode=1) == "FF"
-        assert applyEnum("FF", Tire, enumMode=2) == "FF"
-        assert applyEnum(3, Tire, enumMode=0) == 3
-        assert applyEnum(3, Tire, enumMode=1) == 3
-        assert applyEnum(3, Tire, enumMode=2) == 3
-
-        # test Flag enum with invalid value
-        assert applyEnum(16, Button, enumMode=0) == 16
-        assert applyEnum(16, Button, enumMode=1) == 16
-        assert applyEnum(16, Button, enumMode=2) == 16
-        assert applyEnum(20, Button, enumMode=0) == 20
-        assert applyEnum(20, Button, enumMode=1) == 20
-        assert applyEnum(20, Button, enumMode=2) == 20
-        assert applyEnum("A", Button, enumMode=0) == "A"
-        assert applyEnum("A", Button, enumMode=1) == "A"
-        assert applyEnum("A", Button, enumMode=2) == "A"
+    @pytest.mark.parametrize(
+        "operand1, operand2, operand3, expected",
+        [
+            (-1, Colour, 0, -1),
+            (-1, Colour, 1, -1),
+            (-1, Colour, 2, -1),
+            (99, Colour, 0, 99),
+            (99, Colour, 1, 99),
+            (99, Colour, 2, 99),
+            ("Red", Colour, 0, "Red"),
+            ("Red", Colour, 1, "Red"),
+            ("Red", Colour, 2, "Red"),
+            ("FF", Tire, 0, "FF"),
+            ("FF", Tire, 1, "FF"),
+            ("FF", Tire, 2, "FF"),
+            (3, Tire, 0, 3),
+            (3, Tire, 1, 3),
+            (3, Tire, 2, 3),
+            (16, Button, 0, 16),
+            (16, Button, 1, 16),
+            (16, Button, 2, 16),
+            (20, Button, 0, 20),
+            (20, Button, 1, 20),
+            (20, Button, 2, 20),
+            ("A", Button, 0, "A"),
+            ("A", Button, 1, "A"),
+            ("A", Button, 2, "A"),
+        ],
+    )
+    def test_invalid_value_falls_back_to_original(
+        self,
+        operand1: Any,
+        operand2: Any,
+        operand3: Any,
+        expected: Any,
+    ):
+        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
 
 
 # ---------------------------------------------------------------------------
@@ -285,7 +343,7 @@ class TestDynamicIngest:
         p = WithNone(ptr=None)
         result = dynamic_ingest(p)
         assert result.ptr is None
-    
+
     def test_full_packet_ingestion(self):
         result1 = dynamic_ingest(full_unpacked_packet, enumMode=0)
         result2 = dynamic_ingest(header_unpacked_packet, enumMode=0)
@@ -293,6 +351,8 @@ class TestDynamicIngest:
 
 result1 = dynamic_ingest(full_unpacked_packet, enumMode=0)
 result2 = dynamic_ingest(header_unpacked_packet, enumMode=0)
+
+
 class TestFullPacketIngestion:
 
     def test_full_packet_boolean(self):
@@ -360,7 +420,9 @@ class TestFullPacketIngestion:
         assert result2.header.header_id == 1
         assert result2.header.packetNum == 28
 
+
 if __name__ == "__main__":
     import sys
 
     sys.exit(pytest.main([__file__, "-v"]))
+    # --disable-warnings

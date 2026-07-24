@@ -14,7 +14,7 @@ name = "RaceTelemetry" # this is the PyPI name (can differ from import name)
 version = "v4.6.7-1"    # [major server] . [minor server] . [data structure version] - [package version]
 authors = [{ name = "bobbythehuman" }]
 description = "A telemetry package that can extract UDP and Shared Memory data from most racing games."
-readme = "README_PyPI.md"
+readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
