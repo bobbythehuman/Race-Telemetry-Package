@@ -117,6 +117,7 @@ class TelemetryManager:
         # extra constants and single purpose
         self.HEARTBEAT_INTERVAL: int = 5
         self.PACKET_COUNTER: int = 0
+        self.FULLBUFFERSIZE: int = 0
 
         self.enumMode: int = 0
 
@@ -127,10 +128,16 @@ class TelemetryManager:
         Call this to update the metadata and reset storage.
         Must be called at least once before starting threads.
         """
+        if self.workersAreWorking:
+            LOGGER.warning("[MAIN] Tried to update meta after telemetry has started.")
+            return
+
         if self.ACTIVE_METADATA != MetaData:
             self.ACTIVE_METADATA = MetaData
             self.activeStorage = CentralStorage(self.ACTIVE_METADATA)
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
+
+            self.FULLBUFFERSIZE = self.__get_max_packet_size()
         self.__unpack_meta_data()
 
     def updateLocalIP(self, ip: str) -> bool:
@@ -484,7 +491,7 @@ class TelemetryManager:
         packetID = 0
         headerPacket = None
         heartBeatDestination = (self.destinationIP, self.heartBeatPort)
-        fullBufferSize = self.__get_max_packet_size()
+        # fullBufferSize = self.__get_max_packet_size()
 
         if self.heartBeatFunc:
             if self.PACKET_COUNTER % self.HEARTBEAT_INTERVAL == 0:
@@ -494,7 +501,7 @@ class TelemetryManager:
                 self.PACKET_COUNTER = 0
 
         try:
-            data, _ = sock.recvfrom(fullBufferSize)
+            data, _ = sock.recvfrom(self.FULLBUFFERSIZE)
         except TimeoutError:
             if self.heartBeatFunc:
                 self.heartBeatFunc(sock, heartBeatDestination)
@@ -571,7 +578,8 @@ class TelemetryManager:
         sharedMemoryInfo = {}
 
         if isinstance(allSharedMemoryNames, str):
-            SMSize = self.__get_max_packet_size()
+            # SMSize = self.__get_max_packet_size()
+            SMSize = self.FULLBUFFERSIZE
             SMMap = mmap.mmap(-1, SMSize, tagname=allSharedMemoryNames, access=mmap.ACCESS_READ)
             sharedMemoryInfo.update({SMMap: SMSize})
             LOGGER.info("[NTWK] [Info]\tServer started on %s with size %d bytes" % (allSharedMemoryNames, SMSize))
@@ -609,8 +617,9 @@ class TelemetryManager:
                 # continue
             else:
                 for SMData in SMRawData:
-                    non_zeros = set(SMData).difference(b"\x00")
-                    if not non_zeros:
+                    # non_zeros = set(SMData).difference(b"\x00")
+                    if any(SMData):
+                        # if not non_zeros:
                         continue
                     packet, packetID, headerPacket = self.__retrieve_packet(SMData)
 
