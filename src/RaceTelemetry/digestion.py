@@ -1,7 +1,18 @@
 import ctypes
 import warnings
+import logging
 
 from types import SimpleNamespace
+
+# ---------------------------------------------------------------------------
+# Other Setups
+# ---------------------------------------------------------------------------
+
+LOGGER = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Bytes to strings
+# ---------------------------------------------------------------------------
 
 
 def new_byte_to_string(value: bytes, extra=True) -> str:
@@ -21,6 +32,11 @@ def new_byte_to_string(value: bytes, extra=True) -> str:
     cutValue = splitValue[0]
 
     return cutValue
+
+
+# ---------------------------------------------------------------------------
+# Unpack arrays
+# ---------------------------------------------------------------------------
 
 
 def unpack_array(packet) -> list | str:
@@ -57,9 +73,15 @@ def unpack_array(packet) -> list | str:
 
         else:
             # assume it is a class
+            LOGGER.info("Unknown value, assuming it is a class %r" % item)
             value[key] = dynamic_ingest(item)
 
     return value
+
+
+# ---------------------------------------------------------------------------
+# Apply enums
+# ---------------------------------------------------------------------------
 
 
 def apply_enum(value, enumType, enumMode: int = 0):
@@ -76,11 +98,16 @@ def apply_enum(value, enumType, enumMode: int = 0):
         elif enumMode == 2:
             value = enumType(value).name
     except ValueError:
-        warnings.warn(f"[ENUM] [Warning]\tvalue {value} is not a valid enum member of {enumType}")
+        LOGGER.warning("[msg=ENUM] [Warning]\tvalue %s is not a valid enum member of %s" % (value, enumType))
         # If the value is not a valid enum member, keep it as is
         value = value
 
     return value
+
+
+# ---------------------------------------------------------------------------
+# Dynamic ingestion
+# ---------------------------------------------------------------------------
 
 
 def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
@@ -96,8 +123,8 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     enums = getattr(packet, "_enums_", {})
 
     packetName = packet.__class__.__name__
-    # newPacket = type(packetName, (), {})
-    newPacket = SimpleNamespace()
+    newPacket = type(packetName, (), {})
+    # newPacket = SimpleNamespace()
 
     # reverse enum dictionary so attribute references an enum
     inverseEnums = {}
@@ -132,6 +159,7 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
 
         else:
             # assume it is a class
+            LOGGER.info("Unknown value, assuming it is a class %r" % value)
             value = dynamic_ingest(value)
 
         if source_attr in inverseEnums:
@@ -139,6 +167,7 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
             all_enum_type = inverseEnums[source_attr]
 
             if len(all_enum_type) > 1:
+                LOGGER.critical("Multiple enum types found for attribute '%s': %s. Cannot determine which one to use." % (source_attr, all_enum_type))
                 raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
             else:
                 enum_type = all_enum_type[0]

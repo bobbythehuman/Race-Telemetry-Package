@@ -1,15 +1,21 @@
 import ctypes
 import socket
 import mmap
-import warnings
 import threading
 import re
+import logging
 
 from typing import Generator, Tuple, Type, Any
 from datetime import datetime
 from copy import deepcopy
 
 from .digestion import dynamic_ingest
+
+# ---------------------------------------------------------------------------
+# Other Setups
+# ---------------------------------------------------------------------------
+
+LOGGER = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Central Storage
@@ -145,7 +151,7 @@ class TelemetryManager:
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
         """
         if not callable(mainFunc):
-            warnings.warn(f"[MAIN] [Warning]\tWorker function must be callable.")
+            LOGGER.warning("[MAIN] [Warning]\tWorker function must be callable.")
             return False
 
         if self.__valid_type(mainFunc, type, "Worker Function"):
@@ -200,7 +206,7 @@ class TelemetryManager:
         if not self.__valid_type(target, int, "Enum Mode"):
             return False
         if target not in [0, 1, 2]:
-            warnings.warn(f"[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
+            LOGGER.warning(f"[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
             return False
 
         self.enumMode = target
@@ -337,9 +343,10 @@ class TelemetryManager:
                         self.__trigger_stop()
 
         except KeyboardInterrupt:
-            print("\n[MAIN] [INFO]\tKeyboardInterrupt received.")
+            LOGGER.debug("Keyboard Interrupt from wait_for_stop_signal")
+            LOGGER.info("\n[MAIN] [INFO]\tKeyboardInterrupt received.")
         finally:
-            print("[MAIN] [INFO]\tStopping all threads\n")
+            LOGGER.info("[MAIN] [INFO]\tStopping all threads\n")
             self.__stop_threads()
 
     def __stop_threads(self) -> None:
@@ -357,10 +364,10 @@ class TelemetryManager:
         for workerName, workerThread in self.workerThreads.items():
             workerThread.join(timeout=0.5)
             if workerThread.is_alive():
-                print(f"[MAIN] [WARNING]\tWarning: {workerName} did not stop in time.")
+                LOGGER.warning("[MAIN] [WARNING]\tWarning: %s did not stop in time." % (workerName))
 
         self.workersAreWorking = False
-        print("\n[MAIN] [INFO]\tAll threads stopped. Exiting.")
+        LOGGER.info("[MAIN] [INFO]\tAll threads stopped. Exiting.")
 
     def StartTelemetry(self) -> None:
         """
@@ -370,12 +377,12 @@ class TelemetryManager:
         if self.readOnlyStorage is None:
             raise RuntimeError("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
-        print("[MAIN] [INFO]\tStart at ", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
+        LOGGER.info("[MAIN] [INFO]\tStart at %s" % (datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f")))
         self.__start_threads()
-        print("\n[MAIN] [INFO]\tRunning — press Ctrl+C to stop.")
+        LOGGER.info("[MAIN] [INFO]\tRunning — press Ctrl+C to stop.")
         # comment lines below to make a manual stop outside class
         self.__wait_for_stop_signal()
-        print("[MAIN] [INFO]\tEnd at ", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
+        LOGGER.info("[MAIN] [INFO]\tEnd at %s" % (datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f")))
 
     # Misc packet function
 
@@ -395,12 +402,13 @@ class TelemetryManager:
                 try:
                     rawPacket = packetStruct.from_buffer_copy(data[0:packetBufferSize])
                 except ValueError as exc:
+                    LOGGER.debug("Packet failed to unpack with %s" % (packetStruct.__name__))
                     continue
                 else:
                     packet = dynamic_ingest(rawPacket, self.enumMode)
                     break
         if len(possiblePacketStruct) == len(packetSizes):
-            print(f"[Warning]\tNo matching packet size [{packetSizes}] for received data length {dataLength}")
+            LOGGER.warning("[Warning]\tNo matching packet size [%s] for received data length %d" % (packetSizes, dataLength))
             packet = None
 
         # do enum check here
@@ -428,7 +436,7 @@ class TelemetryManager:
         if possiblePacketStruct:
             packet = self.__construct_packet(data, possiblePacketStruct)
         else:
-            print("ID not found")
+            LOGGER.warning("ID not found")
             packet = None
 
         return packet, packetID, headerPacket
@@ -461,11 +469,12 @@ class TelemetryManager:
                 self.PACKET_COUNTER = 0
 
         except KeyboardInterrupt:
-            print("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
+            LOGGER.debug("Keyboard Interrupt from process_loop")
+            LOGGER.info("[NTWK] [Info]\tKeyboard Interrupt received, shutting down server.")
             self.__trigger_stop()
 
         except OSError as exc:
-            print(f"[NTWK] [Error]\tSocket error: {exc}")
+            LOGGER.error("[NTWK] [Error]\tSocket error: %s" % (exc))
             self.__trigger_stop()
 
         else:
@@ -495,15 +504,15 @@ class TelemetryManager:
         try:
             sock.bind((UDP_IP, UDP_PORT))
         except OSError:
-            print("[NTWK] [ERROR]\tOnly one usage of each socket address")
+            LOGGER.error("[NTWK] [ERROR]\tOnly one usage of each socket address")
             self.__trigger_stop()
         else:
-            print(f"[NTWK] [Info]\tServer started on {UDP_IP}:{UDP_PORT}")
+            LOGGER.info("[NTWK] [Info]\tServer started on %s:%d" % (UDP_IP, UDP_PORT))
 
             if self.handShakeFunc:
                 self.handShakeFunc[0](sock, handShakeDestination)
 
-            print("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
+            LOGGER.info("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
             while self.__is_still_active():
                 yield self.__process_loop(sock)
 
@@ -511,7 +520,7 @@ class TelemetryManager:
                 self.handShakeFunc[1](sock, handShakeDestination)
         finally:
             sock.close()
-            print("[NTWK] [Info]\tServer shutting down.")
+            LOGGER.info("[NTWK] [Info]\tServer shutting down.")
 
     # Main shared memory packet function
 
@@ -519,6 +528,7 @@ class TelemetryManager:
         allSharedMemoryNames = self.allSharedMemoryNames
 
         if not allSharedMemoryNames:
+            LOGGER.critical("[NTWK] [Error]\tShared memory name is not set.")
             raise ValueError("[NTWK] [Error]\tShared memory name is not set.")
 
         sharedMemoryInfo = {}
@@ -527,7 +537,7 @@ class TelemetryManager:
             SMSize = self.__get_max_packet_size()
             SMMap = mmap.mmap(-1, SMSize, tagname=allSharedMemoryNames, access=mmap.ACCESS_READ)
             sharedMemoryInfo.update({SMMap: SMSize})
-            print(f"[NTWK] [Info]\tServer started on {allSharedMemoryNames} with size {SMSize} bytes")
+            LOGGER.info("[NTWK] [Info]\tServer started on %s with size %d bytes" % (allSharedMemoryNames, SMSize))
         elif isinstance(allSharedMemoryNames, dict):
             SMNames = []
             for packetID, packetInfo in self.packetInfo.items():
@@ -538,7 +548,7 @@ class TelemetryManager:
                         SMNames.append(SMName)
                         SMMap = mmap.mmap(-1, SMSize, tagname=SMName, access=mmap.ACCESS_READ)
                         sharedMemoryInfo.update({SMMap: SMSize})
-            print(f"[NTWK] [Info]\tServer started for {SMNames} with sizes {[size for size in sharedMemoryInfo.values()]} bytes")
+            LOGGER.info("[NTWK] [Info]\tServer started for %s with sizes %s bytes" % (SMNames, [size for size in sharedMemoryInfo.values()]))
         else:
             raise ValueError("[NTWK] [Error]\tShared memory name must be a string or a dict mapping packet names to shared memory names.")
 
@@ -552,11 +562,12 @@ class TelemetryManager:
             except TimeoutError:
                 pass
             except KeyboardInterrupt:
-                print("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
+                LOGGER.debug("Keyboard Interrupt from get_shared_packets")
+                LOGGER.info("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
                 self.__trigger_stop()
                 # continue
             except OSError as exc:
-                print(f"[NTWK] [Error]\tShared memory error: {exc}")
+                LOGGER.error("[NTWK] [Error]\tShared memory error: %s" % exc)
                 self.__trigger_stop()
                 # continue
             else:
@@ -570,16 +581,16 @@ class TelemetryManager:
 
         for SMMap in sharedMemoryInfo.keys():
             SMMap.close()
-        print("[NTWK] [Info]\tServer shutting down.")
+        LOGGER.info("[NTWK] [Info]\tServer shutting down.")
 
     # Main thread functions
 
     def GetTelemetry(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
         if self.sharedMemory:
-            print("[NTWK] [Info]\tUsing shared memory telemetry.")
+            LOGGER.info("[NTWK] [Info]\tUsing shared memory telemetry.")
             yield from self.get_shared_packets()
         else:
-            print("[NTWK] [Info]\tUsing UDP telemetry.")
+            LOGGER.info("[NTWK] [Info]\tUsing UDP telemetry.")
             yield from self.get_udp_packets()
 
     def __network_listener(self) -> None:
@@ -591,5 +602,5 @@ class TelemetryManager:
             raise ValueError("[NTWK] [Error]\tStorage instance is not initialized.")
 
         for packet, packetID, headerPacket in self.GetTelemetry():
-            # print(f"[NTWK] [Info]\tReceived packet ID {packetID}")
+            # LOGGER.debug("[NTWK] [Info]\tReceived packet ID %d" % (packetID))
             self.activeStorage._write(packet)
