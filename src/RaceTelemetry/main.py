@@ -5,7 +5,6 @@ import warnings
 import threading
 import re
 
-from dataclasses import dataclass
 from typing import Generator, Tuple, Type, Any
 from datetime import datetime
 from copy import deepcopy
@@ -17,7 +16,6 @@ from .digestion import dynamic_ingest
 # ---------------------------------------------------------------------------
 
 
-@dataclass
 class CentralStorage:
     """
     Holds the latest network data.  Worker threads receive a read-only view
@@ -122,12 +120,8 @@ class TelemetryManager:
         Call this to update the local IP address the server listens on.
         Default is "0.0.0.0"
         """
-        if not isinstance(ip, str):
-            warnings.warn("[NTWK] [Warning]\tInvalid IP address")
-            return False
 
-        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
-            warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
+        if not self.__is_valid_ip(ip):
             return False
 
         self.IP = ip
@@ -138,12 +132,8 @@ class TelemetryManager:
         Call this to update the destination IP address for handshakes and heartbeats.
         Default is None, which will cause an error if handshakes or heartbeats are enabled.
         """
-        if not isinstance(ip, str):
-            warnings.warn("[NTWK] [Warning]\tInvalid IP address")
-            return False
 
-        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
-            warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
+        if not self.__is_valid_ip(ip):
             return False
 
         self.destinationIP = ip
@@ -221,7 +211,7 @@ class TelemetryManager:
         self.enumMode = target
         return True
 
-    # Misc packet functions
+    # Misc innit functions
 
     def __meta_data_check(self, name: str, value: Any = None) -> Any:
         """
@@ -270,6 +260,17 @@ class TelemetryManager:
                 packetSize = self.__get_packet_size(packetStruct)
                 allSizes.append(packetSize)
         return max(allSizes) if allSizes else 0
+
+    def __is_valid_ip(self, ip: str) -> bool:
+        if not isinstance(ip, str):
+            warnings.warn("[NTWK] [Warning]\tInvalid IP address")
+            return False
+
+        if re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
+            return True
+
+        warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
+        return False
 
     # Misc thread function
 
