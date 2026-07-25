@@ -250,7 +250,7 @@ class TelemetryManager:
         self.handShakePort = self.__meta_data_check("handShakePort")
         self.handShakeFunc = self.__meta_data_check("handShakeFunc")
 
-        self.decryptionFunc = self.__meta_data_check("decrytionFunc")
+        self.decryptionFunc = self.__meta_data_check("decryptionFunc")
 
         self.headerPacket = self.__meta_data_check("headerInfo")
         self.packetIDAttr = self.__meta_data_check("packetIDAttribute")

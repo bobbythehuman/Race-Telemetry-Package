@@ -1,4 +1,4 @@
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.BNG_struct import MetaData
 
 
@@ -35,7 +35,7 @@ def displayFormat(worker_id: int, ro_storage, stop_event):
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
 
 
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 activeThreads.updateMeta(MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayFormat)

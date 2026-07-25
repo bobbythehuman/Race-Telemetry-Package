@@ -109,14 +109,14 @@ class MetaData:
     
     # use if a heartbeat is needed
     heartBeatPort: int | None = None
-    heartBeatFunc = None
+    heartBeatFunc: function | None = None
     
     # use for itinial hand shake
     handShakePort: int | None = None
     handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
-    decryptionFunc = None
+    decryptionFunc: function | None = None
     
     # use if there is a header packet
     headerInfo: type | None = None
