@@ -281,7 +281,7 @@ class telemetryManager:
             self.stop_event.set()
         else:
             self.stop_event.clear()
-        self.manuallyStopped = mode
+        # self.manuallyStopped = mode
 
     def __isStillActive(self) -> bool:
         """
@@ -484,26 +484,26 @@ class telemetryManager:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # listen to occupied ports
         sock.settimeout(1.0)  # allows checking stop_event periodically
-        # try:
-        sock.bind((UDP_IP, UDP_PORT))
-        # except OSError:
-        #     print("[NTWK] [ERROR]\tOnly one usage of each socket address")
-        #     self.__triggerStop()
-        # else:
-        print(f"[NTWK] [Info]\tServer started on {UDP_IP}:{UDP_PORT}")
+        try:
+            sock.bind((UDP_IP, UDP_PORT))
+        except OSError:
+            print("[NTWK] [ERROR]\tOnly one usage of each socket address")
+            self.__triggerStop()
+        else:
+            print(f"[NTWK] [Info]\tServer started on {UDP_IP}:{UDP_PORT}")
 
-        if self.handShakeFunc:
-            self.handShakeFunc[0](sock, handShakeDestination)
+            if self.handShakeFunc:
+                self.handShakeFunc[0](sock, handShakeDestination)
 
-        print("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
-        while self.__isStillActive():
-            yield self.__process_loop(sock, PACKET_COUNTER)
+            print("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
+            while self.__isStillActive():
+                yield self.__process_loop(sock, PACKET_COUNTER)
 
-        if self.handShakeFunc:
-            self.handShakeFunc[1](sock, handShakeDestination)
-        # finally:
-        sock.close()
-        print("[NTWK] [Info]\tServer shutting down.")
+            if self.handShakeFunc:
+                self.handShakeFunc[1](sock, handShakeDestination)
+        finally:
+            sock.close()
+            print("[NTWK] [Info]\tServer shutting down.")
 
     # Main shared memory packet function
 
