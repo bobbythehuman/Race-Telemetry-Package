@@ -11,7 +11,6 @@ import re
 
 from .digestion import dynamic_ingest
 
-
 # ---------------------------------------------------------------------------
 # Central Storage
 # ---------------------------------------------------------------------------
@@ -68,6 +67,7 @@ class ReadOnlyStorage:
     def snapshot(self) -> dict[str, Any]:
         return self._storage.snapshot()
 
+
 # ---------------------------------------------------------------------------
 # Manages Threads
 # ---------------------------------------------------------------------------
@@ -100,10 +100,10 @@ class telemetryManager:
     # User controlled functions
 
     def updateMeta(self, MetaData) -> None:
-        '''
+        """
         Call this to update the metadata and reset storage.
         Must be called at least once before starting threads.
-        '''
+        """
         if self.ACTIVE_METADATA != MetaData:
             self.ACTIVE_METADATA = MetaData
             self.activeStorage = CentralStorage(self.ACTIVE_METADATA)
@@ -111,15 +111,15 @@ class telemetryManager:
         self.__unpackMetaData()
 
     def updateLocalIP(self, ip: str) -> bool:
-        '''
+        """
         Call this to update the local IP address the server listens on.
         Default is "0.0.0.0"
-        '''
+        """
         if not isinstance(ip, str):
             warnings.warn("[NTWK] [Warning]\tInvalid IP address")
             return False
 
-        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
+        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
             warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
             return False
 
@@ -127,15 +127,15 @@ class telemetryManager:
         return True
 
     def updateSendIP(self, ip: str) -> bool:
-        '''
+        """
         Call this to update the destination IP address for handshakes and heartbeats.
         Default is None, which will cause an error if handshakes or heartbeats are enabled.
-        '''
+        """
         if not isinstance(ip, str):
             warnings.warn("[NTWK] [Warning]\tInvalid IP address")
             return False
 
-        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$",ip):
+        if not re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
             warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
             return False
 
@@ -143,10 +143,10 @@ class telemetryManager:
         return True
 
     def addWorkerThread(self, mainFunc) -> bool:
-        '''
-        Call this to add a worker thread to access the data. 
+        """
+        Call this to add a worker thread to access the data.
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
-        '''
+        """
         if not callable(mainFunc):
             warnings.warn(f"[MAIN] [Warning]\tWorker function must be callable.")
             return False
@@ -172,11 +172,11 @@ class telemetryManager:
             return False
 
         self.manuallyStopped = target
-        self.__triggerStop(target)
+        # self.__triggerStop(target)
         return True
 
     def isMultiThreaded(self, target: bool = True) -> bool:
-        '''Currently does nothing'''
+        """Currently does nothing"""
         if not isinstance(target, bool):
             warnings.warn(f"[MAIN] [Warning]\tMulti-threaded target must be a boolean.")
             return False
@@ -185,10 +185,10 @@ class telemetryManager:
         return True
 
     def isSharedMemory(self, target: bool = False) -> bool:
-        '''
+        """
         Call this to set whether to use shared memory or UDP for telemetry.
         Default is False (UDP).
-        '''
+        """
         if not isinstance(target, bool):
             warnings.warn(f"[MAIN] [Warning]\tShared memory target must be a boolean.")
             return False
@@ -197,14 +197,14 @@ class telemetryManager:
         return True
 
     def setEnumMode(self, target: int = 0) -> bool:
-        '''
+        """
         Call this to set the enum mode for handling enum values.
         Default is 0 (no special handling).
         Modes:
         0: No special handling (default)
         1: Convert fields with to the raw value
         2: Convert fields to their enum type
-        '''
+        """
         if not isinstance(target, int):
             warnings.warn(f"[MAIN] [Warning]\tEnum mode must be an integer.")
             return False
@@ -218,10 +218,10 @@ class telemetryManager:
     # Misc packet functions
 
     def __metaDataCheck(self, name: str, value: Any = None) -> Any:
-        '''
+        """
         Helper function to check if metadata has the attribute, and return it if it does.
         Otherwise return the provided default value.
-        '''
+        """
 
         if hasattr(self.ACTIVE_METADATA, name):
             return getattr(self.ACTIVE_METADATA, name)
@@ -231,9 +231,9 @@ class telemetryManager:
             # _heartBeatPort = None
 
     def __unpackMetaData(self) -> None:
-        '''
+        """
         Helper function to unpack metadata attributes into class attributes for easy access
-        '''
+        """
         self.mainPort = self.__metaDataCheck("port")
 
         self.heartBeatPort = self.__metaDataCheck("heartBeatPort")
@@ -252,12 +252,12 @@ class telemetryManager:
         self.packetInfo = self.__metaDataCheck("packetInfo", [])
 
     def __getPacketSize(self, packet) -> int:
-        '''Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction.'''
+        """Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction."""
         size = ctypes.sizeof(packet)
         return size
 
     def __getMaxPacketSize(self) -> int:
-        '''Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata.'''
+        """Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata."""
         allSizes = []
         for packetID, packetInfo in self.packetInfo.items():
             for packetStruct in packetInfo:
@@ -268,15 +268,15 @@ class telemetryManager:
     # Misc thread function
 
     def __wait(self, time: float) -> None:
-        '''
+        """
         Helper function to wait while still checking for stop_event
-        '''
+        """
         self.stop_event.wait(time)
 
     def __triggerStop(self, mode: bool = True) -> None:
-        '''
+        """
         Helper function to toggle the stop event and set manuallyStopped to True
-        '''
+        """
         if self.stop_event and mode:
             self.stop_event.set()
         else:
@@ -284,18 +284,18 @@ class telemetryManager:
         self.manuallyStopped = mode
 
     def __isStillActive(self) -> bool:
-        '''
+        """
         Helper function to check if the program should still be running
-        '''
+        """
         return not self.stop_event.is_set() and not self.manuallyStopped
 
     # Start and Stop functions
 
     def __startThreads(self) -> None:
-        '''
+        """
         Helper function to start the network thread and worker threads
         Does not start if metadata is not set or if IP is not set (for network thread)
-        '''
+        """
         if not self.ACTIVE_METADATA:
             return
         if not self.IP:
@@ -315,9 +315,9 @@ class telemetryManager:
         self.workersAreWorking = True
 
     def __waitForStopSignal(self) -> None:
-        '''
+        """
         Helper function to wait for a stop signal (either Ctrl+C or manual stop) while keeping the main thread alive
-        '''
+        """
         endProgram = ""
         try:
             while self.__isStillActive():
@@ -336,9 +336,9 @@ class telemetryManager:
             self.__stopThreads()
 
     def __stopThreads(self) -> None:
-        '''
+        """
         Helper function to stop all threads gracefully by triggering the stop event and joining threads with a timeout
-        '''
+        """
         if not self.workersAreWorking:
             return
         if not self.networkThread:
@@ -356,10 +356,10 @@ class telemetryManager:
         print("\n[MAIN] [INFO]\tAll threads stopped. Exiting.")
 
     def StartTelemetry(self) -> None:
-        '''
+        """
         Call this to start the network and worker threads.
         Will run until a stop signal is received (either Ctrl+C or manual stop).
-        '''
+        """
         print("[MAIN] [INFO]\tStart at ", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
         self.__startThreads()
         print("\n[MAIN] [INFO]\tRunning — press Ctrl+C to stop.")
@@ -370,10 +370,10 @@ class telemetryManager:
     # Misc packet function
 
     def __construct_packet(self, data: bytes, possiblePacketStruct: Tuple) -> type | None:
-        '''
+        """
         Helper function to construct a packet from the data using the possible packet structures provided in the metadata.
         Returns the constructed packet, or None if no matching packet structure is found.
-        '''
+        """
         packet = None
         packetSizes = []
         dataLength = len(data)
@@ -399,14 +399,14 @@ class telemetryManager:
         return packet
 
     def __retrieve_packet(self, data: bytes) -> tuple[type | None, int, Any]:
-        '''
+        """
         Helper function to retrieve the packet, packet ID, and header packet (if applicable) from the raw data.
         Returns a tuple of (packet, packetID, headerPacket).
         packet and headerPacket may be None if no matching packet structure is found or if no header is defined in the metadata.
-        '''
+        """
         if self.headerPacket:
             headerBufferSize = self.__getPacketSize(self.headerPacket)
-            rawHeaderPacket = self.headerPacket.from_buffer_copy(data[0 : headerBufferSize])
+            rawHeaderPacket = self.headerPacket.from_buffer_copy(data[0:headerBufferSize])
             headerPacket = dynamic_ingest(rawHeaderPacket)
 
             packetID = int(getattr(headerPacket, self.packetIDAttr))
@@ -426,10 +426,10 @@ class telemetryManager:
     # Main UDP packet function
 
     def __process_loop(self, sock: socket.socket, PACKET_COUNTER) -> Tuple[Type[Any] | None, int, Type[Any] | None]:
-        '''
+        """
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
-        '''
+        """
         HEARTBEAT_INTERVAL = 5
         packet = None
         packetID = 0
@@ -467,9 +467,9 @@ class telemetryManager:
         return packet, packetID, headerPacket
 
     def get_udp_packets(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
-        '''
+        """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
-        '''
+        """
 
         UDP_IP = self.IP
         UDP_PORT = self.mainPort
@@ -484,8 +484,12 @@ class telemetryManager:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # listen to occupied ports
         sock.settimeout(1.0)  # allows checking stop_event periodically
+        # try:
         sock.bind((UDP_IP, UDP_PORT))
-
+        # except OSError:
+        #     print("[NTWK] [ERROR]\tOnly one usage of each socket address")
+        #     self.__triggerStop()
+        # else:
         print(f"[NTWK] [Info]\tServer started on {UDP_IP}:{UDP_PORT}")
 
         if self.handShakeFunc:
@@ -497,6 +501,7 @@ class telemetryManager:
 
         if self.handShakeFunc:
             self.handShakeFunc[1](sock, handShakeDestination)
+        # finally:
         sock.close()
         print("[NTWK] [Info]\tServer shutting down.")
 
@@ -548,7 +553,7 @@ class telemetryManager:
                 # continue
             else:
                 for SMData in SMRawData:
-                    non_zeros = set(SMData).difference(b'\x00')
+                    non_zeros = set(SMData).difference(b"\x00")
                     if not non_zeros:
                         continue
                     packet, packetID, headerPacket = self.__retrieve_packet(SMData)
@@ -570,10 +575,10 @@ class telemetryManager:
             yield from self.get_udp_packets()
 
     def __network_listener(self) -> None:
-        '''
+        """
         Listens for incoming network packets and writes them to the active storage.
         This function runs in a separate thread and should not be called directly.
-        '''
+        """
         if self.activeStorage is None:
             raise ValueError("[NTWK] [Error]\tStorage instance is not initialized.")
 
