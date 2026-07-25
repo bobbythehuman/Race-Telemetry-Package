@@ -1,12 +1,13 @@
 from RaceTelemetry import telemetryManager
 from RaceTelemetry.data_structures.BNG_struct import MetaData
 
+
 def displaySpeed(worker_id: int, ro_storage, stop_event):
     print(f"[THRD] [INFO]\tWorker {worker_id} started.")
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
 
-        data = snapshot.get("lastestData")
+        data = snapshot.get("latestData")
         if data:
             telemetry = data.get("TelemetryData")
             if telemetry:
@@ -23,7 +24,7 @@ def displayFormat(worker_id: int, ro_storage, stop_event):
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
 
-        data = snapshot.get("lastestData")
+        data = snapshot.get("latestData")
         if data:
             motionData = data.get("MotionSim")
             if motionData:
