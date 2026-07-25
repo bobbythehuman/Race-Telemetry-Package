@@ -5,7 +5,7 @@ import threading
 import re
 import logging
 
-from typing import Generator, Tuple, Type, Any
+from typing import Generator, Any, Callable
 from datetime import datetime
 from copy import deepcopy
 
@@ -28,7 +28,7 @@ class CentralStorage:
     via ReadOnlyStorage so they cannot accidentally mutate the contents.
     """
 
-    def __init__(self, MetaData) -> None:
+    def __init__(self, MetaData: type) -> None:
         self._lock = threading.RLock()
 
         self.allData = {}
@@ -42,7 +42,7 @@ class CentralStorage:
                     self.allData[packetName] = []
                     self.latestData[packetName] = None
 
-    def _write(self, data) -> None:
+    def _write(self, data: type | None) -> None:
         """Called only by the network thread."""
         with self._lock:
             if data:
@@ -82,35 +82,47 @@ class ReadOnlyStorage:
 
 class TelemetryManager:
     def __init__(self):
-        self.ACTIVE_METADATA = None
-        self.IP = "0.0.0.0"
-        self.destinationIP = None
+        self.ACTIVE_METADATA: type | None = None
+        self.IP: str = "0.0.0.0"
+        self.destinationIP: str | None = None
+
+        # from meta data
+        self.mainPort: int | None = None
+        self.heartBeatPort: int | None = None
+        self.heartBeatFunc: function | None = None
+        self.handShakePort: int | None = None
+        self.handShakeFunc: tuple[function, function] | None = None
+        self.decryptionFunc: function | None = None
+        self.headerPacket: type | None = None
+        self.packetIDAttr: str | None = None
+        self.allSharedMemoryNames: str | None | dict[str, str] = None
+        self.packetInfo: dict[int, tuple[type, ...]] | None = None
 
         self.activeStorage = None
         self.readOnlyStorage = None
         self.stop_event = threading.Event()
-        self.manuallyStopped = False
+        self.manuallyStopped: bool = False
 
         self.networkThread = None
         self.workerThreads: dict[int, threading.Thread] = {}
 
-        self.workersAreWorking = False
-        self.threadCount = 0
-        self.multiThreaded = True
+        self.workersAreWorking: bool = False
+        self.threadCount: int = 0
+        self.multiThreaded: bool = True
 
-        self.sharedMemory = False
+        self.sharedMemory: bool = False
         self.sharedMemoryName = None
         self.sharedMemorySize = None
 
         # extra constants and single purpose
-        self.HEARTBEAT_INTERVAL = 5
-        self.PACKET_COUNTER = 0
+        self.HEARTBEAT_INTERVAL: int = 5
+        self.PACKET_COUNTER: int = 0
 
-        self.enumMode = 0
+        self.enumMode: int = 0
 
     # User controlled functions
 
-    def updateMeta(self, MetaData) -> None:
+    def updateMeta(self, MetaData: type) -> None:
         """
         Call this to update the metadata and reset storage.
         Must be called at least once before starting threads.
@@ -145,7 +157,7 @@ class TelemetryManager:
         self.destinationIP = ip
         return True
 
-    def addWorkerThread(self, mainFunc) -> bool:
+    def addWorkerThread(self, mainFunc: Callable[..., Any]) -> bool:
         """
         Call this to add a worker thread to access the data.
         The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
@@ -158,7 +170,6 @@ class TelemetryManager:
             return False
 
         self.threadCount += 1
-        # readOnlyStorage may need updating when metadata gets updated
         workerThread = threading.Thread(
             target=mainFunc,
             kwargs={"worker_id": self.threadCount, "ro_storage": self.readOnlyStorage, "stop_event": self.stop_event},
@@ -248,7 +259,7 @@ class TelemetryManager:
 
         self.packetInfo = self.__meta_data_check("packetInfo", [])
 
-    def __get_packet_size(self, packet) -> int:
+    def __get_packet_size(self, packet: type) -> int:
         """Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction."""
         size = ctypes.sizeof(packet)
         return size
@@ -386,7 +397,7 @@ class TelemetryManager:
 
     # Misc packet function
 
-    def __construct_packet(self, data: bytes, possiblePacketStruct: Tuple) -> type | None:
+    def __construct_packet(self, data: bytes, possiblePacketStruct: tuple) -> type | None:
         """
         Helper function to construct a packet from the data using the possible packet structures provided in the metadata.
         Returns the constructed packet, or None if no matching packet structure is found.
@@ -443,7 +454,7 @@ class TelemetryManager:
 
     # Main UDP packet function
 
-    def __process_loop(self, sock: socket.socket) -> Tuple[Type[Any] | None, int, Type[Any] | None]:
+    def __process_loop(self, sock: socket.socket) -> tuple[type[Any] | None, int, type[Any] | None]:
         """
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
@@ -484,7 +495,7 @@ class TelemetryManager:
             packet, packetID, headerPacket = self.__retrieve_packet(data)
         return packet, packetID, headerPacket
 
-    def get_udp_packets(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
+    def get_udp_packets(self) -> Generator[tuple[type[Any] | None, int, type[Any] | None], None, None]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         """
@@ -524,7 +535,7 @@ class TelemetryManager:
 
     # Main shared memory packet function
 
-    def get_shared_packets(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
+    def get_shared_packets(self) -> Generator[tuple[type[Any] | None, int, type[Any] | None], None, None]:
         allSharedMemoryNames = self.allSharedMemoryNames
 
         if not allSharedMemoryNames:
@@ -585,7 +596,7 @@ class TelemetryManager:
 
     # Main thread functions
 
-    def GetTelemetry(self) -> Generator[Tuple[Type[Any] | None, int, Type[Any] | None], None, None]:
+    def GetTelemetry(self) -> Generator[tuple[type[Any] | None, int, type[Any] | None], None, None]:
         if self.sharedMemory:
             LOGGER.info("[NTWK] [Info]\tUsing shared memory telemetry.")
             yield from self.get_shared_packets()
