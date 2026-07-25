@@ -172,7 +172,6 @@ class telemetryManager:
             return False
 
         self.manuallyStopped = target
-        # self.__triggerStop(target)
         return True
 
     def isMultiThreaded(self, target: bool = True) -> bool:
@@ -275,13 +274,12 @@ class telemetryManager:
 
     def __triggerStop(self, mode: bool = True) -> None:
         """
-        Helper function to toggle the stop event and set manuallyStopped to True
+        Helper function to toggle the stop event
         """
         if self.stop_event and mode:
             self.stop_event.set()
         else:
             self.stop_event.clear()
-        # self.manuallyStopped = mode
 
     def __isStillActive(self) -> bool:
         """
@@ -360,6 +358,9 @@ class telemetryManager:
         Call this to start the network and worker threads.
         Will run until a stop signal is received (either Ctrl+C or manual stop).
         """
+        if self.readOnlyStorage is None:
+            raise RuntimeError("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+
         print("[MAIN] [INFO]\tStart at ", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
         self.__startThreads()
         print("\n[MAIN] [INFO]\tRunning — press Ctrl+C to stop.")

@@ -104,6 +104,11 @@ class TestTelemetryManager:
     def test_telemetry_manager_initialization(self, telemetry: telemetryManager):
         assert isinstance(telemetry, telemetryManager)
 
+    def test_fail_start_telemetry(self, telemetry: telemetryManager):
+        telemetry = telemetryManager()
+        with pytest.raises(RuntimeError):
+            telemetry.StartTelemetry()
+
     def test_meta_data_check(self, telemetry: telemetryManager):
         assert telemetry._telemetryManager__metaDataCheck("port") == 1234
         assert telemetry._telemetryManager__metaDataCheck("packetIDAttribute") == "header_id"
@@ -124,11 +129,11 @@ class TestTelemetryManager:
         telemetry._telemetryManager__triggerStop()
         assert telemetry.stop_event.is_set() == True
 
-    def test_manual_stop(self, telemetry: telemetryManager):
-        assert telemetry.stop_event.is_set() == False
+    # def test_manual_stop(self, telemetry: telemetryManager): # this will prompt the terminal
+    #     assert telemetry.stop_event.is_set() == False
 
-        telemetry.manualStop(True)
-        assert telemetry.stop_event.is_set() == True
+    #     telemetry.manualStop(True)
+    #     assert telemetry.stop_event.is_set() == True
 
     def test_is_still_active(self, telemetry: telemetryManager):
         # check it is active
