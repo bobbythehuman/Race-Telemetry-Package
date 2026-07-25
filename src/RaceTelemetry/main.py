@@ -266,6 +266,10 @@ class TelemetryManager:
 
     def __get_max_packet_size(self) -> int:
         """Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata."""
+        if not self.packetInfo:
+            LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
+            raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
+
         allSizes = []
         for packetID, packetInfo in self.packetInfo.items():
             for packetStruct in packetInfo:
@@ -386,6 +390,7 @@ class TelemetryManager:
         Will run until a stop signal is received (either Ctrl+C or manual stop).
         """
         if self.readOnlyStorage is None:
+            LOGGER.error("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
             raise RuntimeError("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
         LOGGER.info("[MAIN] [INFO]\tStart at %s" % (datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f")))
@@ -433,6 +438,14 @@ class TelemetryManager:
         Returns a tuple of (packet, packetID, headerPacket).
         packet and headerPacket may be None if no matching packet structure is found or if no header is defined in the metadata.
         """
+        if not self.packetIDAttr:
+            LOGGER.error("[NTWK] [Error]\tPacket ID Attribute is empty.")
+            raise ValueError("[NTWK] [Error]\tPacket ID Attribute is empty.")
+
+        if not self.packetInfo:
+            LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
+            raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
+
         if self.headerPacket:
             headerBufferSize = self.__get_packet_size(self.headerPacket)
             rawHeaderPacket = self.headerPacket.from_buffer_copy(data[0:headerBufferSize])
@@ -459,6 +472,14 @@ class TelemetryManager:
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
         """
+        if self.heartBeatFunc and not callable(self.heartBeatFunc):
+            LOGGER.error("[NTWK] [Error]\tHeart Beat Function is not a function.")
+            raise ValueError("[NTWK] [Error]\tHeart Beat Function is not a function.")
+
+        if self.decryptionFunc and not callable(self.decryptionFunc):
+            LOGGER.error("[NTWK] [Error]\tDecryption Function is not a function.")
+            raise ValueError("[NTWK] [Error]\tDecryption Function is not a function.")
+
         packet = None
         packetID = 0
         headerPacket = None
@@ -507,6 +528,7 @@ class TelemetryManager:
         handShakeDestination = (self.destinationIP, self.handShakePort)
 
         if (self.handShakeFunc or self.heartBeatFunc) and not self.destinationIP:
+            LOGGER.error("[NTWK] [Error]\tDestination IP must be set for handshakes or heartbeats.")
             raise ValueError("[NTWK] [Error]\tDestination IP must be set for handshakes or heartbeats.")
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -541,6 +563,10 @@ class TelemetryManager:
         if not allSharedMemoryNames:
             LOGGER.critical("[NTWK] [Error]\tShared memory name is not set.")
             raise ValueError("[NTWK] [Error]\tShared memory name is not set.")
+
+        if not self.packetInfo:
+            LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
+            raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
 
         sharedMemoryInfo = {}
 
