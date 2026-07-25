@@ -148,8 +148,7 @@ class TelemetryManager:
             warnings.warn(f"[MAIN] [Warning]\tWorker function must be callable.")
             return False
 
-        if isinstance(mainFunc, type):
-            warnings.warn(f"[MAIN] [Warning]\tWorker function must not be a class initialisation.")
+        if self.__valid_type(mainFunc, type, "Worker Function"):
             return False
 
         self.threadCount += 1
@@ -164,8 +163,7 @@ class TelemetryManager:
 
     def manualStop(self, target: bool) -> bool:
         """Manually stop the program"""
-        if not isinstance(target, bool):
-            warnings.warn(f"[MAIN] [Warning]\tManual stop target must be a boolean.")
+        if not self.__valid_type(target, bool, "Manual Stop"):
             return False
 
         self.manuallyStopped = target
@@ -173,8 +171,7 @@ class TelemetryManager:
 
     def isMultiThreaded(self, target: bool = True) -> bool:
         """Currently does nothing"""
-        if not isinstance(target, bool):
-            warnings.warn(f"[MAIN] [Warning]\tMulti-threaded target must be a boolean.")
+        if not self.__valid_type(target, bool, "Multi Thread"):
             return False
 
         self.multiThreaded = target
@@ -185,8 +182,7 @@ class TelemetryManager:
         Call this to set whether to use shared memory or UDP for telemetry.
         Default is False (UDP).
         """
-        if not isinstance(target, bool):
-            warnings.warn(f"[MAIN] [Warning]\tShared memory target must be a boolean.")
+        if not self.__valid_type(target, bool, "Shared Memory"):
             return False
 
         self.sharedMemory = target
@@ -201,8 +197,7 @@ class TelemetryManager:
         1: Convert fields with to the raw value
         2: Convert fields to their enum type
         """
-        if not isinstance(target, int):
-            warnings.warn(f"[MAIN] [Warning]\tEnum mode must be an integer.")
+        if not self.__valid_type(target, int, "Enum Mode"):
             return False
         if target not in [0, 1, 2]:
             warnings.warn(f"[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
@@ -262,14 +257,20 @@ class TelemetryManager:
         return max(allSizes) if allSizes else 0
 
     def __is_valid_ip(self, ip: str) -> bool:
-        if not isinstance(ip, str):
-            warnings.warn("[NTWK] [Warning]\tInvalid IP address")
+        if not self.__valid_type(ip, str, "IP"):
             return False
 
         if re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
             return True
 
-        warnings.warn(f"[NTWK] [Warning]\tInvalid IP address: {ip}")
+        LOGGER.warning("[NTWK] [Warning]\tInvalid IP address: %s" % (ip))
+        return False
+
+    def __valid_type(self, object_: object, type_, name: str) -> bool:
+        if isinstance(object_, type_):
+            return True
+        else:
+            LOGGER.warning(f"[MAIN] [Warning]\t%s must be a %r." % (name, type_))
         return False
 
     # Misc thread function
