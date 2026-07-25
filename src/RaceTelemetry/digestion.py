@@ -1,7 +1,10 @@
 import ctypes
+import warnings
+
+from types import SimpleNamespace
 
 
-def newChrToString(value: bytes, extra=True) -> str:
+def new_byte_to_string(value: bytes, extra=True) -> str:
     """
     Takes a bytes value and converts it to a string,
     stripping any null characters and splitting on the first null character if extra is True.
@@ -20,7 +23,7 @@ def newChrToString(value: bytes, extra=True) -> str:
     return cutValue
 
 
-def unpackArray(packet) -> list | str:
+def unpack_array(packet) -> list | str:
     """
     Takes a ctypes array and converts it to a list, with any bytes values converted to strings.
     """
@@ -29,24 +32,28 @@ def unpackArray(packet) -> list | str:
         return packet
 
     if isinstance(packet[0], bytes):
-        value = newChrToString(packet)
+        # if array contains bytes convert array to string
+        value = new_byte_to_string(packet)
         return value
 
     value = list(packet)
 
     for key, item in enumerate(value):
         if type(item) in [int, str, bool]:
+            # no transformation need to be done
             pass
 
         elif isinstance(item, float):
+            # round float numbers
             value[key] = round(item, 5)
 
         elif isinstance(item, ctypes.Array):
-            value[key] = unpackArray(item)
-            # value[key] = newChrToString(item)
+            # manage each item in array seperatly
+            value[key] = unpack_array(item)
 
         elif isinstance(item, bytes):
-            value[key] = newChrToString(item)
+            # convert bytes to a string
+            value[key] = new_byte_to_string(item)
 
         else:
             # assume it is a class
@@ -55,7 +62,7 @@ def unpackArray(packet) -> list | str:
     return value
 
 
-def applyEnum(value, enumType, enumMode: int = 0):
+def apply_enum(value, enumType, enumMode: int = 0):
     """
     Receives a value and converts it into an Enum then returns a value depending on enumMode.
     """
@@ -92,12 +99,15 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     # newPacket = type(packetName, (), {})
     newPacket = SimpleNamespace()
 
+    # reverse enum dictionary so attribute references an enum
     inverseEnums = {}
     for k, v in enums.items():
         for x in v:
             inverseEnums.setdefault(x, []).append(k)
 
     for source_attr, value in attrs.items():
+        # check if value references the parent if so return None or empty array
+
         if isinstance(value, bool):
             pass
         elif isinstance(value, int):
@@ -106,33 +116,37 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
             pass
 
         elif isinstance(value, float):
+            # round float numbers
             value = round(value, 5)
 
         elif isinstance(value, bytes):
-            value = newChrToString(value)
+            # convert bytes to a string
+            value = new_byte_to_string(value)
 
         elif isinstance(value, ctypes.Array):
-            value = unpackArray(value)
+            # manage each item in array seperatly
+            value = unpack_array(value)
 
         elif value is None:
             pass
 
         else:
-            # print("Unrecognised type or assuming it is a class")
+            # assume it is a class
             value = dynamic_ingest(value)
 
         if source_attr in inverseEnums:
             enum_type = None
             all_enum_type = inverseEnums[source_attr]
+
             if len(all_enum_type) > 1:
                 raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
             else:
                 enum_type = all_enum_type[0]
 
             if isinstance(value, list):
-                value = [applyEnum(i, enum_type, enumMode) for i in value]
+                value = [apply_enum(i, enum_type, enumMode) for i in value]
             else:
-                value = applyEnum(value, enum_type, enumMode)
+                value = apply_enum(value, enum_type, enumMode)
 
         setattr(newPacket, source_attr, value)
 
