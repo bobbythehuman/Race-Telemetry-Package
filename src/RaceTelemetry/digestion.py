@@ -24,6 +24,10 @@ def unpackArray(packet) -> list | str:
     """
     Takes a ctypes array and converts it to a list, with any bytes values converted to strings.
     """
+    if not packet:
+        # return empty packets
+        return packet
+
     if isinstance(packet[0], bytes):
         value = newChrToString(packet)
         return value
@@ -65,6 +69,7 @@ def applyEnum(value, enumType, enumMode: int = 0):
         elif enumMode == 2:
             value = enumType(value).name
     except ValueError:
+        warnings.warn(f"[ENUM] [Warning]\tvalue {value} is not a valid enum member of {enumType}")
         # If the value is not a valid enum member, keep it as is
         value = value
 
@@ -84,7 +89,8 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     enums = getattr(packet, "_enums_", {})
 
     packetName = packet.__class__.__name__
-    newPacket = type(packetName, (), {})
+    # newPacket = type(packetName, (), {})
+    newPacket = SimpleNamespace()
 
     inverseEnums = {}
     for k, v in enums.items():
