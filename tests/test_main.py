@@ -13,7 +13,7 @@ import warnings
 
 import pytest
 
-from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, telemetryManager
+from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
 from .test_resources import (
     testPacket1,
     testPacket2,
@@ -50,8 +50,8 @@ def RO_storage(storage: CentralStorage) -> ReadOnlyStorage:
 
 
 @pytest.fixture
-def telemetry() -> telemetryManager:
-    telemetry = telemetryManager()
+def telemetry() -> TelemetryManager:
+    telemetry = TelemetryManager()
     telemetry.updateMeta(metaData)
     return telemetry
 
@@ -101,60 +101,78 @@ class TestReadOnlyStorage:
 
 class TestTelemetryManager:
 
-    def test_telemetry_manager_initialization(self, telemetry: telemetryManager):
-        assert isinstance(telemetry, telemetryManager)
+    def test_telemetry_manager_initialization(self, telemetry: TelemetryManager):
+        assert isinstance(telemetry, TelemetryManager)
 
-    def test_fail_start_telemetry(self, telemetry: telemetryManager):
-        telemetry = telemetryManager()
+    def test_fail_start_telemetry(self, telemetry: TelemetryManager):
+        telemetry = TelemetryManager()
         with pytest.raises(RuntimeError):
             telemetry.StartTelemetry()
 
-    def test_meta_data_check(self, telemetry: telemetryManager):
-        assert telemetry._telemetryManager__metaDataCheck("port") == 1234
-        assert telemetry._telemetryManager__metaDataCheck("packetIDAttribute") == "header_id"
-        assert telemetry._telemetryManager__metaDataCheck("headerInfo") == SubHeaderPacket
-        assert telemetry._telemetryManager__metaDataCheck("heartBeatPort") == None
-        assert telemetry._telemetryManager__metaDataCheck("heartBeatPort", 1234) == 1234
+    @pytest.mark.parametrize(
+        "operand1, operand2, expected",
+        [
+            ("port", None, 1234),
+            ("packetIDAttribute", None, "header_id"),
+            ("headerInfo", None, SubHeaderPacket),
+            ("heartBeatPort", None, None),
+            ("heartBeatPort", 1234, 1234),
+        ],
+    )
+    def test_meta_data_check(self, telemetry: TelemetryManager, operand1: Str, operand2: Any, expected: Any) -> None:
+        assert telemetry._TelemetryManager__meta_data_check(operand1, operand2) == expected
+        # assert telemetry._telemetryManager__meta_data_check("packetIDAttribute") == "header_id"
+        # assert telemetry._telemetryManager__meta_data_check("headerInfo") == SubHeaderPacket
+        # assert telemetry._telemetryManager__meta_data_check("heartBeatPort") == None
+        # assert telemetry._telemetryManager__meta_data_check("heartBeatPort", 1234) == 1234
 
-    def test_packet_size(self, telemetry: telemetryManager):
-        assert telemetry._telemetryManager__getPacketSize(testPacket1) == 4
-        assert telemetry._telemetryManager__getPacketSize(testPacket2) == 8
+    @pytest.mark.parametrize(
+        "operand, expected",
+        [
+            (testPacket1, 4),
+            (testPacket2, 8),
+        ],
+    )
+    def test_packet_size(self, telemetry: TelemetryManager, operand: Type, expected: Any) -> None:
+        assert telemetry._TelemetryManager__get_packet_size(operand) == expected
+        # assert telemetry._telemetryManager__get_packet_size(testPacket1) == 4
+        # assert telemetry._telemetryManager__get_packet_size(testPacket2) == 8
 
-    def test_max_packet_size(self, telemetry: telemetryManager):
-        assert telemetry._telemetryManager__getMaxPacketSize() == 59
+    def test_max_packet_size(self, telemetry: TelemetryManager):
+        assert telemetry._TelemetryManager__get_max_packet_size() == 59
 
-    def test_trigger_stop(self, telemetry: telemetryManager):
+    def test_trigger_stop(self, telemetry: TelemetryManager):
         assert telemetry.stop_event.is_set() == False
 
-        telemetry._telemetryManager__triggerStop()
+        telemetry._TelemetryManager__trigger_stop()
         assert telemetry.stop_event.is_set() == True
 
-    # def test_manual_stop(self, telemetry: telemetryManager): # this will prompt the terminal
+    # def test_manual_stop(self, telemetry: TelemetryManager): # this will prompt the terminal
     #     assert telemetry.stop_event.is_set() == False
 
     #     telemetry.manualStop(True)
     #     assert telemetry.stop_event.is_set() == True
 
-    def test_is_still_active(self, telemetry: telemetryManager):
+    def test_is_still_active(self, telemetry: TelemetryManager):
         # check it is active
-        assert telemetry._telemetryManager__isStillActive() == True
+        assert telemetry._TelemetryManager__is_still_active() == True
 
         # check it is not active after manual stop
         telemetry.manualStop(True)
-        assert telemetry._telemetryManager__isStillActive() == False
+        assert telemetry._TelemetryManager__is_still_active() == False
 
         # reset manuallyStopped to False and check it is active again
         telemetry.manualStop(False)
-        assert telemetry._telemetryManager__isStillActive() == True
+        assert telemetry._TelemetryManager__is_still_active() == True
 
-        telemetry._telemetryManager__triggerStop()
-        assert telemetry._telemetryManager__isStillActive() == False
+        telemetry._TelemetryManager__trigger_stop()
+        assert telemetry._TelemetryManager__is_still_active() == False
 
-    def test_construct_packet_wrong_type(self, telemetry: telemetryManager):
-        constructed_packet1 = telemetry._telemetryManager__construct_packet(full_packet_byte, [testPacket1, testPacket2])
+    def test_construct_packet_wrong_type(self, telemetry: TelemetryManager):
+        constructed_packet1 = telemetry._TelemetryManager__construct_packet(full_packet_byte, [testPacket1, testPacket2])
         assert constructed_packet1 == None
 
-        constructed_packet2 = telemetry._telemetryManager__construct_packet(full_packet_byte, [])
+        constructed_packet2 = telemetry._TelemetryManager__construct_packet(full_packet_byte, [])
         assert constructed_packet2 == None
 
 
@@ -162,9 +180,9 @@ class TestTelemetryManager:
 # TelemetryManager - Packets
 # ---------------------------------------------------------------------------
 
-packetTelemetry = telemetryManager()
+packetTelemetry = TelemetryManager()
 packetTelemetry.updateMeta(metaData)
-constructed_packet, packetID, headerPacker = packetTelemetry._telemetryManager__retrieve_packet(header_packet_byte)
+constructed_packet, packetID, headerPacker = packetTelemetry._TelemetryManager__retrieve_packet(header_packet_byte)
 
 
 class TestRetrievePacket:
@@ -218,7 +236,7 @@ class TestUserInputs:
             ("255.255.255.255", True),
         ],
     )
-    def test_update_local_ip_valid(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_update_local_ip_valid(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.updateLocalIP(operand) == expected
 
     @pytest.mark.parametrize(
@@ -241,7 +259,7 @@ class TestUserInputs:
             ("255.255.255.255", True),
         ],
     )
-    def test_update_send_ip_valid(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_update_send_ip_valid(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.updateLocalIP(operand) == expected
 
     @pytest.mark.parametrize(
@@ -262,7 +280,7 @@ class TestUserInputs:
             (workerClass.workerFunc, True),
         ],
     )
-    def test_add_worker_thread(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_add_worker_thread(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.addWorkerThread(operand) == expected
 
     @pytest.mark.parametrize(
@@ -281,7 +299,7 @@ class TestUserInputs:
             (True, True),
         ],
     )
-    def test_manual_stop(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_manual_stop(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.manualStop(operand) == expected
 
     @pytest.mark.parametrize(
@@ -300,7 +318,7 @@ class TestUserInputs:
             (True, True),
         ],
     )
-    def test_is_multi_thread(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_is_multi_thread(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.isMultiThreaded(operand) == expected
 
     @pytest.mark.parametrize(
@@ -319,7 +337,7 @@ class TestUserInputs:
             (True, True),
         ],
     )
-    def test_is_shared_memory(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_is_shared_memory(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.isSharedMemory(operand) == expected
 
     @pytest.mark.parametrize(
@@ -339,7 +357,7 @@ class TestUserInputs:
             (True, True),
         ],
     )
-    def test_enum_mode(self, telemetry: telemetryManager, operand: Any, expected: bool) -> None:
+    def test_enum_mode(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
         assert telemetry.setEnumMode(operand) == expected
 
 

@@ -12,9 +12,9 @@ from typing import Any
 import pytest
 
 from ..src.RaceTelemetry.digestion import (
-    newChrToString,
-    unpackArray,
-    applyEnum,
+    new_byte_to_string,
+    unpack_array,
+    apply_enum,
     dynamic_ingest,
 )
 from .test_resources import (
@@ -40,25 +40,25 @@ class TestNewChrToString:
 
     def test_extra_true_splits_on_first_null(self):
         raw = b"hello\x00world\x00"
-        assert newChrToString(raw, extra=True) == "hello"
+        assert new_byte_to_string(raw, extra=True) == "hello"
 
     def test_extra_false_stripped_ends_only(self):
         raw = b"hello\x00world\x00"
         # strip("\0") only removes leading/trailing nulls, not embedded ones
-        assert newChrToString(raw, extra=False) == "hello\x00world"
+        assert new_byte_to_string(raw, extra=False) == "hello\x00world"
 
     def test_no_null_bytes(self):
         raw = b"plain text"
-        assert newChrToString(raw, extra=True) == "plain text"
-        assert newChrToString(raw, extra=False) == "plain text"
+        assert new_byte_to_string(raw, extra=True) == "plain text"
+        assert new_byte_to_string(raw, extra=False) == "plain text"
 
     def test_ctypes_char_array_input(self):
         buf = ctypes.create_string_buffer(b"abc", 10)  # 'abc' + null padding
-        assert newChrToString(buf.raw, extra=True) == "abc"
+        assert new_byte_to_string(buf.raw, extra=True) == "abc"
 
 
 # ---------------------------------------------------------------------------
-# unpackArray
+# unpack_array
 # ---------------------------------------------------------------------------
 
 
@@ -66,16 +66,16 @@ class TestUnpackArray:
 
     def test_char_array_becomes_string(self):
         arr = (ctypes.c_char * 10)(*b"hi\x00\x00\x00\x00\x00\x00\x00\x00")
-        result = unpackArray(arr)
+        result = unpack_array(arr)
         assert result == "hi"
 
     def test_int_array_becomes_list(self):
         arr = (ctypes.c_int * 4)(1, 2, 3, 4)
-        assert unpackArray(arr) == [1, 2, 3, 4]
+        assert unpack_array(arr) == [1, 2, 3, 4]
 
     def test_float_array_rounded(self):
         arr = (ctypes.c_float * 2)(1.123456789, 2.0)
-        result = unpackArray(arr)
+        result = unpack_array(arr)
         assert result[1] == 2.0
         assert result[0] == round(result[0], 5)  # already rounded, no more than 5dp
         assert abs(result[0] - 1.12346) < 1e-4
@@ -83,7 +83,7 @@ class TestUnpackArray:
     def test_nested_ctypes_array(self):
         Inner = ctypes.c_int * 2
         arr = (Inner * 2)((1, 2), (3, 4))
-        assert unpackArray(arr) == [[1, 2], [3, 4]]
+        assert unpack_array(arr) == [[1, 2], [3, 4]]
 
     def test_array_of_bytes_elements(self):
         # array whose *elements* are individual bytes objects (e.g. char arrays nested
@@ -92,7 +92,7 @@ class TestUnpackArray:
             _fields_ = [("name", ctypes.c_char * 4)]
 
         arr = (Small * 2)((b"ab\x00\x00",), (b"cd\x00\x00",))
-        result = unpackArray(arr)
+        result = unpack_array(arr)
         # each element is a Structure -> goes through dynamic_ingest branch
         assert result[0].name == "ab"
         assert result[1].name == "cd"
@@ -144,7 +144,7 @@ class TestApplyEnum:
         operand3: Any,
         expected: Any,
     ):
-        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
+        assert apply_enum(operand1, operand2, enumMode=operand3) == expected
 
     @pytest.mark.parametrize(
         "operand1, operand2, operand3, expected",
@@ -165,7 +165,7 @@ class TestApplyEnum:
         operand3: Any,
         expected: Any,
     ):
-        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
+        assert apply_enum(operand1, operand2, enumMode=operand3) == expected
 
     @pytest.mark.parametrize(
         "operand1, operand2, operand3, expected",
@@ -186,7 +186,7 @@ class TestApplyEnum:
         operand3: Any,
         expected: Any,
     ):
-        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
+        assert apply_enum(operand1, operand2, enumMode=operand3) == expected
 
     @pytest.mark.parametrize(
         "operand1, operand2, operand3, expected",
@@ -207,7 +207,7 @@ class TestApplyEnum:
         operand3: Any,
         expected: Any,
     ):
-        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
+        assert apply_enum(operand1, operand2, enumMode=operand3) == expected
 
     @pytest.mark.parametrize(
         "operand1, operand2, operand3, expected",
@@ -245,7 +245,7 @@ class TestApplyEnum:
         operand3: Any,
         expected: Any,
     ):
-        assert applyEnum(operand1, operand2, enumMode=operand3) == expected
+        assert apply_enum(operand1, operand2, enumMode=operand3) == expected
 
 
 # ---------------------------------------------------------------------------

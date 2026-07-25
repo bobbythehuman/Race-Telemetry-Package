@@ -1,0 +1,1 @@
+pytest .\tests\test_main.py .\tests\test_digestion.py --disable-warnings
