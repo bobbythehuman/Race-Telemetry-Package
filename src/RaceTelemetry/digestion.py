@@ -6,10 +6,18 @@ def newChrToString(value: bytes, extra=True) -> str:
     Takes a bytes value and converts it to a string,
     stripping any null characters and splitting on the first null character if extra is True.
     """
-    if extra:
-        return bytes(value).decode("utf-8").strip("\0").split("\x00", 1)[0]
-    else:
-        return bytes(value).decode("utf-8").strip("\0")
+
+    toBytes = bytes(value)
+    decodedValue = toBytes.decode("utf-8", errors="replace")
+    stripedValue = decodedValue.strip("\0")
+
+    if not extra:
+        return stripedValue
+
+    splitValue = stripedValue.split("\x00", 1)
+    cutValue = splitValue[0]
+
+    return cutValue
 
 
 def unpackArray(packet) -> list | str:
