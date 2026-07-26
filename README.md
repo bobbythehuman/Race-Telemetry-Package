@@ -38,11 +38,11 @@ pip install RaceTelemetry
 ```
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Create the manager and tell it which game protocol to expect
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 telemetry.updateMeta(MetaData)
 
 # Start pulling packets — this blocks until data arrives
@@ -104,11 +104,11 @@ Defined in [`main.py`](src/RaceTelemetry/main.py) as `telemetryManager.GetTeleme
 More examples: [`tests/Game_Specific`](tests/Game_Specific)
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Initialise the manager
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 
 # Tell it which game's protocol to use
 telemetry.updateMeta(MetaData)
@@ -141,7 +141,7 @@ Defined in [`main.py`](src/RaceTelemetry/main.py) as `telemetryManager.StartTele
 More examples: [`tests/Game_Specific`](tests/Game_Specific)
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Define a worker thread function
@@ -157,7 +157,7 @@ def my_worker_thread(worker_id: int, ro_storage, stop_event):
                 pass  # Process data here
 
 # Initialise the manager
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 
 # Tell it which game's protocol to use
 activeThreads.updateMeta(MetaData)
@@ -173,7 +173,7 @@ activeThreads.StartTelemetry()
 
 | Method                 | Parameters                                                                                                                                             | Description                                                                                                                                                                                               |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `telemetryManager()` | None                                                                                                                                                   | Creates a new telemetry manager instance, which handles network communication, data storage, and threading.                                                                                               |
+| `TelemetryManager()` | None                                                                                                                                                   | Creates a new telemetry manager instance, which handles network communication, data storage, and threading.                                                                                               |
 | `.updateMeta()`      | `MetaData` (class) — see [Adding Support for a New Game](#adding-support-for-a-new-game)                                                             | Applies game-specific metadata to configure packet structures, ports, and data handling.**Must be called before starting telemetry.**                                                               |
 | `.updateLocalIP()`   | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`                                                                                                | Sets the local IP address the telemetry server listens on for incoming packets.                                                                                                                           |
 | `.updateSendIP()`    | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`                                                                                                | Sets the destination IP address used for heartbeats and handshake packets.                                                                                                                                |
@@ -270,7 +270,7 @@ class TelemetryData(DataTypes.STRUCTURE):
 Before starting telemetry, choose how enum fields should be returned:
 
 ```python
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 activeThreads.updateMeta(MetaData)
 activeThreads.addWorkerThread(displayTime)
 
@@ -373,11 +373,11 @@ class MetaData:
 ### Step 4: Import and Use It
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from your_game_struct import MetaData
 
 # Setup, works for both modes
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 activeThreads.updateMeta(MetaData)
 
 # Single-threaded use
@@ -572,6 +572,7 @@ More debugging guides live in [`Supporting_Docs/`](./Supporting_Docs/), includin
 | Richard Burns Rally | [rbr-udp-telem on GitHub](https://github.com/groybe/rbr-udp-telem)                                                                                               |                                                       |
 | KartKraft           | [kartkraft-telemetry schema on GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs)                                      |                                                       |
 | Project CARS 3      | likely shares a protocol with Project CARS 2, not yet confirmed                                                                                                 |                                                       |
+| MotoGP 18           | [MotoGP-18-UDP-Telemetry](https://github.com/SHWotever/MotoGP-18-UDP-Telemetry/tree/master)                                                                   | still missing some data                           |
 
 <!-- - EA Sports WRC 2023 — [How to use UDP on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068) -->
 

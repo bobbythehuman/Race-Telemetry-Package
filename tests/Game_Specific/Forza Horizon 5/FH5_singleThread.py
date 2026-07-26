@@ -1,8 +1,8 @@
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.FH5_struct import MetaData
 
 
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
 telemetry.updateMeta(MetaData)
 

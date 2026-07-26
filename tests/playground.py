@@ -42,7 +42,7 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #     stop_event.set()
 
         # * demo - printing your current speed in f1 24
-        # data = snapshot.get("lastestData")
+        # data = snapshot.get("latestData")
         # if data:
         #     telemetry = data.get("PacketCarTelemetryData")
         #     if telemetry:
@@ -50,7 +50,7 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #         print(speed)
 
         # * demo - printing your current speed in beamng
-        # data = snapshot.get("lastestData")
+        # data = snapshot.get("latestData")
         # if data:
         #     telemetry = data.get("TelemetryData")
         #     if telemetry:
@@ -60,7 +60,7 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #         print(f"{ord(gear)-1} : {roundedSpeed}")
 
         # * demo - printing your current speed in project cars 2
-        # data = snapshot.get("lastestData")
+        # data = snapshot.get("latestData")
         # if data:
         #     telemetry = data.get("TelemetryData")
         #     if telemetry:
@@ -68,7 +68,7 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #         print(round(speed * 2.23694, 2))
 
         # * demo - printing your current speed in forza motorsports 8
-        # data = snapshot.get("lastestData")
+        # data = snapshot.get("latestData")
         # if data:
         #     telemetry = data.get("SledData")
         #     if telemetry:
@@ -80,7 +80,7 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #         print(round(speed * 2.23694, 2))
 
         # * demo - printing your current speed in gran turismo 7
-        # data = snapshot.get("lastestData")
+        # data = snapshot.get("latestData")
         # if data:
         #     telemetry = data.get("PacketCData")
         #     if telemetry:
@@ -88,7 +88,7 @@ def example_worker_thread(worker_id: int, ro_storage: ReadOnlyStorage, stop_even
         #         print(round(speed * 2.23694, 2))
 
         # * demo - printing your current speed in assetto corsa
-        # data = snapshot.get("lastestData")
+        # data = snapshot.get("latestData")
         # if data:
         #     telemetry = data.get("RTCarData")
         #     if telemetry:
@@ -124,7 +124,7 @@ def main() -> None:
     # sendIP = "192.168.1.161"
 
     # setup
-    activeThreads = telemetryManager()
+    activeThreads = TelemetryManager()
     activeThreads.updateMeta(ACTIVE_META)
     activeThreads.updateLocalIP(localIP)
     # activeThreads.updateSendIP(localIP)

@@ -1,4 +1,4 @@
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.GT7_struct import MetaData
 
 
@@ -7,7 +7,7 @@ def displaySpeed(worker_id: int, ro_storage, stop_event):
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
 
-        data = snapshot.get("lastestData")
+        data = snapshot.get("latestData")
         if data:
             telemetry = data.get("PacketCData")
             if telemetry:
@@ -24,7 +24,7 @@ def displayGear(worker_id: int, ro_storage, stop_event):
     while not stop_event.is_set():
         snapshot = ro_storage.snapshot()
 
-        data = snapshot.get("lastestData")
+        data = snapshot.get("latestData")
         if data:
             telemetry = data.get("PacketCData")
             if telemetry:
@@ -38,7 +38,7 @@ def displayGear(worker_id: int, ro_storage, stop_event):
 # the IP of the PS5
 sourceIP = "192.168.1.1"
 
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 activeThreads.updateMeta(MetaData)
 # add the source IP of the PS5
 activeThreads.updateSendIP(sourceIP)

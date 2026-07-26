@@ -1,10 +1,10 @@
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.AC_UDP_struct import MetaData
 
 
 sourceIP = "127.0.0.1"
 
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
 telemetry.updateMeta(MetaData)
 telemetry.updateSendIP(sourceIP)

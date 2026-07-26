@@ -1,11 +1,11 @@
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.GT7_struct import MetaData
 
 
 # the IP of the PS5
 sourceIP = "192.168.1.1"
 
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
 telemetry.updateMeta(MetaData)
 telemetry.updateSendIP(sourceIP)

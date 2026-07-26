@@ -415,7 +415,7 @@ class MetaData:
     handShakeFunc: tuple | None = None
     
     # use if the data needs decrypting
-    decrytionFunc = decrypt_data
+    decryptionFunc = decrypt_data
     
     # use if there is a header packet
     headerInfo: type | None = None

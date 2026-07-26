@@ -42,11 +42,11 @@ This is suitable for applications that don't require concurrent processing or re
 For basic telemetry extraction without threading:
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Initialize the class
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 
 # Configure metadata and network settings
 telemetry.updateMeta(MetaData)
@@ -74,7 +74,7 @@ This allows for real-time data processing while continuously receiving new packe
 For real-time telemetry processing with multiple threads:
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 
 # Define a worker thread function
@@ -83,7 +83,7 @@ def my_worker_thread(worker_id: int, ro_storage, stop_event):
         snapshot = ro_storage.snapshot()
   
         # Access telemetry data
-        data = snapshot.get("lastestData")
+        data = snapshot.get("latestData")
         if data:
             telemetry = data.get("PacketCarTelemetryData")
             if telemetry:
@@ -91,7 +91,7 @@ def my_worker_thread(worker_id: int, ro_storage, stop_event):
                 pass
 
 # Initialize the class
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 
 # Configure metadata and network settings
 activeThreads.updateMeta(MetaData)
@@ -107,7 +107,7 @@ activeThreads.StartTelemetry()
 
 | Systax             | Parameters                                             | Description                                                            |
 | ------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------- |
-| telemetryManager() | None        | Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.    |
+| TelemetryManager() | None        | Initialize and create a new telemetry manager instance. This manages all network communication, data storage, and threading.    |
 | .updateMeta()      | `MetaData` (class): see [Adding and Using a New Packet Structure](#adding-and-using-a-new-packet-structure) for details      | Apply game-specific metadata to configure packet structures, ports, and data handling.<br />**Must be called before starting telemetry.**               |
 | .updateLocalIP()   | `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`      | Set the local IP address that the telemetry server listens on for incoming packets. |
 | .updateSendIP()    | `ip` (str): e.g., `"192.168.1.100"`, `"127.0.0.1"`      | Set the destination IP address for sending heartbeats and handshake packets.        |
@@ -210,7 +210,7 @@ class TelemetryData(DataTypes.STRUCTURE):
 Before starting the telemetry, set the enum mode in your main script:
 
 ```python
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 activeThreads.updateMeta(MetaData)
 activeThreads.addWorkerThread(displayTime)
 
@@ -318,12 +318,12 @@ class MetaData:
 In your main script, import the new metadata and use it with either mode:
 
 ```python
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 
 from your_game_struct import MetaData
 
 ## Setup for both modes
-activeThreads = telemetryManager()
+activeThreads = TelemetryManager()
 activeThreads.updateMeta(YourGameMetaData)
 
 ## Use in single-threaded mode

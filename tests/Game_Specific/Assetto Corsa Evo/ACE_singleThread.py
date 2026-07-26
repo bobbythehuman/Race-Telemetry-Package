@@ -1,7 +1,7 @@
-from RaceTelemetry import telemetryManager
+from RaceTelemetry import TelemetryManager
 from RaceTelemetry.data_structures.ACE_struct import MetaData
 
-telemetry = telemetryManager()
+telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
 telemetry.updateMeta(MetaData)
 telemetry.isSharedMemory(True)
