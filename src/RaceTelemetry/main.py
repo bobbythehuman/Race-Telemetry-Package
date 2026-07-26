@@ -297,7 +297,7 @@ class TelemetryManager:
             return True
         else:
             LOGGER.warning(f"[MAIN] [Warning]\t%s must be a %r." % (name, type_))
-        return False
+            return False
 
     # Misc thread function
 
@@ -458,8 +458,8 @@ class TelemetryManager:
             headerPacket = dynamic_ingest(rawHeaderPacket)
 
             if hasattr(headerPacket, self.packetIDAttr):
-            packetID = int(getattr(headerPacket, self.packetIDAttr))
-        else:
+                packetID = int(getattr(headerPacket, self.packetIDAttr))
+            else:
                 LOGGER.warning("[NTWR] [Warning] Header packet %s doesnt contain the ID attribute %s" % (headerPacket, self.packetIDAttr))
                 packetID = 0
         else:
@@ -541,6 +541,14 @@ class TelemetryManager:
             LOGGER.error("[NTWK] [Error]\tDestination IP must be set for handshakes or heartbeats.")
             raise ValueError("[NTWK] [Error]\tDestination IP must be set for handshakes or heartbeats.")
 
+        # if self.handShakeFunc and len(self.handShakeFunc) != 2:
+        #     LOGGER.error("[NTWK] [Error]\tHand Shake function needs 2 function.")
+        #     raise ValueError("[NTWK] [Error]\tHand Shake function needs 2 function.")
+
+        # if not callable(self.handShakeFunc[0]) or not callable(self.handShakeFunc[1]):
+        #     LOGGER.error("[NTWK] [Error]\tHand Shake function must be a function.")
+        #     raise ValueError("[NTWK] [Error]\tHand Shake function must be a function.")
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # listen to occupied ports
         sock.settimeout(1.0)  # allows checking stop_event periodically
@@ -554,7 +562,7 @@ class TelemetryManager:
             LOGGER.info("[NTWK] [Info]\tServer started on %s:%d" % (UDP_IP, UDP_PORT))
 
             if self.handShakeFunc:
-                self.handShakeFunc[0](sock, handShakeDestination)
+                self.handShakeFunc[0](sock, handShakeDestination)  # TODO fix this function not callable
 
             LOGGER.info("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
             while self.__is_still_active():
