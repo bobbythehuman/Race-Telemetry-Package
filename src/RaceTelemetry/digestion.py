@@ -17,17 +17,17 @@ LOGGER = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def new_byte_to_string(value: bytes, extra=True) -> str:
+def new_byte_to_string(value: bytes, split_on_null=True) -> str:
     """
     Takes a bytes value and converts it to a string,
-    stripping any null characters and splitting on the first null character if extra is True.
+    stripping any null characters and splitting on the first null character if split_on_null is True.
     """
 
     toBytes = bytes(value)
     decodedValue = toBytes.decode("utf-8", errors="replace")
     strippedValue = decodedValue.strip("\0")
 
-    if not extra:
+    if not split_on_null:
         return strippedValue
 
     splitValue = strippedValue.split("\x00", 1)
@@ -47,7 +47,8 @@ def unpack_array(packet) -> list | str:
     """
     if not packet:
         # return empty packets
-        return packet
+        LOGGER.debug("Received empty packet %r" % packet)
+        return []
 
     if isinstance(packet[0], bytes):
         # if array contains bytes convert array to string
@@ -110,7 +111,7 @@ def apply_enum(value, enumType, enumMode: int = 0):
         elif enumMode == 2:
             value = enumType(value).name
     except ValueError:
-        LOGGER.warning("[msg=ENUM] [Warning]\tvalue %s is not a valid enum member of %s" % (value, enumType))
+        LOGGER.warning("[ENUM] [Warning]\tvalue %s is not a valid enum member of %s" % (value, enumType))
         # If the value is not a valid enum member, keep it as is
         pass
 
@@ -133,8 +134,8 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     """
     packetName = packet.__class__.__name__
 
-    if not hasattr(packet, "_field_"):
-        LOGGER.error("Packet %s doesnt contain a _field_ attribute" % packet.__name__)
+    if not hasattr(packet, "_fields_"):
+        LOGGER.error("Packet %s doesnt contain a _field_ attribute" % (packetName))
         return type(packetName, (), {})
 
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
