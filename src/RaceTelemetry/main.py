@@ -5,6 +5,7 @@ import threading
 import re
 import logging
 
+from types import SimpleNamespace
 from typing import Generator, Any, Callable
 from datetime import datetime
 from copy import deepcopy
@@ -42,7 +43,7 @@ class CentralStorage:
                     self.allData[packetName] = []
                     self.latestData[packetName] = None
 
-    def _write(self, data: type | None) -> None:
+    def _write(self, data: SimpleNamespace | None) -> None:
         """Called only by the network thread."""
         with self._lock:
             if data:
@@ -407,7 +408,7 @@ class TelemetryManager:
 
     # Misc packet function
 
-    def __construct_packet(self, data: bytes, possiblePacketStruct: tuple) -> type | None:
+    def __construct_packet(self, data: bytes, possiblePacketStruct: tuple) -> SimpleNamespace | None:
         """
         Helper function to construct a packet from the data using the possible packet structures provided in the metadata.
         Returns the constructed packet, or None if no matching packet structure is found.
@@ -437,7 +438,7 @@ class TelemetryManager:
 
         return packet
 
-    def __retrieve_packet(self, data: bytes) -> tuple[type | None, int, Any]:
+    def __retrieve_packet(self, data: bytes) -> tuple[SimpleNamespace | None, int, Any]:
         """
         Helper function to retrieve the packet, packet ID, and header packet (if applicable) from the raw data.
         Returns a tuple of (packet, packetID, headerPacket).
@@ -477,7 +478,7 @@ class TelemetryManager:
 
     # Main UDP packet function
 
-    def __process_loop(self, sock: socket.socket) -> tuple[type[Any] | None, int, type[Any] | None]:
+    def __process_loop(self, sock: socket.socket) -> tuple[SimpleNamespace | None, int, SimpleNamespace | None]:
         """
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
@@ -525,7 +526,7 @@ class TelemetryManager:
             packet, packetID, headerPacket = self.__retrieve_packet(data)
         return packet, packetID, headerPacket
 
-    def get_udp_packets(self) -> Generator[tuple[type[Any] | None, int, type[Any] | None], None, None]:
+    def get_udp_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         """
@@ -576,7 +577,7 @@ class TelemetryManager:
 
     # Main shared memory packet function
 
-    def get_shared_packets(self) -> Generator[tuple[type[Any] | None, int, type[Any] | None], None, None]:
+    def get_shared_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         allSharedMemoryNames = self.allSharedMemoryNames
 
         if not allSharedMemoryNames:
@@ -643,7 +644,7 @@ class TelemetryManager:
 
     # Main thread functions
 
-    def GetTelemetry(self) -> Generator[tuple[type[Any] | None, int, type[Any] | None], None, None]:
+    def GetTelemetry(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         if self.sharedMemory:
             LOGGER.info("[NTWK] [Info]\tUsing shared memory telemetry.")
             yield from self.get_shared_packets()

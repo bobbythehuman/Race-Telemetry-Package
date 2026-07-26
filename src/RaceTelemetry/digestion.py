@@ -1,7 +1,7 @@
 import ctypes
-from struct import pack
-import warnings
+from enum import Enum
 import logging
+from typing import Any
 
 from types import SimpleNamespace
 from functools import lru_cache
@@ -97,7 +97,7 @@ def _inverse_enums(packet_cls):
     return inverse
 
 
-def apply_enum(value, enumType, enumMode: int = 0):
+def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> Any:
     """
     Receives a value and converts it into an Enum then returns a value depending on enumMode.
     """
@@ -123,7 +123,7 @@ def apply_enum(value, enumType, enumMode: int = 0):
 # ---------------------------------------------------------------------------
 
 
-def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
+def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -> SimpleNamespace:
     """
     Takes a packet and dynamically ingests it, converting:
     - floats to rounded floats
