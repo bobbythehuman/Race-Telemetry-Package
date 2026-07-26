@@ -136,8 +136,6 @@ class TelemetryManager:
             self.ACTIVE_METADATA = MetaData
             self.activeStorage = CentralStorage(self.ACTIVE_METADATA)
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
-
-            self.FULLBUFFERSIZE = self.__get_max_packet_size()
         self.__unpack_meta_data()
 
     def updateLocalIP(self, ip: str) -> bool:
@@ -491,7 +489,6 @@ class TelemetryManager:
         packetID = 0
         headerPacket = None
         heartBeatDestination = (self.destinationIP, self.heartBeatPort)
-        # fullBufferSize = self.__get_max_packet_size()
 
         if self.heartBeatFunc:
             if self.PACKET_COUNTER % self.HEARTBEAT_INTERVAL == 0:
@@ -531,6 +528,7 @@ class TelemetryManager:
         UDP_IP = self.IP
         UDP_PORT = self.mainPort
         self.PACKET_COUNTER = 0
+        self.FULLBUFFERSIZE = self.__get_max_packet_size()
 
         handShakeDestination = (self.destinationIP, self.handShakePort)
 
@@ -541,6 +539,7 @@ class TelemetryManager:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # listen to occupied ports
         sock.settimeout(1.0)  # allows checking stop_event periodically
+
         try:
             sock.bind((UDP_IP, UDP_PORT))
         except OSError:
