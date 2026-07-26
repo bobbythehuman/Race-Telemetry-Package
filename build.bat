@@ -61,7 +61,7 @@ REM ---------------------------------------------
 REM 3. Run tests before building
 REM ---------------------------------------------
 echo Running pytest checks...
-pytest .\tests\test_main.py .\tests\test_digestion.py --disable-warnings
+cmd /c run_test.bat
 
 if errorlevel 1 (
     echo.

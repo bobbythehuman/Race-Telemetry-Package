@@ -1,10 +1,23 @@
-import ctypes
-from enum import Enum
-import logging
-from typing import Any
+"""
+Dynamic ctypes packet ingestion.
 
-from types import SimpleNamespace
+Converts ctypes Structures/Unions (and nested Structures/Unions/Arrays within
+them) into plain Python objects (SimpleNamespace), applying these
+transformations along the way:
+
+- bytes fields  -> decoded, null-terminated strings
+- float fields  -> rounded floats
+- ctypes Arrays -> lists (or a string, if the array holds bytes)
+- fields declared in a packet's `_enums_` mapping -> resolved Enum values
+- nested Structures/Unions -> recursively ingested SimpleNamespace objects
+"""
+
+import ctypes
+import logging
+from enum import Enum
 from functools import lru_cache
+from types import SimpleNamespace
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Other Setups
@@ -12,15 +25,53 @@ from functools import lru_cache
 
 LOGGER = logging.getLogger(__name__)
 
+
+def _convert_value(value: Any) -> Any:
+    """
+    Applies the standard set of conversions to a single value:
+    leave primitives as-is, round floats, decode bytes, unpack ctypes
+    Arrays, and recursively ingest anything else (assumed to be a
+    nested ctypes Structure/Union).
+
+    Shared by `unpack_array` and `dynamic_ingest` so the conversion
+    rules only need to be maintained in one place.
+    """
+
+    if isinstance(value, (str, int, bool)):
+        # no transformation need to be done
+        return value
+
+    elif isinstance(value, float):
+        # round float numbers
+        return round(value, 5)
+
+    elif isinstance(value, bytes):
+        # convert bytes to a string
+        return new_byte_to_string(value)
+
+    elif isinstance(value, ctypes.Array):
+        # manage each item in array seperatly
+        return unpack_array(value)
+
+    elif value is None:
+        return value
+
+    else:
+        # Anything left over is assumed to be a nested Structure/Union.
+        LOGGER.info("Unknown value, assuming it is a class %r", value)
+        return dynamic_ingest(value)
+
+
 # ---------------------------------------------------------------------------
 # Bytes to strings
 # ---------------------------------------------------------------------------
 
 
-def new_byte_to_string(value: bytes, split_on_null=True) -> str:
+def new_byte_to_string(value: bytes, split_on_null: bool = True) -> str:
     """
-    Takes a bytes value and converts it to a string,
-    stripping any null characters and splitting on the first null character if split_on_null is True.
+    Takes a bytes value and converts it to a string, stripping any null
+    characters and splitting on the first null character if
+    split_on_null is True.
     """
 
     toBytes = bytes(value)
@@ -31,9 +82,9 @@ def new_byte_to_string(value: bytes, split_on_null=True) -> str:
         return strippedValue
 
     splitValue = strippedValue.split("\x00", 1)
-    cutValue = splitValue[0]
+    firstSegment = splitValue[0]
 
-    return cutValue
+    return firstSegment
 
 
 # ---------------------------------------------------------------------------
@@ -43,7 +94,10 @@ def new_byte_to_string(value: bytes, split_on_null=True) -> str:
 
 def unpack_array(packet) -> list | str:
     """
-    Takes a ctypes array and converts it to a list, with any bytes values converted to strings.
+    Takes a ctypes array and converts it to a list, with any bytes
+    values converted to strings. If the array itself holds raw bytes
+    (a char array), a single decoded string is returned instead of a
+    list of byte values.
     """
     if not packet:
         # return empty packets
@@ -55,31 +109,12 @@ def unpack_array(packet) -> list | str:
         value = new_byte_to_string(packet)
         return value
 
-    value = list(packet)
+    newArray = []
+    for item in packet:
+        newItem = _convert_value(item)
+        newArray.append(newItem)
 
-    for key, item in enumerate(value):
-        if isinstance(item, (int, str, bool)):
-            # no transformation need to be done
-            pass
-
-        elif isinstance(item, float):
-            # round float numbers
-            value[key] = round(item, 5)
-
-        elif isinstance(item, ctypes.Array):
-            # manage each item in array seperatly
-            value[key] = unpack_array(item)
-
-        elif isinstance(item, bytes):
-            # convert bytes to a string
-            value[key] = new_byte_to_string(item)
-
-        else:
-            # assume it is a class
-            LOGGER.info("Unknown value, assuming it is a class %r" % item)
-            value[key] = dynamic_ingest(item)
-
-    return value
+    return newArray
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +123,12 @@ def unpack_array(packet) -> list | str:
 
 
 @lru_cache(maxsize=None)
-def _inverse_enums(packet_cls):
+def _inverse_enums(packet_cls) -> dict:
+    """
+    Builds a {field_name: [enum_type, ...]} mapping from a packet
+    class's `_enums_` attribute, so a given field name can be looked
+    up to find which Enum type (if any) applies to it.
+    """
     enums = getattr(packet_cls, "_enums_", {})
     inverse = {}
     for k, v in enums.items():
@@ -99,10 +139,14 @@ def _inverse_enums(packet_cls):
 
 def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> Any:
     """
-    Receives a value and converts it into an Enum then returns a value depending on enumMode.
+    Receives a value and converts it into an Enum, then returns a
+    value depending on enum_mode (see EnumMode for the options).
+    If the value isn't a valid member of enum_type, it's returned
+    unchanged and a warning is logged.
     """
     if not enumType:
         return value
+
     try:
         if enumMode == 0:
             value = enumType(value)
@@ -110,6 +154,7 @@ def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> An
             value = enumType(value).value
         elif enumMode == 2:
             value = enumType(value).name
+
     except ValueError:
         LOGGER.warning("[ENUM] [Warning]\tvalue %s is not a valid enum member of %s" % (value, enumType))
         # If the value is not a valid enum member, keep it as is
@@ -133,7 +178,6 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -
     - fields with a declared _enums_ mapped to their enum type
     """
     packetName = packet.__class__.__name__
-    # newPacket = type(packetName, (), {})
     newPacket = SimpleNamespace()
     newPacket.__name__ = packetName
 
@@ -147,40 +191,18 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -
     inverseEnums = _inverse_enums(packet.__class__)
 
     for source_attr, value in attrs.items():
-        # check if value references the parent if so return None or empty array
+        # TODO check if value references the parent if so return None or empty array
 
-        if isinstance(value, (str, int, bool)):
-            pass
-
-        elif isinstance(value, float):
-            # round float numbers
-            value = round(value, 5)
-
-        elif isinstance(value, bytes):
-            # convert bytes to a string
-            value = new_byte_to_string(value)
-
-        elif isinstance(value, ctypes.Array):
-            # manage each item in array seperatly
-            value = unpack_array(value)
-
-        elif value is None:
-            pass
-
-        else:
-            # assume it is a class
-            LOGGER.info("Unknown value, assuming it is a class %r" % value)
-            value = dynamic_ingest(value)
+        value = _convert_value(value)
 
         if source_attr in inverseEnums:
-            enum_type = None
-            all_enum_type = inverseEnums[source_attr]
+            all_enum_type = inverseEnums.get(source_attr)
 
             if len(all_enum_type) > 1:
                 LOGGER.critical("Multiple enum types found for attribute '%s': %s. Cannot determine which one to use." % (source_attr, all_enum_type))
                 raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
-            else:
-                enum_type = all_enum_type[0]
+
+            enum_type = all_enum_type[0]
 
             if isinstance(value, list):
                 value = [apply_enum(i, enum_type, enumMode) for i in value]
