@@ -56,10 +56,10 @@ class CentralStorage:
         """Return a consistent, immutable snapshot for worker threads."""
         with self._lock:
             return {
-                # "allData": self.allData.copy(),
-                "allData": deepcopy(self.allData),
-                # "latestData": self.latestData.copy(),
-                "latestData": deepcopy(self.latestData),
+                "allData": self.allData.copy(),
+                # "allData": deepcopy(self.allData),
+                "latestData": self.latestData.copy(),
+                # "latestData": deepcopy(self.latestData),
             }
 
 
@@ -90,10 +90,10 @@ class TelemetryManager:
         # from meta data
         self.mainPort: int | None = None
         self.heartBeatPort: int | None = None
-        self.heartBeatFunc: function | None = None
+        self.heartBeatFunc: Callable[..., Any] | None = None
         self.handShakePort: int | None = None
-        self.handShakeFunc: tuple[function, function] | None = None
-        self.decryptionFunc: function | None = None
+        self.handShakeFunc: tuple[Callable[..., Any], Callable[..., Any]] | None = None
+        self.decryptionFunc: Callable[..., Any] | None = None
         self.headerPacket: type | None = None
         self.packetIDAttr: str | None = None
         self.allSharedMemoryNames: str | None | dict[str, str] = None
@@ -172,7 +172,8 @@ class TelemetryManager:
             LOGGER.warning("[MAIN] [Warning]\tWorker function must be callable.")
             return False
 
-        if self.__valid_type(mainFunc, type, "Worker Function"):
+        if isinstance(mainFunc, type):
+            LOGGER.warning("[MAIN] [Warning]\tWorker Function must not be a class.")
             return False
 
         self.threadCount += 1
@@ -497,14 +498,13 @@ class TelemetryManager:
         heartBeatDestination = (self.destinationIP, self.heartBeatPort)
 
         if self.heartBeatFunc:
+            self.PACKET_COUNTER += 1
             if self.PACKET_COUNTER % self.HEARTBEAT_INTERVAL == 0:
                 self.heartBeatFunc(sock, heartBeatDestination)
-                self.PACKET_COUNTER += 1
-            else:
                 self.PACKET_COUNTER = 0
 
         try:
-            data, _ = sock.recvfrom(self.FULLBUFFERSIZE)
+            data, _ = sock.recvfrom(self.FULLBUFFERSIZE)  # TODO could verify ip matches destination IP
         except TimeoutError:
             if self.heartBeatFunc:
                 self.heartBeatFunc(sock, heartBeatDestination)
@@ -596,6 +596,7 @@ class TelemetryManager:
             SMMap = mmap.mmap(-1, SMSize, tagname=allSharedMemoryNames, access=mmap.ACCESS_READ)
             sharedMemoryInfo.update({SMMap: SMSize})
             LOGGER.info("[NTWK] [Info]\tServer started on %s with size %d bytes" % (allSharedMemoryNames, SMSize))
+
         elif isinstance(allSharedMemoryNames, dict):
             SMNames = []
             for packetID, packetInfo in self.packetInfo.items():
@@ -606,6 +607,7 @@ class TelemetryManager:
                         SMNames.append(SMName)
                         SMMap = mmap.mmap(-1, SMSize, tagname=SMName, access=mmap.ACCESS_READ)
                         sharedMemoryInfo.update({SMMap: SMSize})
+
             LOGGER.info("[NTWK] [Info]\tServer started for %s with sizes %s bytes" % (SMNames, [size for size in sharedMemoryInfo.values()]))
         else:
             raise ValueError("[NTWK] [Error]\tShared memory name must be a string or a dict mapping packet names to shared memory names.")
@@ -617,6 +619,7 @@ class TelemetryManager:
                     SMMap.seek(0)
                     raw = SMMap.read(SMSize)
                     SMRawData.append(raw)
+
             except TimeoutError:
                 pass
             except KeyboardInterrupt:
@@ -630,9 +633,7 @@ class TelemetryManager:
                 # continue
             else:
                 for SMData in SMRawData:
-                    # non_zeros = set(SMData).difference(b"\x00")
-                    if any(SMData):
-                        # if not non_zeros:
+                    if not any(SMData):
                         continue
                     packet, packetID, headerPacket = self.__retrieve_packet(SMData)
 
