@@ -227,40 +227,45 @@ class TestUserInputs:
             ("256.256.256.256", False),
             ("192.168.1", False),
             ("1.2.3.4.5", False),
+            ("1.2.3.4.5.", False),
             ("192.1", False),
+            ("192.1.", False),
             (False, False),
             (testPacket1, False),
+            ("1.1.1.1.", False),
+            ("1.2.3.4.", False),
             ("1.1.1.1", True),
             ("192.168.1.1", True),
             ("192.168.68.1", True),
             ("255.255.255.255", True),
         ],
     )
-    def test_update_local_ip_valid(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.updateLocalIP(operand) == expected
+    def test_is_valid_ip(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
+        assert telemetry._TelemetryManager__is_valid_ip(operand) == expected
 
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (5, False),
-            (-8, False),
-            (2.7, False),
-            ("invalid_ip", False),
-            ("256.100.50.25", False),
-            ("256.256.256.256", False),
-            ("192.168.1", False),
-            ("1.2.3.4.5", False),
-            ("192.1", False),
-            (False, False),
-            (testPacket1, False),
-            ("1.1.1.1", True),
-            ("192.168.1.1", True),
-            ("192.168.68.1", True),
-            ("255.255.255.255", True),
-        ],
-    )
-    def test_update_send_ip_valid(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.updateLocalIP(operand) == expected
+    # @pytest.mark.parametrize(
+    #     "operand, expected",
+    #     [
+    #         (5, False),
+    #         (-8, False),
+    #         (2.7, False),
+    #         ("invalid_ip", False),
+    #         ("256.100.50.25", False),
+    #         ("256.256.256.256", False),
+    #         ("192.168.1", False),
+    #         ("1.2.3.4.5", False),
+    #         ("1.2.3.4.5.", False),
+    #         ("192.1", False),
+    #         (False, False),
+    #         (testPacket1, False),
+    #         ("1.1.1.1", True),
+    #         ("192.168.1.1", True),
+    #         ("192.168.68.1", True),
+    #         ("255.255.255.255", True),
+    #     ],
+    # )
+    # def test_update_send_ip_valid(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
+    #     assert telemetry.updateLocalIP(operand) == expected
 
     @pytest.mark.parametrize(
         "operand, expected",

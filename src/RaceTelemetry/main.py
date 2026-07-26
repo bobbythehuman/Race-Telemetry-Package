@@ -26,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 class CentralStorage:
     """
     Holds the latest network data.  Worker threads receive a read-only view
-    via ReadOnlyStorage so they cannot accidentally mutate the contents.
+    via ReadOnlyStorage so they cannot accidentally edit the contents.
     """
 
     def __init__(self, MetaData: type) -> None:
@@ -53,7 +53,7 @@ class CentralStorage:
                 self.latestData[packetName] = data
 
     def snapshot(self) -> dict[str, Any]:
-        """Return a consistent, immutable snapshot for worker threads."""
+        """Return a consistent, snapshot for worker threads."""
         with self._lock:
             return {
                 "allData": self.allData.copy(),
@@ -264,7 +264,7 @@ class TelemetryManager:
 
         self.allSharedMemoryNames = self.__meta_data_check("allSharedMemoryNames")
 
-        self.packetInfo = self.__meta_data_check("packetInfo", [])
+        self.packetInfo = self.__meta_data_check("packetInfo", {})
 
     def __get_packet_size(self, packet: type) -> int:
         """Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction."""

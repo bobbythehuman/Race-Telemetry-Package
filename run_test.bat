@@ -1,1 +1,1 @@
-pytest .\tests\test_main.py .\tests\test_digestion.py --disable-warnings
+pytest .\tests\test_main1.py .\tests\test_main2.py .\tests\test_digestion1.py .\tests\test_digestion2.py --disable-warnings

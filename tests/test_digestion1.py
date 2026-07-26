@@ -40,21 +40,21 @@ class TestNewChrToString:
 
     def test_extra_true_splits_on_first_null(self):
         raw = b"hello\x00world\x00"
-        assert new_byte_to_string(raw, extra=True) == "hello"
+        assert new_byte_to_string(raw, split_on_null=True) == "hello"
 
     def test_extra_false_stripped_ends_only(self):
         raw = b"hello\x00world\x00"
         # strip("\0") only removes leading/trailing nulls, not embedded ones
-        assert new_byte_to_string(raw, extra=False) == "hello\x00world"
+        assert new_byte_to_string(raw, split_on_null=False) == "hello\x00world"
 
     def test_no_null_bytes(self):
         raw = b"plain text"
-        assert new_byte_to_string(raw, extra=True) == "plain text"
-        assert new_byte_to_string(raw, extra=False) == "plain text"
+        assert new_byte_to_string(raw, split_on_null=True) == "plain text"
+        assert new_byte_to_string(raw, split_on_null=False) == "plain text"
 
     def test_ctypes_char_array_input(self):
         buf = ctypes.create_string_buffer(b"abc", 10)  # 'abc' + null padding
-        assert new_byte_to_string(buf.raw, extra=True) == "abc"
+        assert new_byte_to_string(buf.raw, split_on_null=True) == "abc"
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +89,9 @@ class TestUnpackArray:
         # array whose *elements* are individual bytes objects (e.g. char arrays nested
         # inside a struct array) rather than the array itself being a char array
         class Small(ctypes.Structure):
-            _fields_ = [("name", ctypes.c_char * 4)]
+            _fields_ = [
+                ("name", ctypes.c_char * 4),
+            ]
 
         arr = (Small * 2)((b"ab\x00\x00",), (b"cd\x00\x00",))
         result = unpack_array(arr)
