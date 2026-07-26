@@ -26,6 +26,11 @@ from typing import Any
 LOGGER = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# Shared value conversion
+# ---------------------------------------------------------------------------
+
+
 def _convert_value(value: Any) -> Any:
     """
     Applies the standard set of conversions to a single value:
@@ -101,7 +106,7 @@ def unpack_array(packet) -> list | str:
     """
     if not packet:
         # return empty packets
-        LOGGER.debug("Received empty packet %r" % packet)
+        LOGGER.debug("Received empty packet %r", packet)
         return []
 
     if isinstance(packet[0], bytes):
@@ -156,7 +161,7 @@ def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> An
             value = enumType(value).name
 
     except ValueError:
-        LOGGER.warning("[ENUM] [Warning]\tvalue %s is not a valid enum member of %s" % (value, enumType))
+        LOGGER.warning("[ENUM] [Warning]\tvalue %r is not a valid enum member of %r", value, enumType)
         # If the value is not a valid enum member, keep it as is
         pass
 
@@ -182,7 +187,7 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -
     newPacket.__name__ = packetName
 
     if not hasattr(packet, "_fields_"):
-        LOGGER.error("Packet %s doesnt contain a _field_ attribute" % (packetName))
+        LOGGER.error("Packet %r doesnt contain a _field_ attribute", packetName)
         return newPacket
 
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
@@ -199,7 +204,7 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -
             all_enum_type = inverseEnums.get(source_attr)
 
             if len(all_enum_type) > 1:
-                LOGGER.critical("Multiple enum types found for attribute '%s': %s. Cannot determine which one to use." % (source_attr, all_enum_type))
+                LOGGER.critical("Multiple enum types found for attribute '%r': %r. Cannot determine which one to use.", source_attr, all_enum_type)
                 raise ValueError(f"Multiple enum types found for attribute '{source_attr}': {all_enum_type}. Cannot determine which one to use.")
 
             enum_type = all_enum_type[0]

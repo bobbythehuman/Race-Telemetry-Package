@@ -291,14 +291,14 @@ class TelemetryManager:
         if re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
             return True
 
-        LOGGER.warning("[NTWK] [Warning]\tInvalid IP address: %s" % (ip))
+        LOGGER.warning("[NTWK] [Warning]\tInvalid IP address: %r", ip)
         return False
 
     def __valid_type(self, object_: object, type_, name: str) -> bool:
         if isinstance(object_, type_):
             return True
         else:
-            LOGGER.warning(f"[MAIN] [Warning]\t%s must be a %r." % (name, type_))
+            LOGGER.warning("[MAIN] [Warning]\t%r must be a %r.", name, type_)
             return False
 
     # Misc thread function
@@ -366,9 +366,9 @@ class TelemetryManager:
 
         except KeyboardInterrupt:
             LOGGER.debug("Keyboard Interrupt from wait_for_stop_signal")
-            LOGGER.info("\n[MAIN] [INFO]\tKeyboardInterrupt received.")
+            LOGGER.info("[MAIN] [INFO]\tKeyboardInterrupt received.")
         finally:
-            LOGGER.info("[MAIN] [INFO]\tStopping all threads\n")
+            LOGGER.info("[MAIN] [INFO]\tStopping all threads")
             self.__stop_threads()
 
     def __stop_threads(self) -> None:
@@ -386,7 +386,7 @@ class TelemetryManager:
         for workerName, workerThread in self.workerThreads.items():
             workerThread.join(timeout=0.5)
             if workerThread.is_alive():
-                LOGGER.warning("[MAIN] [WARNING]\tWarning: %s did not stop in time." % (workerName))
+                LOGGER.warning("[MAIN] [WARNING]\tWarning: %r did not stop in time.", workerName)
 
         self.workersAreWorking = False
         LOGGER.info("[MAIN] [INFO]\tAll threads stopped. Exiting.")
@@ -400,12 +400,12 @@ class TelemetryManager:
             LOGGER.error("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
             raise RuntimeError("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
-        LOGGER.info("[MAIN] [INFO]\tStart at %s" % (datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f")))
+        LOGGER.info("[MAIN] [INFO]\tStart at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
         self.__start_threads()
         LOGGER.info("[MAIN] [INFO]\tRunning — press Ctrl+C to stop.")
         # comment lines below to make a manual stop outside class
         self.__wait_for_stop_signal()
-        LOGGER.info("[MAIN] [INFO]\tEnd at %s" % (datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f")))
+        LOGGER.info("[MAIN] [INFO]\tEnd at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
 
     # Misc packet function
 
@@ -425,13 +425,13 @@ class TelemetryManager:
                 try:
                     rawPacket = packetStruct.from_buffer_copy(data[0:packetBufferSize])
                 except ValueError as exc:
-                    LOGGER.debug("Packet failed to unpack with %s" % (packetStruct.__name__))
+                    LOGGER.debug("Packet failed to unpack with %r", packetStruct.__name__)
                     continue
                 else:
                     packet = dynamic_ingest(rawPacket, self.enumMode)
                     break
         if len(possiblePacketStruct) == len(packetSizes):
-            LOGGER.warning("[Warning]\tNo matching packet size [%s] for received data length %d" % (packetSizes, dataLength))
+            LOGGER.warning("[Warning]\tNo matching packet size [%r] for received data length %r", packetSizes, dataLength)
             packet = None
 
         # do enum check here
@@ -462,7 +462,7 @@ class TelemetryManager:
             if hasattr(headerPacket, self.packetIDAttr):
                 packetID = int(getattr(headerPacket, self.packetIDAttr))
             else:
-                LOGGER.warning("[NTWR] [Warning] Header packet %s doesnt contain the ID attribute %s" % (headerPacket, self.packetIDAttr))
+                LOGGER.warning("[NTWR] [Warning]\tHeader packet %r doesnt contain the ID attribute %r", headerPacket, self.packetIDAttr)
                 packetID = 0
         else:
             headerPacket = None
@@ -516,7 +516,7 @@ class TelemetryManager:
             self.__trigger_stop()
 
         except OSError as exc:
-            LOGGER.error("[NTWK] [Error]\tSocket error: %s" % (exc))
+            LOGGER.error("[NTWK] [Error]\tSocket error: %r", exc)
             self.__trigger_stop()
 
         else:
@@ -560,7 +560,7 @@ class TelemetryManager:
             LOGGER.error("[NTWK] [ERROR]\tOnly one usage of each socket address")
             self.__trigger_stop()
         else:
-            LOGGER.info("[NTWK] [Info]\tServer started on %s:%d" % (UDP_IP, UDP_PORT))
+            LOGGER.info("[NTWK] [Info]\tServer started on %r:%r", UDP_IP, UDP_PORT)
 
             if self.handShakeFunc:
                 self.handShakeFunc[0](sock, handShakeDestination)  # TODO fix this function not callable
@@ -608,7 +608,7 @@ class TelemetryManager:
                         SMMap = mmap.mmap(-1, SMSize, tagname=SMName, access=mmap.ACCESS_READ)
                         sharedMemoryInfo.update({SMMap: SMSize})
 
-            LOGGER.info("[NTWK] [Info]\tServer started for %s with sizes %s bytes" % (SMNames, [size for size in sharedMemoryInfo.values()]))
+            LOGGER.info("[NTWK] [Info]\tServer started for %r with sizes %r bytes", SMNames, [size for size in sharedMemoryInfo.values()])
         else:
             raise ValueError("[NTWK] [Error]\tShared memory name must be a string or a dict mapping packet names to shared memory names.")
 
@@ -628,7 +628,7 @@ class TelemetryManager:
                 self.__trigger_stop()
                 # continue
             except OSError as exc:
-                LOGGER.error("[NTWK] [Error]\tShared memory error: %s" % exc)
+                LOGGER.error("[NTWK] [Error]\tShared memory error: %r", exc)
                 self.__trigger_stop()
                 # continue
             else:
@@ -662,5 +662,5 @@ class TelemetryManager:
             raise ValueError("[NTWK] [Error]\tStorage instance is not initialized.")
 
         for packet, packetID, headerPacket in self.GetTelemetry():
-            # LOGGER.debug("[NTWK] [Info]\tReceived packet ID %d" % (packetID))
+            # LOGGER.debug("[NTWK] [Info]\tReceived packet ID %r", packetID)
             self.activeStorage._write(packet)
