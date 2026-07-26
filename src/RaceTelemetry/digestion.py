@@ -1,8 +1,10 @@
 import ctypes
+from struct import pack
 import warnings
 import logging
 
 from types import SimpleNamespace
+from functools import lru_cache
 
 # ---------------------------------------------------------------------------
 # Other Setups
@@ -23,12 +25,12 @@ def new_byte_to_string(value: bytes, extra=True) -> str:
 
     toBytes = bytes(value)
     decodedValue = toBytes.decode("utf-8", errors="replace")
-    stripedValue = decodedValue.strip("\0")
+    strippedValue = decodedValue.strip("\0")
 
     if not extra:
-        return stripedValue
+        return strippedValue
 
-    splitValue = stripedValue.split("\x00", 1)
+    splitValue = strippedValue.split("\x00", 1)
     cutValue = splitValue[0]
 
     return cutValue
@@ -55,7 +57,7 @@ def unpack_array(packet) -> list | str:
     value = list(packet)
 
     for key, item in enumerate(value):
-        if type(item) in [int, str, bool]:
+        if isinstance(item, (int, str, bool)):
             # no transformation need to be done
             pass
 
@@ -84,6 +86,16 @@ def unpack_array(packet) -> list | str:
 # ---------------------------------------------------------------------------
 
 
+@lru_cache(maxsize=None)
+def _inverse_enums(packet_cls):
+    enums = getattr(packet_cls, "_enums_", {})
+    inverse = {}
+    for k, v in enums.items():
+        for x in v:
+            inverse.setdefault(x, []).append(k)
+    return inverse
+
+
 def apply_enum(value, enumType, enumMode: int = 0):
     """
     Receives a value and converts it into an Enum then returns a value depending on enumMode.
@@ -100,7 +112,7 @@ def apply_enum(value, enumType, enumMode: int = 0):
     except ValueError:
         LOGGER.warning("[msg=ENUM] [Warning]\tvalue %s is not a valid enum member of %s" % (value, enumType))
         # If the value is not a valid enum member, keep it as is
-        value = value
+        pass
 
     return value
 
@@ -119,27 +131,24 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     - recursively ingests any nested classes
     - fields with a declared _enums_ mapped to their enum type
     """
-    attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
-    enums = getattr(packet, "_enums_", {})
-
     packetName = packet.__class__.__name__
+
+    if not hasattr(packet, "_field_"):
+        LOGGER.error("Packet %s doesnt contain a _field_ attribute" % packet.__name__)
+        return type(packetName, (), {})
+
+    attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
+
     newPacket = type(packetName, (), {})
     # newPacket = SimpleNamespace()
 
     # reverse enum dictionary so attribute references an enum
-    inverseEnums = {}
-    for k, v in enums.items():
-        for x in v:
-            inverseEnums.setdefault(x, []).append(k)
+    inverseEnums = _inverse_enums(packet.__class__)
 
     for source_attr, value in attrs.items():
         # check if value references the parent if so return None or empty array
 
-        if isinstance(value, bool):
-            pass
-        elif isinstance(value, int):
-            pass
-        elif isinstance(value, str):
+        if isinstance(value, (str, int, bool)):
             pass
 
         elif isinstance(value, float):
