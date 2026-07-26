@@ -133,15 +133,15 @@ def dynamic_ingest(packet: type, enumMode: int = 0) -> type:
     - fields with a declared _enums_ mapped to their enum type
     """
     packetName = packet.__class__.__name__
+    # newPacket = type(packetName, (), {})
+    newPacket = SimpleNamespace()
+    newPacket.__name__ = packetName
 
     if not hasattr(packet, "_fields_"):
         LOGGER.error("Packet %s doesnt contain a _field_ attribute" % (packetName))
-        return type(packetName, (), {})
+        return newPacket
 
     attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
-
-    newPacket = type(packetName, (), {})
-    # newPacket = SimpleNamespace()
 
     # reverse enum dictionary so attribute references an enum
     inverseEnums = _inverse_enums(packet.__class__)
