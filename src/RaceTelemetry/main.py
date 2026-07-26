@@ -443,20 +443,25 @@ class TelemetryManager:
         Returns a tuple of (packet, packetID, headerPacket).
         packet and headerPacket may be None if no matching packet structure is found or if no header is defined in the metadata.
         """
-        if not self.packetIDAttr:
-            LOGGER.error("[NTWK] [Error]\tPacket ID Attribute is empty.")
-            raise ValueError("[NTWK] [Error]\tPacket ID Attribute is empty.")
 
         if not self.packetInfo:
             LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
             raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
 
         if self.headerPacket:
+            if not self.packetIDAttr:
+                LOGGER.error("[NTWK] [Error]\tPacket ID Attribute is empty.")
+                raise ValueError("[NTWK] [Error]\tPacket ID Attribute is empty.")
+
             headerBufferSize = self.__get_packet_size(self.headerPacket)
             rawHeaderPacket = self.headerPacket.from_buffer_copy(data[0:headerBufferSize])
             headerPacket = dynamic_ingest(rawHeaderPacket)
 
+            if hasattr(headerPacket, self.packetIDAttr):
             packetID = int(getattr(headerPacket, self.packetIDAttr))
+        else:
+                LOGGER.warning("[NTWR] [Warning] Header packet %s doesnt contain the ID attribute %s" % (headerPacket, self.packetIDAttr))
+                packetID = 0
         else:
             headerPacket = None
             packetID = 0
