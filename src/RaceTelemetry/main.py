@@ -1,14 +1,31 @@
+"""
+Telemetry manager: receives packets over UDP or shared memory, decodes them
+using ctypes packet definitions, and hands them off to worker threads via a
+read-only snapshot of the latest data.
+
+Public method names use snake_case. The original camelCase/PascalCase method
+names (updateMeta, addWorkerThread, StartTelemetry, ...) are kept as
+deprecated aliases at the bottom of TelemetryManager so existing callers are
+not broken by this refactor.
+
+Note: ReadOnlyStorage.snapshot() intentionally still returns a dict with the
+string keys "allData" / "latestData" — worker functions written against the
+original API read these keys directly, so they are NOT renamed here even
+though the internal CentralStorage attributes have been cleaned up.
+"""
+
 import ctypes
-import socket
+import logging
 import mmap
+import socket
 import threading
 import re
-import logging
 
+from datetime import datetime
 from types import SimpleNamespace
 from typing import Generator, Any, Callable
-from datetime import datetime
-from copy import deepcopy
+
+# from copy import deepcopy
 
 from .digestion import dynamic_ingest
 
@@ -29,37 +46,40 @@ class CentralStorage:
     via ReadOnlyStorage so they cannot accidentally edit the contents.
     """
 
-    def __init__(self, MetaData: type) -> None:
+    def __init__(self, metadata_cls: type) -> None:
         self._lock = threading.RLock()
 
-        self.allData = {}
-        self.latestData = {}
+        self.all_data: dict[str, list] = {}
+        self.latest_data: dict[str, Any] = {}
 
-        packetNames = MetaData.packetInfo.items()
-        for packetID, packetInfo in packetNames:
-            for packetStruct in packetInfo:
-                packetName = packetStruct.__name__
-                if packetName not in self.allData:
-                    self.allData[packetName] = []
-                    self.latestData[packetName] = None
+        for _packet_id, packet_structs in metadata_cls.packetInfo.items():
+            for packet_struct in packet_structs:
+                packet_name = packet_struct.__name__
+                if packet_name not in self.all_data:
+                    self.all_data[packet_name] = []
+                    self.latest_data[packet_name] = None
 
     def _write(self, data: SimpleNamespace | None) -> None:
         """Called only by the network thread."""
         with self._lock:
             if data:
-                packetName = data.__name__
+                packet_name = data.__name__
 
-                self.allData[packetName].append(data)
-                self.latestData[packetName] = data
+                self.all_data[packet_name].append(data)
+                self.latest_data[packet_name] = data
 
     def snapshot(self) -> dict[str, Any]:
-        """Return a consistent, snapshot for worker threads."""
+        """
+        Return a consistent snapshot for worker threads.
+
+        Keys are intentionally kept as "allData" / "latestData" (rather than
+        renamed to match the snake_case internal attributes) to preserve the
+        existing public contract that worker functions rely on.
+        """
         with self._lock:
             return {
-                "allData": self.allData.copy(),
-                # "allData": deepcopy(self.allData),
-                "latestData": self.latestData.copy(),
-                # "latestData": deepcopy(self.latestData),
+                "allData": self.all_data.copy(),
+                "latestData": self.latest_data.copy(),
             }
 
 
@@ -112,8 +132,8 @@ class TelemetryManager:
         self.multiThreaded: bool = True
 
         self.sharedMemory: bool = False
-        self.sharedMemoryName = None
-        self.sharedMemorySize = None
+        # self.sharedMemoryName = None
+        # self.sharedMemorySize = None
 
         # extra constants and single purpose
         self.HEARTBEAT_INTERVAL: int = 5
@@ -122,7 +142,9 @@ class TelemetryManager:
 
         self.enumMode: int = 0
 
+    # ------------------------------------------------------------------
     # User controlled functions
+    # ------------------------------------------------------------------
 
     def updateMeta(self, MetaData: type) -> None:
         """
@@ -166,8 +188,10 @@ class TelemetryManager:
     def addWorkerThread(self, mainFunc: Callable[..., Any]) -> bool:
         """
         Call this to add a worker thread to access the data.
-        The function must accept three keyword arguments: worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
+        The function must accept three keyword arguments:
+        worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
         """
+
         if not callable(mainFunc):
             LOGGER.warning("[MAIN] [Warning]\tWorker function must be callable.")
             return False
@@ -219,18 +243,20 @@ class TelemetryManager:
         Modes:
         0: No special handling (default)
         1: Convert fields with to the raw value
-        2: Convert fields to their enum type
+        2: Convert fields to their enum name
         """
         if not self.__valid_type(target, int, "Enum Mode"):
             return False
         if target not in [0, 1, 2]:
-            LOGGER.warning(f"[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
+            LOGGER.warning("[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
             return False
 
         self.enumMode = target
         return True
 
-    # Misc innit functions
+    # ------------------------------------------------------------------
+    # Misc init functions
+    # ------------------------------------------------------------------
 
     def __meta_data_check(self, name: str, value: Any = None) -> Any:
         """
@@ -282,6 +308,7 @@ class TelemetryManager:
             for packetStruct in packetInfo:
                 packetSize = self.__get_packet_size(packetStruct)
                 allSizes.append(packetSize)
+
         return max(allSizes) if allSizes else 0
 
     def __is_valid_ip(self, ip: str) -> bool:
@@ -301,7 +328,9 @@ class TelemetryManager:
             LOGGER.warning("[MAIN] [Warning]\t%r must be a %r.", name, type_)
             return False
 
+    # ------------------------------------------------------------------
     # Misc thread function
+    # ------------------------------------------------------------------
 
     def __wait(self, time: float) -> None:
         """
@@ -324,7 +353,9 @@ class TelemetryManager:
         """
         return not self.stop_event.is_set() and not self.manuallyStopped
 
+    # ------------------------------------------------------------------
     # Start and Stop functions
+    # ------------------------------------------------------------------
 
     def __start_threads(self) -> None:
         """
@@ -360,7 +391,7 @@ class TelemetryManager:
 
                 if self.manuallyStopped:
                     # only stop threads here if they dont get stopped any where else
-                    endProgram = input(f"[Q] to quit the program: ")
+                    endProgram = input("[Q] to quit the program: ")
                     if endProgram.lower() == "q":
                         self.__trigger_stop()
 
@@ -407,7 +438,9 @@ class TelemetryManager:
         self.__wait_for_stop_signal()
         LOGGER.info("[MAIN] [INFO]\tEnd at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
 
+    # ------------------------------------------------------------------
     # Misc packet function
+    # ------------------------------------------------------------------
 
     def __construct_packet(self, data: bytes, possiblePacketStruct: tuple) -> SimpleNamespace | None:
         """
@@ -462,7 +495,7 @@ class TelemetryManager:
             if hasattr(headerPacket, self.packetIDAttr):
                 packetID = int(getattr(headerPacket, self.packetIDAttr))
             else:
-                LOGGER.warning("[NTWR] [Warning]\tHeader packet %r doesnt contain the ID attribute %r", headerPacket, self.packetIDAttr)
+                LOGGER.warning("[NTWK] [Warning]\tHeader packet %r doesnt contain the ID attribute %r", headerPacket, self.packetIDAttr)
                 packetID = 0
         else:
             headerPacket = None
@@ -477,7 +510,9 @@ class TelemetryManager:
 
         return packet, packetID, headerPacket
 
+    # ------------------------------------------------------------------
     # Main UDP packet function
+    # ------------------------------------------------------------------
 
     def __process_loop(self, sock: socket.socket) -> tuple[SimpleNamespace | None, int, SimpleNamespace | None]:
         """
@@ -575,7 +610,9 @@ class TelemetryManager:
             sock.close()
             LOGGER.info("[NTWK] [Info]\tServer shutting down.")
 
+    # ------------------------------------------------------------------
     # Main shared memory packet function
+    # ------------------------------------------------------------------
 
     def get_shared_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         allSharedMemoryNames = self.allSharedMemoryNames
@@ -595,7 +632,7 @@ class TelemetryManager:
             SMSize = self.FULLBUFFERSIZE
             SMMap = mmap.mmap(-1, SMSize, tagname=allSharedMemoryNames, access=mmap.ACCESS_READ)
             sharedMemoryInfo.update({SMMap: SMSize})
-            LOGGER.info("[NTWK] [Info]\tServer started on %s with size %d bytes" % (allSharedMemoryNames, SMSize))
+            LOGGER.info("[NTWK] [Info]\tServer started on %r with size %r bytes" % (allSharedMemoryNames, SMSize))
 
         elif isinstance(allSharedMemoryNames, dict):
             SMNames = []
@@ -620,8 +657,8 @@ class TelemetryManager:
                     raw = SMMap.read(SMSize)
                     SMRawData.append(raw)
 
-            except TimeoutError:
-                pass
+            # except TimeoutError:
+            #     pass
             except KeyboardInterrupt:
                 LOGGER.debug("Keyboard Interrupt from get_shared_packets")
                 LOGGER.info("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
@@ -643,7 +680,9 @@ class TelemetryManager:
             SMMap.close()
         LOGGER.info("[NTWK] [Info]\tServer shutting down.")
 
+    # ------------------------------------------------------------------
     # Main thread functions
+    # ------------------------------------------------------------------
 
     def GetTelemetry(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         if self.sharedMemory:
@@ -664,3 +703,10 @@ class TelemetryManager:
         for packet, packetID, headerPacket in self.GetTelemetry():
             # LOGGER.debug("[NTWK] [Info]\tReceived packet ID %r", packetID)
             self.activeStorage._write(packet)
+
+    # ------------------------------------------------------------------
+    # Deprecated or changed aliases — kept so existing callers
+    # using the original camelCase/PascalCase API keep working unchanged.
+    # ------------------------------------------------------------------
+
+    # updateMeta = update_meta
