@@ -65,8 +65,8 @@ class TestCentralStorage:
 
     def test_central_storage_initialization(self, storage: CentralStorage):
         assert isinstance(storage, CentralStorage)
-        assert storage.allData == {"testPacket1": [], "testPacket2": [], "HeaderPacket": []}
-        assert storage.latestData == {"testPacket1": None, "testPacket2": None, "HeaderPacket": None}
+        assert storage.all_data == {"testPacket1": [], "testPacket2": [], "HeaderPacket": []}
+        assert storage.latest_data == {"testPacket1": None, "testPacket2": None, "HeaderPacket": None}
 
     def test_snapshot_output(self, storage: CentralStorage):
         output = {
@@ -119,7 +119,7 @@ class TestTelemetryManager:
             ("heartBeatPort", 1234, 1234),
         ],
     )
-    def test_meta_data_check(self, telemetry: TelemetryManager, operand1: Str, operand2: Any, expected: Any) -> None:
+    def test_meta_data_check(self, telemetry: TelemetryManager, operand1: str, operand2: Any, expected: Any) -> None:
         assert telemetry._TelemetryManager__meta_data_check(operand1, operand2) == expected
         # assert telemetry._telemetryManager__meta_data_check("packetIDAttribute") == "header_id"
         # assert telemetry._telemetryManager__meta_data_check("headerInfo") == SubHeaderPacket
@@ -133,7 +133,7 @@ class TestTelemetryManager:
             (testPacket2, 8),
         ],
     )
-    def test_packet_size(self, telemetry: TelemetryManager, operand: Type, expected: Any) -> None:
+    def test_packet_size(self, telemetry: TelemetryManager, operand: type, expected: Any) -> None:
         assert telemetry._TelemetryManager__get_packet_size(operand) == expected
         # assert telemetry._telemetryManager__get_packet_size(testPacket1) == 4
         # assert telemetry._telemetryManager__get_packet_size(testPacket2) == 8

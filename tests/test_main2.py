@@ -35,7 +35,6 @@ import pytest
 
 from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
 
-
 # ===========================================================================
 # Shared fixtures / helper ctypes structures & fake metadata
 # ===========================================================================
@@ -118,8 +117,8 @@ class TestCentralStorage:
 
         storage = CentralStorage(MetaData)
 
-        assert storage.allData == {"PacketA": [], "PacketB": []}
-        assert storage.latestData == {"PacketA": None, "PacketB": None}
+        assert storage.all_data == {"PacketA": [], "PacketB": []}
+        assert storage.latest_data == {"PacketA": None, "PacketB": None}
 
     def test_duplicate_packet_names_across_ids_are_not_duplicated(self):
         # Two different packetIDs mapping to the SAME struct type should
@@ -128,15 +127,15 @@ class TestCentralStorage:
             packetInfo = {1: (PacketA,), 2: (PacketA,)}
 
         storage = CentralStorage(MetaData)
-        assert list(storage.allData.keys()) == ["PacketA"]
+        assert list(storage.all_data.keys()) == ["PacketA"]
 
     def test_empty_packet_info_produces_empty_storage(self):
         class MetaData:
             packetInfo = {}
 
         storage = CentralStorage(MetaData)
-        assert storage.allData == {}
-        assert storage.latestData == {}
+        assert storage.all_data == {}
+        assert storage.latest_data == {}
 
     def test_write_appends_to_all_data_and_updates_latest(self):
         class MetaData:
@@ -149,8 +148,8 @@ class TestCentralStorage:
         storage._write(p1)
         storage._write(p2)
 
-        assert storage.allData["PacketA"] == [p1, p2]
-        assert storage.latestData["PacketA"] is p2
+        assert storage.all_data["PacketA"] == [p1, p2]
+        assert storage.latest_data["PacketA"] is p2
 
     def test_write_with_none_is_a_no_op(self):
         class MetaData:
@@ -159,8 +158,8 @@ class TestCentralStorage:
         storage = CentralStorage(MetaData)
         storage._write(None)
 
-        assert storage.allData["PacketA"] == []
-        assert storage.latestData["PacketA"] is None
+        assert storage.all_data["PacketA"] == []
+        assert storage.latest_data["PacketA"] is None
 
     def test_snapshot_returns_both_keys_with_current_data(self):
         class MetaData:
@@ -185,7 +184,7 @@ class TestCentralStorage:
         snap = storage.snapshot()
         snap["allData"]["NewKey"] = ["intruder"]
 
-        assert "NewKey" not in storage.allData
+        assert "NewKey" not in storage.all_data
 
     def test_snapshot_list_values_are_shallow_shared_not_deep_copied(self):
         # NOTE: `.copy()` on a dict is a SHALLOW copy, so the list objects
@@ -798,8 +797,8 @@ class TestNetworkListener:
 
         manager._TelemetryManager__network_listener()
 
-        assert manager.activeStorage.allData["PacketA"] == [p1, p2]
-        assert manager.activeStorage.latestData["PacketA"] is p2
+        assert manager.activeStorage.all_data["PacketA"] == [p1, p2]
+        assert manager.activeStorage.latest_data["PacketA"] is p2
 
 
 # ===========================================================================
@@ -940,9 +939,7 @@ class TestThreadLifecycle:
 
     def test_wait_for_stop_signal_always_stops_threads_in_finally(self, manager, monkeypatch):
         stopped = []
-        monkeypatch.setattr(
-            TelemetryManager, "_TelemetryManager__stop_threads", lambda self: stopped.append(True)
-        )
+        monkeypatch.setattr(TelemetryManager, "_TelemetryManager__stop_threads", lambda self: stopped.append(True))
         manager.stop_event.set()
 
         manager._TelemetryManager__wait_for_stop_signal()
@@ -963,9 +960,7 @@ class TestStartTelemetry:
 
     def test_calls_start_threads_then_waits_for_stop_signal(self, manager, monkeypatch):
         calls = []
-        monkeypatch.setattr(
-            TelemetryManager, "_TelemetryManager__start_threads", lambda self: calls.append("start")
-        )
+        monkeypatch.setattr(TelemetryManager, "_TelemetryManager__start_threads", lambda self: calls.append("start"))
         monkeypatch.setattr(
             TelemetryManager,
             "_TelemetryManager__wait_for_stop_signal",
