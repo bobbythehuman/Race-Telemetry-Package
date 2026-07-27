@@ -8,6 +8,7 @@ dist/*
 Packaged_Program/*
 
 requirements.txt
+other.txt
 
 issues.txt
 

@@ -25,7 +25,7 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 - [Supported Games](#supported-games)
 - [Troubleshooting](#troubleshooting)
 - [Game-Specific Notes](#game-specific-notes)
-- [Documentation &amp; Reference Links](#documentation--reference-links)
+- [Documentation & Reference Links](#documentation--reference-links)
 - [Contributing](#contributing)
 - [Licence](#licence)
 
@@ -295,7 +295,7 @@ activeThreads.StartTelemetry()
 | `heartBeatFunc`     | function                        | Heartbeat function                                                                     |
 | `handShakePort`     | `int`                         | UDP port to send a handshake to                                                        |
 | `handShakeFunc`     | `tuple[function, function]`   | Start and stop handshake functions                                                     |
-| `decrytionFunc`     | function                        | Data decryption function                                                               |
+| `decryptionFunc`    | function                        | Data decryption function                                                               |
 | `headerInfo`        | type                            | The header struct class, if the protocol uses one                                      |
 | `packetIDAttribute` | `str`                         | The header packet attribute that identifies the packet ID                              |
 | `sharedMemoryName`  | `str` or `dict[str, str]`   | Name of the shared memory segment, or a dictionary mapping packet name to segment name |
@@ -354,7 +354,7 @@ class MetaData:
     handShakeFunc: tuple | None = None  # (startHandShakeFunc, stopHandShakeFunc)
 
     # Only needed if the data requires decryption
-    decrytionFunc = decrypt_data
+    decryptionFunc = decrypt_data
 
     # Only needed if the protocol uses a header packet
     headerInfo: type | None = PacketHeader
@@ -572,7 +572,7 @@ More debugging guides live in [`Supporting_Docs/`](./Supporting_Docs/), includin
 | Richard Burns Rally | [rbr-udp-telem on GitHub](https://github.com/groybe/rbr-udp-telem)                                                                                               |                                                       |
 | KartKraft           | [kartkraft-telemetry schema on GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs)                                      |                                                       |
 | Project CARS 3      | likely shares a protocol with Project CARS 2, not yet confirmed                                                                                                 |                                                       |
-| MotoGP 18           | [MotoGP-18-UDP-Telemetry](https://github.com/SHWotever/MotoGP-18-UDP-Telemetry/tree/master)                                                                   | still missing some data                           |
+| MotoGP 18           | [MotoGP-18-UDP-Telemetry](https://github.com/SHWotever/MotoGP-18-UDP-Telemetry/tree/master)                                                                      | still missing some data                               |
 
 <!-- - EA Sports WRC 2023 — [How to use UDP on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068) -->
 
