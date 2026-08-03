@@ -16,18 +16,16 @@ though the internal CentralStorage attributes have been cleaned up.
 
 import ctypes
 import logging
-
-import threading
 import re
 
 from datetime import datetime
 from types import SimpleNamespace
 from typing import Generator, Any, Callable
 
-# from copy import deepcopy
-
 from .digestion import dynamic_ingest
+from .threads import ThreadSupervisor
 from .transport import UDPTransport, SharedMemoryTransport
+from .storage import CentralStorage, ReadOnlyStorage
 
 # ---------------------------------------------------------------------------
 # Other Setups
@@ -37,72 +35,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Central Storage
-# ---------------------------------------------------------------------------
-
-
-class CentralStorage:
-    """
-    Holds the latest network data.  Worker threads receive a read-only view
-    via ReadOnlyStorage so they cannot accidentally edit the contents.
-    """
-
-    def __init__(self, metadata_cls: type) -> None:
-        self._lock = threading.RLock()
-
-        self.all_data: dict[str, list] = {}
-        self.latest_data: dict[str, Any] = {}
-
-        for _packet_id, packet_structs in metadata_cls.packetInfo.items():
-            for packet_struct in packet_structs:
-                packet_name = packet_struct.__name__
-                if packet_name not in self.all_data:
-                    self.all_data[packet_name] = []
-                    self.latest_data[packet_name] = None
-
-    def _write(self, data: SimpleNamespace | None) -> None:
-        """Called only by the network thread."""
-        with self._lock:
-            if data:
-                packet_name = data.__name__
-
-                self.all_data[packet_name].append(data)
-                self.latest_data[packet_name] = data
-
-    def snapshot(self) -> dict[str, Any]:
-        """
-        Return a consistent snapshot for worker threads.
-
-        Keys are intentionally kept as "allData" / "latestData" (rather than
-        renamed to match the snake_case internal attributes) to preserve the
-        existing public contract that worker functions rely on.
-        """
-        with self._lock:
-            return {
-                "allData": self.all_data.copy(),
-                "latestData": self.latest_data.copy(),
-            }
-
-
-class ReadOnlyStorage:
-    """
-    Thin wrapper passed to worker threads.
-    Exposes only .snapshot() — no write methods visible.
-    """
-
-    def __init__(self, storage: CentralStorage) -> None:
-        self._storage = storage
-
-    def snapshot(self) -> dict[str, Any]:
-        return self._storage.snapshot()
-
-
-# ---------------------------------------------------------------------------
-# Config — metadata + settings, validation only. No sockets, no threads.
+# Config — metadata + settings, validation only
 # ---------------------------------------------------------------------------
 
 
 class TelemetryConfig:
+    """
+    Holds the metadata and settings for the telemetry system.
+    Provides validation and unpacking of metadata attributes for easy access.
+    """
+
     def __init__(self):
         self.active_metadata: type | None = None
         self.local_ip: str = "0.0.0.0"
@@ -169,22 +111,22 @@ class TelemetryConfig:
         """
         Helper function to unpack metadata attributes into class attributes for easy access
         """
-        self.mainPort = self._meta_data_check("port")
+        self.main_port = self._meta_data_check("port")
 
-        self.heartBeatPort = self._meta_data_check("heartBeatPort")
-        self.heartBeatFunc = self._meta_data_check("heartBeatFunc")
+        self.heartbeat_port = self._meta_data_check("heartBeatPort")
+        self.heartbeat_func = self._meta_data_check("heartBeatFunc")
 
-        self.handShakePort = self._meta_data_check("handShakePort")
-        self.handShakeFunc = self._meta_data_check("handShakeFunc")
+        self.handshake_port = self._meta_data_check("handShakePort")
+        self.handshake_func = self._meta_data_check("handShakeFunc")
 
-        self.decryptionFunc = self._meta_data_check("decryptionFunc")
+        self.decryption_func = self._meta_data_check("decryptionFunc")
 
-        self.headerPacket = self._meta_data_check("headerInfo")
-        self.packetIDAttr = self._meta_data_check("packetIDAttribute")
+        self.header_packet = self._meta_data_check("headerInfo")
+        self.packet_id_attr = self._meta_data_check("packetIDAttribute")
 
-        self.allSharedMemoryNames = self._meta_data_check("allSharedMemoryNames")
+        self.all_shared_memory_names = self._meta_data_check("allSharedMemoryNames")
 
-        self.packetInfo = self._meta_data_check("packetInfo", {})
+        self.packet_info = self._meta_data_check("packetInfo", {})
 
     def _is_valid_ip(self, ip: str) -> bool:
         if not self._valid_type(ip, str, "IP"):
@@ -205,11 +147,15 @@ class TelemetryConfig:
 
 
 # ---------------------------------------------------------------------------
-# Packet decoding — no sockets, no threads. Pure function of config + bytes.
+# Packet decoding — function of config + bytes
 # ---------------------------------------------------------------------------
 
 
 class PacketRouter:
+    """
+    Takes raw bytes and decodes them into packets using the metadata.
+    """
+
     def __init__(self, config: TelemetryConfig):
         self.config = config
 
@@ -265,17 +211,17 @@ class PacketRouter:
         packet and headerPacket may be None if no matching packet structure is found or if no header is defined in the metadata.
         """
 
-        if not self.config.packetInfo:
+        if not self.config.packet_info:
             LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
             raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
 
-        if self.config.headerPacket:
+        if self.config.header_packet:
             if not self.config.packet_id_attr:
                 LOGGER.error("[NTWK] [Error]\tPacket ID Attribute is empty.")
                 raise ValueError("[NTWK] [Error]\tPacket ID Attribute is empty.")
 
-            headerBufferSize = self.get_packet_size(self.config.headerPacket)
-            rawHeaderPacket = self.config.headerPacket.from_buffer_copy(data[0:headerBufferSize])
+            headerBufferSize = self.get_packet_size(self.config.header_packet)
+            rawHeaderPacket = self.config.header_packet.from_buffer_copy(data[0:headerBufferSize])
             headerPacket = dynamic_ingest(rawHeaderPacket)
 
             if hasattr(headerPacket, self.config.packet_id_attr):
@@ -298,160 +244,15 @@ class PacketRouter:
 
 
 # ---------------------------------------------------------------------------
-# Thread lifecycle — no packets, no sockets.
-# ---------------------------------------------------------------------------
-
-
-class ThreadSupervisor:
-    def __init__(self):
-        self.stop_event = threading.Event()
-        self.manually_stopped: bool = False
-
-        self.network_thread: threading.Thread | None = None
-        self.worker_threads: dict[int, threading.Thread] = {}
-
-        self.workers_are_working: bool = False
-        self.thread_count: int = 0
-        self.multi_threaded: bool = True  # unused for now
-
-    def add_worker_thread(self, mainFunc: Callable[..., Any], ro_storage: ReadOnlyStorage | None) -> bool:
-        """
-        Call this to add a worker thread to access the data.
-        The function must accept three keyword arguments:
-        worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
-        """
-
-        if not callable(mainFunc):
-            LOGGER.warning("[MAIN] [Warning]\tWorker function must be callable.")
-            return False
-
-        if isinstance(mainFunc, type):
-            LOGGER.warning("[MAIN] [Warning]\tWorker Function must not be a class.")
-            return False
-
-        if not ro_storage:
-            LOGGER.warning("[MAIN] [Warning]\tRead-only storage is not initialized. Call updateMeta() before adding worker threads.")
-            return False
-
-        self.thread_count += 1
-        workerThread = threading.Thread(
-            target=mainFunc,
-            kwargs={"worker_id": self.thread_count, "ro_storage": ro_storage, "stop_event": self.stop_event},
-            daemon=True,
-        )
-        self.worker_threads.update({self.thread_count: workerThread})
-        return True
-
-    def manual_stop(self, target: bool) -> bool:
-        """Manually stop the program"""
-
-        if not isinstance(target, bool):
-            LOGGER.error("[MAIN] [Error]\tInvalid type for manual stop. Expected bool.")
-            return False
-
-        self.manually_stopped = target
-        return True
-
-    def is_multi_threaded(self, target: bool = True) -> bool:
-        """Currently does nothing"""
-
-        if not isinstance(target, bool):
-            LOGGER.error("[MAIN] [Error]\tInvalid type for multi-threading. Expected bool.")
-            return False
-
-        self.multi_threaded = target
-        return True
-
-    def _start_threads(self, network_target: Callable[[], None]) -> None:
-        """
-        Helper function to start the network thread and worker threads
-        Does not start if metadata is not set or if IP is not set (for network thread)
-        """
-
-        self.network_thread = threading.Thread(
-            target=network_target,
-            kwargs={},
-            daemon=True,
-        )
-
-        self.network_thread.start()
-
-        for workerName, workerThread in self.worker_threads.items():
-            workerThread.start()
-
-        self.workers_are_working = True
-
-    def _wait_for_stop_signal(self) -> None:
-        """
-        Helper function to wait for a stop signal (either Ctrl+C or manual stop) while keeping the main thread alive
-        """
-
-        endProgram = ""
-        try:
-            while self._is_still_active():
-                self._wait(0.5)
-
-                if self.manually_stopped:
-                    # only stop threads here if they dont get stopped any where else
-                    endProgram = input("[Q] to quit the program: ")
-                    if endProgram.lower() == "q":
-                        self._trigger_stop()
-
-        except KeyboardInterrupt:
-            LOGGER.debug("Keyboard Interrupt from wait_for_stop_signal")
-            LOGGER.info("[MAIN] [INFO]\tKeyboardInterrupt received.")
-        finally:
-            LOGGER.info("[MAIN] [INFO]\tStopping all threads")
-            self._stop_threads()
-
-    def _stop_threads(self) -> None:
-        """
-        Helper function to stop all threads gracefully by triggering the stop event and joining threads with a timeout
-        """
-        if not self.workers_are_working:
-            return
-        if not self.network_thread:
-            return
-
-        self._trigger_stop()
-        self.network_thread.join(timeout=0.5)
-
-        for workerName, workerThread in self.worker_threads.items():
-            workerThread.join(timeout=0.5)
-            if workerThread.is_alive():
-                LOGGER.warning("[MAIN] [WARNING]\tWarning: %r did not stop in time.", workerName)
-
-        self.workers_are_working = False
-        LOGGER.info("[MAIN] [INFO]\tAll threads stopped. Exiting.")
-
-    def _wait(self, time: float) -> None:
-        """
-        Helper function to wait while still checking for stop_event
-        """
-        self.stop_event.wait(time)
-
-    def _trigger_stop(self, mode: bool = True) -> None:
-        """
-        Helper function to toggle the stop event
-        """
-        if self.stop_event and mode:
-            self.stop_event.set()
-        else:
-            self.stop_event.clear()
-
-    def _is_still_active(self) -> bool:
-        """
-        Helper function to check if the program should still be running
-        """
-        return not self.stop_event.is_set()
-
-
-# ---------------------------------------------------------------------------
 # telemetry manager — orchestrates config, storage, router, transport, and threads.
 # ---------------------------------------------------------------------------
 
 
 class TelemetryManager:
+    """
+    Main class to manage telemetry data reception, decoding, and worker thread management.
+    """
+
     def __init__(self):
         self.config = TelemetryConfig()
         self.supervisor = ThreadSupervisor()

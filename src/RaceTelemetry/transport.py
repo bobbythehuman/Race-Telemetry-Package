@@ -1,12 +1,12 @@
 import logging
 import mmap
 import socket
-import threading
 
-from typing import Generator
 from types import SimpleNamespace
+from typing import Generator, TYPE_CHECKING
 
-from RaceTelemetry.main import PacketRouter, TelemetryConfig, ThreadSupervisor
+if TYPE_CHECKING:
+    from RaceTelemetry.main import PacketRouter, TelemetryConfig, ThreadSupervisor
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,6 +17,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class UDPTransport:
+    """
+    Class to handle UDP transport for telemetry data.
+    This class manages the lifecycle of a UDP socket and provides a generator to yield packets.
+    """
+
     HEARTBEAT_INTERVAL: int = 5
 
     # def __init__(self, config: TelemetryConfig, router: PacketRouter, stop_event: threading.Event) -> None:
@@ -134,6 +139,11 @@ class UDPTransport:
 
 
 class SharedMemoryTransport:
+    """
+    Class to handle shared memory transport for telemetry data.
+    This class manages the lifecycle of shared memory mappings and provides a generator to yield packets.
+    """
+
     # def __init__(self, config: TelemetryConfig, router: PacketRouter, stop_event: threading.Event) -> None:
     def __init__(self, config: TelemetryConfig, router: PacketRouter, supervisor: ThreadSupervisor) -> None:
         self.config = config
