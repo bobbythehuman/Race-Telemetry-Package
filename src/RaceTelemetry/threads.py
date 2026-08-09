@@ -26,6 +26,8 @@ class ThreadSupervisor:
         self.thread_count: int = 0
         self.multi_threaded: bool = True  # unused for now
 
+        LOGGER.debug("ThreadSupervisor initialized.")
+
     def add_worker_thread(self, mainFunc: Callable[..., Any], ro_storage: ReadOnlyStorage | None) -> bool:
         """
         Call this to add a worker thread to access the data.
@@ -34,15 +36,15 @@ class ThreadSupervisor:
         """
 
         if not callable(mainFunc):
-            LOGGER.warning("[MAIN] [Warning]\tWorker function must be callable.")
+            LOGGER.warning("Worker function must be callable.")
             return False
 
         if isinstance(mainFunc, type):
-            LOGGER.warning("[MAIN] [Warning]\tWorker Function must not be a class.")
+            LOGGER.warning("Worker Function must not be a class.")
             return False
 
         if not ro_storage:
-            LOGGER.warning("[MAIN] [Warning]\tRead-only storage is not initialized. Call updateMeta() before adding worker threads.")
+            LOGGER.warning("Read-only storage is not initialized. Call updateMeta() before adding worker threads.")
             return False
 
         self.thread_count += 1
@@ -58,7 +60,7 @@ class ThreadSupervisor:
         """Manually stop the program"""
 
         if not isinstance(target, bool):
-            LOGGER.error("[MAIN] [Error]\tInvalid type for manual stop. Expected bool.")
+            LOGGER.error("Invalid type for manual stop. Expected bool.")
             return False
 
         self.manually_stopped = target
@@ -68,10 +70,11 @@ class ThreadSupervisor:
         """Currently does nothing"""
 
         if not isinstance(target, bool):
-            LOGGER.error("[MAIN] [Error]\tInvalid type for multi-threading. Expected bool.")
+            LOGGER.error("Invalid type for multi-threading. Expected bool.")
             return False
 
         self.multi_threaded = target
+        LOGGER.debug("Multi-threading set to %r.", target)
         return True
 
     def _start_threads(self, network_target: Callable[[], None]) -> None:
@@ -87,11 +90,13 @@ class ThreadSupervisor:
         )
 
         self.network_thread.start()
+        LOGGER.debug("Network thread started.")
 
         for workerName, workerThread in self.worker_threads.items():
             workerThread.start()
 
         self.workers_are_working = True
+        LOGGER.debug("Worker threads started: %r", list(self.worker_threads.keys()))
 
     def _wait_for_stop_signal(self) -> None:
         """
@@ -111,9 +116,9 @@ class ThreadSupervisor:
 
         except KeyboardInterrupt:
             LOGGER.debug("Keyboard Interrupt from wait_for_stop_signal")
-            LOGGER.info("[MAIN] [INFO]\tKeyboardInterrupt received.")
+            LOGGER.info("KeyboardInterrupt received.")
         finally:
-            LOGGER.info("[MAIN] [INFO]\tStopping all threads")
+            LOGGER.info("Stopping all threads")
             self._stop_threads()
 
     def _stop_threads(self) -> None:
@@ -128,17 +133,17 @@ class ThreadSupervisor:
         self._trigger_stop()
         current_thread = threading.current_thread()
         if self.network_thread is not current_thread:
-        self.network_thread.join(timeout=0.5)
+            self.network_thread.join(timeout=0.5)
 
         for workerName, workerThread in self.worker_threads.items():
             if workerThread is current_thread:
                 continue
             workerThread.join(timeout=0.5)
             if workerThread.is_alive():
-                LOGGER.warning("[MAIN] [WARNING]\tWarning: %r did not stop in time.", workerName)
+                LOGGER.warning("Warning: %r did not stop in time.", workerName)
 
         self.workers_are_working = False
-        LOGGER.info("[MAIN] [INFO]\tAll threads stopped. Exiting.")
+        LOGGER.info("All threads stopped. Exiting.")
 
     def _wait(self, time: float) -> None:
         """

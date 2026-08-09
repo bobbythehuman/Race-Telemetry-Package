@@ -23,7 +23,7 @@ class PacketRouter:
 
     def __init__(self, config: TelemetryConfig):
         self.config = config
-        LOGGER.debug("[MAIN] [Info]\tPacketRouter initialized with metadata: %r", config.active_metadata.__name__ if config.active_metadata else None)
+        LOGGER.debug("PacketRouter initialized with metadata: %r", config.active_metadata.__name__ if config.active_metadata else None)
 
     def get_packet_size(self, packet: type) -> int:
         """Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction."""
@@ -33,8 +33,8 @@ class PacketRouter:
     def get_max_packet_size(self) -> int:
         """Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata."""
         if not self.config.packet_info:
-            LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
-            raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
+            LOGGER.error("Packet Info is empty.")
+            raise ValueError("Packet Info is empty.")
 
         allSizes = []
         for packetID, packetInfo in self.config.packet_info.items():
@@ -42,6 +42,7 @@ class PacketRouter:
                 packetSize = self.get_packet_size(packetStruct)
                 allSizes.append(packetSize)
 
+        LOGGER.debug("Maximum packet size calculated: %r", max(allSizes) if allSizes else 0)
         return max(allSizes) if allSizes else 0
 
     def construct_packet(self, data: bytes, possiblePacketStruct: tuple) -> SimpleNamespace | None:
@@ -79,13 +80,13 @@ class PacketRouter:
         """
 
         if not self.config.packet_info:
-            LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
-            raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
+            LOGGER.error("Packet Info is empty.")
+            raise ValueError("Packet Info is empty.")
 
         if self.config.header_packet:
             if not self.config.packet_id_attr:
-                LOGGER.error("[NTWK] [Error]\tPacket ID Attribute is empty.")
-                raise ValueError("[NTWK] [Error]\tPacket ID Attribute is empty.")
+                LOGGER.error("Packet ID Attribute is empty.")
+                raise ValueError("Packet ID Attribute is empty.")
 
             headerBufferSize = self.get_packet_size(self.config.header_packet)
             rawHeaderPacket = self.config.header_packet.from_buffer_copy(data[0:headerBufferSize])

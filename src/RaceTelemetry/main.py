@@ -49,7 +49,7 @@ class TelemetryManager:
 
         self.shared_memory: bool = False
 
-        LOGGER.debug("[MAIN] [Info]\tTelemetryManager initialized.")
+        LOGGER.debug("TelemetryManager initialized.")
 
     # -- configuration passthroughs -------------------------------------
 
@@ -107,7 +107,7 @@ class TelemetryManager:
         Default is False (UDP).
         """
         if not isinstance(target, bool):
-            LOGGER.error("[MAIN] [Error]\tInvalid type for shared memory setting. Expected bool.")
+            LOGGER.error("Invalid type for shared memory setting. Expected bool.")
             return False
 
         self.shared_memory = target
@@ -139,10 +139,10 @@ class TelemetryManager:
         This function runs in a separate thread and should not be called directly.
         """
         if self.activeStorage is None:
-            raise ValueError("[NTWK] [Error]\tStorage instance is not initialized.")
+            raise ValueError("Storage instance is not initialized.")
 
         for packet, packetID, headerPacket in self._telemetry_generator():
-            # LOGGER.debug("[NTWK] [Info]\tReceived packet ID %r", packetID)
+            # LOGGER.debug("Received packet ID %r", packetID)
             self.activeStorage._write(packet)
 
     def _telemetry_generator(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
@@ -151,7 +151,7 @@ class TelemetryManager:
         This function is used internally by GetTelemetry() and should not be called directly.
         """
         if not self.shared_memory_transport or not self.udp_transport:
-            LOGGER.error("[NTWK] [Error]\tTelemetry transports are not initialized. Call updateMeta() before GetTelemetry().")
+            LOGGER.error("Telemetry transports are not initialized. Call updateMeta() before GetTelemetry().")
             return
 
         if self.shared_memory:
@@ -165,16 +165,16 @@ class TelemetryManager:
         """
 
         if self.readOnlyStorage is None:
-            LOGGER.error("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
-            raise RuntimeError("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+            LOGGER.error("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+            raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
         if self.supervisor.multi_threaded:
-            LOGGER.info("[NTWK] [Info]\tUsing multi-threaded telemetry.")
+            LOGGER.info("Using multi-threaded telemetry with generator.")
             self.supervisor._start_threads(network_target=self._network_listener)
             return self.readOnlyStorage
 
         else:
-            LOGGER.info("[NTWK] [Info]\tUsing single-threaded telemetry.")
+            LOGGER.info("Using single-threaded telemetry with generator.")
             return self._telemetry_generator()
 
     def StartTelemetry(self) -> None:
@@ -183,16 +183,16 @@ class TelemetryManager:
         Will run until a stop signal is received (either Ctrl+C or manual stop).
         """
         if self.readOnlyStorage is None:
-            LOGGER.error("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
-            raise RuntimeError("[MAIN] [Error]\tRead-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+            LOGGER.error("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+            raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
-        LOGGER.info("[MAIN] [INFO]\tStart at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
+        LOGGER.info("Start at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
 
         self.supervisor._start_threads(network_target=self._network_listener)
-        LOGGER.info("[MAIN] [INFO]\tRunning — press Ctrl+C to stop.")
+        LOGGER.info("Running — press Ctrl+C to stop.")
 
         self.supervisor._wait_for_stop_signal()
-        LOGGER.info("[MAIN] [INFO]\tEnd at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
+        LOGGER.info("End at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
 
     def StopTelemetry(self) -> None:
         """
