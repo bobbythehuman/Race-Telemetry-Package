@@ -35,7 +35,9 @@ class TelemetryConfig:
 
         self.enum_mode: int = 0
 
-        LOGGER.debug("[MAIN] [Info]\tTelemetryConfig initialized.")
+        self.heartbeat_destination: tuple[str, int] | None = None
+
+        LOGGER.debug("TelemetryConfig initialized.")
 
     def update_meta(self, metadata_cls: type) -> bool:
         if self.active_metadata == metadata_cls:
@@ -43,7 +45,7 @@ class TelemetryConfig:
 
         self.active_metadata = metadata_cls
         self._unpack_meta_data()
-        LOGGER.debug("[MAIN] [Info]\tMetadata updated to %r.", metadata_cls.__name__ if metadata_cls else None)
+        LOGGER.debug("Metadata updated to %r.", metadata_cls.__name__ if metadata_cls else None)
         return True
 
     def update_local_ip(self, ip: str) -> bool:
@@ -58,13 +60,14 @@ class TelemetryConfig:
             return False
 
         self.destination_ip = ip
+        self._update_heartbeat_destination()
         return True
 
     def set_enum_mode(self, target: int = 0) -> bool:
         if not self._valid_type(target, int, "Enum Mode"):
             return False
         if target not in [0, 1, 2]:
-            LOGGER.warning("[MAIN] [Warning]\tEnum mode must be 0, 1, or 2.")
+            LOGGER.warning("Enum mode must be 0, 1, or 2.")
             return False
 
         self.enum_mode = target
@@ -89,6 +92,7 @@ class TelemetryConfig:
 
         self.heartbeat_port = self._meta_data_check("heartBeatPort")
         self.heartbeat_func = self._meta_data_check("heartBeatFunc")
+        self._update_heartbeat_destination()
 
         self.handshake_port = self._meta_data_check("handShakePort")
         self.handshake_func = self._meta_data_check("handShakeFunc")
@@ -102,7 +106,7 @@ class TelemetryConfig:
 
         self.packet_info = self._meta_data_check("packetInfo", {})
 
-        LOGGER.debug("[MAIN] [Info]\tMetadata unpacked: %r", self.active_metadata.__name__ if self.active_metadata else None)
+        LOGGER.debug("Metadata unpacked: %r", self.active_metadata.__name__ if self.active_metadata else None)
 
     def _is_valid_ip(self, ip: str) -> bool:
         if not self._valid_type(ip, str, "IP"):
@@ -111,12 +115,18 @@ class TelemetryConfig:
         if re.match(r"^(((?!25?[6-9])[12]\d|[1-9])?\d\.?\b){4}$", ip):
             return True
 
-        LOGGER.warning("[NTWK] [Warning]\tInvalid IP address: %r", ip)
+        LOGGER.warning("Invalid IP address: %r", ip)
         return False
 
     def _valid_type(self, value: object, expected_type: type, name: str) -> bool:
         if isinstance(value, expected_type):
             return True
         else:
-            LOGGER.warning("[MAIN] [Warning]\t%r must be a %r.", name, expected_type)
+            LOGGER.warning("%r must be a %r.", name, expected_type)
             return False
+
+    def _update_heartbeat_destination(self) -> None:
+        if self.destination_ip and self.heartbeat_port:
+            self.heartbeat_destination = (self.destination_ip, self.heartbeat_port)
+        else:
+            self.heartbeat_destination = None
