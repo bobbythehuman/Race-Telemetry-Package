@@ -5,8 +5,10 @@ import socket
 from types import SimpleNamespace
 from typing import Generator, TYPE_CHECKING
 
+from .router import PacketRouter
+
 if TYPE_CHECKING:
-    from RaceTelemetry.main import PacketRouter, TelemetryConfig, ThreadSupervisor
+    from RaceTelemetry.main import TelemetryConfig, ThreadSupervisor
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,8 +35,30 @@ class UDPTransport:
         # self.stop_event = stop_event
         self.supervisor = supervisor
 
+        self.heartBeatDestination = None
+
         self._packet_counter: int = 0
         self._full_buffer_size: int = 0
+        LOGGER.debug("UDPTransport initialized with config: %r", config.__class__.__name__)
+
+    def call_handshake(self, sock: socket.socket, mode: str) -> None:
+        """
+        Call the handshake function if it is defined in the configuration.
+        mode should be either "start" or "stop" to indicate the handshake phase.
+        """
+
+        handShakeDestination = (self.config.destination_ip, self.config.handshake_port)
+        if not self.config.handshake_func:
+            return
+            # LOGGER.error("Handshake function is not defined.")
+            # raise ValueError("Handshake function is not defined.")
+
+        if mode == "start":
+            LOGGER.info("Calling handshake function for start.")
+            self.config.handshake_func[0](sock, handShakeDestination)
+        elif mode == "stop":
+            LOGGER.info("Calling handshake function for stop.")
+            self.config.handshake_func[1](sock, handShakeDestination)
 
     def get_udp_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
@@ -46,19 +70,9 @@ class UDPTransport:
 
         self.FULLBUFFERSIZE = self.router.get_max_packet_size()
 
-        handShakeDestination = (self.config.destination_ip, self.config.handshake_port)
-
         if (self.config.handshake_func or self.config.heartbeat_func) and not self.config.destination_ip:
-            LOGGER.error("[NTWK] [Error]\tDestination IP must be set for handshakes or heartbeats.")
-            raise ValueError("[NTWK] [Error]\tDestination IP must be set for handshakes or heartbeats.")
-
-        # if self.config.handshake_func and len(self.config.handshake_func) != 2:
-        #     LOGGER.error("[NTWK] [Error]\tHand Shake function needs 2 function.")
-        #     raise ValueError("[NTWK] [Error]\tHand Shake function needs 2 function.")
-
-        # if not callable(self.config.handshake_func[0]) or not callable(self.config.handshake_func[1]):
-        #     LOGGER.error("[NTWK] [Error]\tHand Shake function must be a function.")
-        #     raise ValueError("[NTWK] [Error]\tHand Shake function must be a function.")
+            LOGGER.error("Destination IP must be set for handshakes or heartbeats.")
+            raise ValueError("Destination IP must be set for handshakes or heartbeats.")
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # listen to occupied ports
@@ -67,23 +81,23 @@ class UDPTransport:
         try:
             sock.bind((UDP_IP, UDP_PORT))
         except OSError:
-            LOGGER.error("[NTWK] [ERROR]\tOnly one usage of each socket address")
+            LOGGER.error("Only one usage of each socket address")
             self.supervisor._trigger_stop()
         else:
-            LOGGER.info("[NTWK] [Info]\tServer started on %r:%r", UDP_IP, UDP_PORT)
+            LOGGER.info("Server started on %r:%r", UDP_IP, UDP_PORT)
 
-            if self.config.handshake_func:
-                self.config.handshake_func[0](sock, handShakeDestination)  # TODO fix this function not callable
+            self.heartBeatDestination = self.config.heartbeat_destination
+            self.call_handshake(sock, "start")
 
-            LOGGER.info("[NTWK] [Info]\tStop event provided, running until stop_event is set.")
+            LOGGER.info("Stop event provided, running until stop_event is set.")
             while self.supervisor._is_still_active():
                 yield self._process_loop(sock)
 
-            if self.config.handshake_func:
-                self.config.handshake_func[1](sock, handShakeDestination)
+            self.call_handshake(sock, "stop")
+
         finally:
             sock.close()
-            LOGGER.info("[NTWK] [Info]\tServer shutting down.")
+            LOGGER.info("Server shutting down.")
 
     def _process_loop(self, sock: socket.socket) -> tuple[SimpleNamespace | None, int, SimpleNamespace | None]:
         """
@@ -91,38 +105,37 @@ class UDPTransport:
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
         """
         if self.config.heartbeat_func and not callable(self.config.heartbeat_func):
-            LOGGER.error("[NTWK] [Error]\tHeart Beat Function is not a function.")
-            raise ValueError("[NTWK] [Error]\tHeart Beat Function is not a function.")
+            LOGGER.error("Heart Beat Function is not a function.")
+            raise ValueError("Heart Beat Function is not a function.")
 
         if self.config.decryption_func and not callable(self.config.decryption_func):
-            LOGGER.error("[NTWK] [Error]\tDecryption Function is not a function.")
-            raise ValueError("[NTWK] [Error]\tDecryption Function is not a function.")
+            LOGGER.error("Decryption Function is not a function.")
+            raise ValueError("Decryption Function is not a function.")
 
         packet = None
         packetID = 0
         headerPacket = None
-        heartBeatDestination = (self.config.destination_ip, self.config.heartbeat_port)
 
         if self.config.heartbeat_func:
             self.PACKET_COUNTER += 1
             if self.PACKET_COUNTER % self.HEARTBEAT_INTERVAL == 0:
-                self.config.heartbeat_func(sock, heartBeatDestination)
+                self.config.heartbeat_func(sock, self.heartBeatDestination)
                 self.PACKET_COUNTER = 0
 
         try:
             data, _ = sock.recvfrom(self.FULLBUFFERSIZE)  # TODO could verify ip matches destination IP
         except TimeoutError:
             if self.config.heartbeat_func:
-                self.config.heartbeat_func(sock, heartBeatDestination)
+                self.config.heartbeat_func(sock, self.heartBeatDestination)
                 self.PACKET_COUNTER = 0
 
         except KeyboardInterrupt:
             LOGGER.debug("Keyboard Interrupt from process_loop")
-            LOGGER.info("[NTWK] [Info]\tKeyboard Interrupt received, shutting down server.")
+            LOGGER.info("Keyboard Interrupt received, shutting down server.")
             self.supervisor._trigger_stop()
 
         except OSError as exc:
-            LOGGER.error("[NTWK] [Error]\tSocket error: %r", exc)
+            LOGGER.error("Socket error: %r", exc)
             self.supervisor._trigger_stop()
 
         else:
@@ -153,40 +166,61 @@ class SharedMemoryTransport:
         # self.stop_event = stop_event
         self.supervisor = supervisor
 
-    def get_shared_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
-        allSharedMemoryNames = self.config.all_shared_memory_names
+        LOGGER.debug("SharedMemoryTransport initialized with config: %r", config.__class__.__name__)
 
-        if not allSharedMemoryNames:
-            LOGGER.critical("[NTWK] [Error]\tShared memory name is not set.")
-            raise ValueError("[NTWK] [Error]\tShared memory name is not set.")
+    def connect_map(self, name: str, struct: type | None = None) -> dict[mmap.mmap, int]:
+        if struct:
+            SMSize = self.router.get_packet_size(struct)
+        else:
+            SMSize = self.router.get_max_packet_size()
+        SMMap = mmap.mmap(-1, SMSize, tagname=name, access=mmap.ACCESS_READ)
+        return {SMMap: SMSize}
+
+    def setup_maps(self, allSharedMemoryNames: str | dict[str, str]) -> dict[mmap.mmap, int]:
+        """
+        Set up shared memory mappings based on the provided names and return a dictionary of mmap objects and their sizes.
+        """
 
         if not self.config.packet_info:
-            LOGGER.error("[NTWK] [Error]\tPacket Info is empty.")
-            raise ValueError("[NTWK] [Error]\tPacket Info is empty.")
+            LOGGER.error("Packet Info is empty.")
+            raise ValueError("Packet Info is empty.")
 
         sharedMemoryInfo = {}
 
         if isinstance(allSharedMemoryNames, str):
-            SMSize = self.router.get_max_packet_size()
-            SMMap = mmap.mmap(-1, SMSize, tagname=allSharedMemoryNames, access=mmap.ACCESS_READ)
+            SMInfo = self.connect_map(allSharedMemoryNames)
+            sharedMemoryInfo.update(SMInfo)
 
-            sharedMemoryInfo.update({SMMap: SMSize})
-            LOGGER.info("[NTWK] [Info]\tServer started on %r with size %r bytes" % (allSharedMemoryNames, SMSize))
+            LOGGER.info("Server started on %r with size %r bytes" % (allSharedMemoryNames, SMInfo.values()))
 
         elif isinstance(allSharedMemoryNames, dict):
             SMNames = []
             for packetID, packetInfo in self.config.packet_info.items():
                 for packetStruct in packetInfo:
                     SMName = allSharedMemoryNames.get(packetStruct.__name__)
-                    SMSize = self.router.get_packet_size(packetStruct)
                     if SMName:
                         SMNames.append(SMName)
-                        SMMap = mmap.mmap(-1, SMSize, tagname=SMName, access=mmap.ACCESS_READ)
-                        sharedMemoryInfo.update({SMMap: SMSize})
+                        SMInfo = self.connect_map(SMName, packetStruct)
+                        sharedMemoryInfo.update(SMInfo)
 
-            LOGGER.info("[NTWK] [Info]\tServer started for %r with sizes %r bytes", SMNames, [size for size in sharedMemoryInfo.values()])
+            LOGGER.info("Server started for %r with sizes %r bytes", SMNames, [size for size in sharedMemoryInfo.values()])
         else:
-            raise ValueError("[NTWK] [Error]\tShared memory name must be a string or a dict mapping packet names to shared memory names.")
+            raise ValueError("Shared memory name must be a string or a dict mapping packet names to shared memory names.")
+
+        return sharedMemoryInfo
+
+    def get_shared_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
+        """
+        Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet from shared memory.
+        """
+
+        allSharedMemoryNames = self.config.all_shared_memory_names
+
+        if not allSharedMemoryNames:
+            LOGGER.critical("Shared memory name is not set.")
+            raise ValueError("Shared memory name is not set.")
+
+        sharedMemoryInfo = self.setup_maps(allSharedMemoryNames)
 
         while self.supervisor._is_still_active():
             try:
@@ -196,17 +230,15 @@ class SharedMemoryTransport:
                     raw = SMMap.read(SMSize)
                     SMRawData.append(raw)
 
-            # except TimeoutError:
-            #     pass
             except KeyboardInterrupt:
                 LOGGER.debug("Keyboard Interrupt from get_shared_packets")
-                LOGGER.info("[NTWK] [Info]\tKeyboardInterrupt received, shutting down server.")
+                LOGGER.info("KeyboardInterrupt received, shutting down server.")
                 self.supervisor._trigger_stop()
-                # continue
+
             except OSError as exc:
-                LOGGER.error("[NTWK] [Error]\tShared memory error: %r", exc)
+                LOGGER.error("Shared memory error: %r", exc)
                 self.supervisor._trigger_stop()
-                # continue
+
             else:
                 for SMData in SMRawData:
                     if not any(SMData):
@@ -217,4 +249,4 @@ class SharedMemoryTransport:
 
         for SMMap in sharedMemoryInfo.keys():
             SMMap.close()
-        LOGGER.info("[NTWK] [Info]\tServer shutting down.")
+        LOGGER.info("Server shutting down.")
