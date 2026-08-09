@@ -117,17 +117,17 @@ class UDPTransport:
         headerPacket = None
 
         if self.config.heartbeat_func:
-            self.PACKET_COUNTER += 1
-            if self.PACKET_COUNTER % self.HEARTBEAT_INTERVAL == 0:
+            self._packet_counter += 1
+            if self._packet_counter % self.HEARTBEAT_INTERVAL == 0:
                 self.config.heartbeat_func(sock, self.heartBeatDestination)
-                self.PACKET_COUNTER = 0
+                self._packet_counter = 0
 
         try:
             data, _ = sock.recvfrom(self.FULLBUFFERSIZE)  # TODO could verify ip matches destination IP
         except TimeoutError:
             if self.config.heartbeat_func:
                 self.config.heartbeat_func(sock, self.heartBeatDestination)
-                self.PACKET_COUNTER = 0
+                self._packet_counter = 0
 
         except KeyboardInterrupt:
             LOGGER.debug("Keyboard Interrupt from process_loop")
