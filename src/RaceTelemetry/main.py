@@ -200,7 +200,8 @@ class TelemetryManager:
         Can be called from a worker thread or the main thread.
         """
         self.supervisor._trigger_stop()
-        LOGGER.info("[MAIN] [INFO]\tStop signal sent to all threads.")
+        self.supervisor._stop_threads()
+        LOGGER.info("Stop signal sent to all threads.")
 
     # ------------------------------------------------------------------
     # Deprecated or changed aliases — kept so existing callers

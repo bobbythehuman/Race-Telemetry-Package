@@ -126,9 +126,13 @@ class ThreadSupervisor:
             return
 
         self._trigger_stop()
+        current_thread = threading.current_thread()
+        if self.network_thread is not current_thread:
         self.network_thread.join(timeout=0.5)
 
         for workerName, workerThread in self.worker_threads.items():
+            if workerThread is current_thread:
+                continue
             workerThread.join(timeout=0.5)
             if workerThread.is_alive():
                 LOGGER.warning("[MAIN] [WARNING]\tWarning: %r did not stop in time.", workerName)
