@@ -14,6 +14,12 @@ class CentralStorage:
     """
 
     def __init__(self, metadata_cls: type) -> None:
+        """
+        Initializes the CentralStorage with the provided metadata class.
+        The metadata class is expected to have a `packetInfo` attribute that
+        defines the structure of the packets to be stored.
+        """
+
         self._lock = threading.RLock()
 
         self.all_data: dict[str, list] = {}
@@ -25,6 +31,8 @@ class CentralStorage:
                 if packet_name not in self.all_data:
                     self.all_data[packet_name] = []
                     self.latest_data[packet_name] = None
+
+        LOGGER.debug("CentralStorage initialized with metadata: %r", metadata_cls.__name__)
 
     def _write(self, data: SimpleNamespace | None) -> None:
         """Called only by the network thread."""
@@ -57,7 +65,17 @@ class ReadOnlyStorage:
     """
 
     def __init__(self, storage: CentralStorage) -> None:
+        """Initializes the ReadOnlyStorage with a reference to the CentralStorage."""
         self._storage = storage
+        LOGGER.debug("ReadOnlyStorage initialized.")
+
+    def __iter__(self) -> "ReadOnlyStorage":
+        return self
+
+    def __next__(self) -> dict[str, Any]:
+        """Returns the latest data snapshot."""
+        return self.snapshot().get("latestData", {"None": None})
 
     def snapshot(self) -> dict[str, Any]:
+        """Returns a consistent snapshot of the latest data."""
         return self._storage.snapshot()
