@@ -25,7 +25,7 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 - [Supported Games](#supported-games)
 - [Troubleshooting](#troubleshooting)
 - [Game-Specific Notes](#game-specific-notes)
-- [Documentation & Reference Links](#documentation--reference-links)
+- [Documentation &amp; Reference Links](#documentation--reference-links)
 - [Contributing](#contributing)
 - [Licence](#licence)
 
@@ -45,7 +45,8 @@ from RaceTelemetry.data_structures.F1_2024_struct import MetaData
 telemetry = TelemetryManager()
 telemetry.updateMeta(MetaData)
 
-# Start pulling packets — this blocks until data arrives
+# Select single-threaded mode, then start pulling packets
+telemetry.isMultiThreaded(False)
 for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
         continue
@@ -60,7 +61,7 @@ That's the whole setup for basic, single-threaded use. See [Usage](#usage) below
 
 ### Prerequisites
 
-- Python 3.8 or later
+- Python 3.7 or later
 - The telemetry-sending device (console or PC running the game) must be reachable on the network — either the same machine (loopback) or the same local network
 - The game must be configured to send telemetry to the correct IP and port (UDP), or to write to shared memory, depending on the title
 
@@ -88,105 +89,91 @@ In multi-threaded mode, the package runs three kinds of thread:
 | **Network listener thread** | Continuously receives UDP or shared-memory packets, decodes them using the game's protocol, and stores the latest data in`CentralStorage` |
 | **Worker thread(s)**        | Your own code, which reads telemetry via read-only snapshots — you never touch`CentralStorage` directly                                  |
 
-Data lives in `CentralStorage`, which is protected by thread-safe locking. Worker threads never get direct access to it; instead they receive a `ReadOnlyStorage` interface that only allows taking **immutable snapshots**. This means you get thread safety for free, without managing any locks yourself.
+Data lives in `CentralStorage`, which is protected by thread-safe locking. Worker threads never get direct access to it; instead they receive a `ReadOnlyStorage` interface that only allows taking consistent snapshots. Each snapshot contains `allData` (packet history) and `latestData` (the most recent packet for each packet type).
 
 ## Usage
 
-### Single-Threaded Mode
-
-A simple, blocking function that listens for packets and returns decoded telemetry as they arrive. Best for scripts and simple applications that don't need background processing.
-
-Defined in [`main.py`](src/RaceTelemetry/main.py) as `telemetryManager.GetTelemetry()`:
-
-- Blocks until a packet is received
-- No threading overhead — the simplest way to get started
+The package provides three ways to consume telemetry. All three require `updateMeta(MetaData)` first. UDP is used by default; call `isSharedMemory(True)` before starting if the selected game uses shared memory.
 
 More examples: [`tests/Game_Specific`](tests/Game_Specific)
 
+### 1. Single-threaded packet generator
+
+Call `isMultiThreaded(False)` before `GetTelemetry()`. The call returns a generator that receives, decodes, and yields one packet at a time on the calling thread. Each item is a `(packet, packetID, headerPacket)` tuple. This is the simplest choice for scripts and applications that can process telemetry synchronously, but the loop is blocked while waiting for the next packet.
+
 ```python
-from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.F1_2024_struct import MetaData
-
-# Initialise the manager
 telemetry = TelemetryManager()
-
-# Tell it which game's protocol to use
 telemetry.updateMeta(MetaData)
+telemetry.isMultiThreaded(False)
 
-# Start receiving telemetry
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
+telemetryStream = telemetry.GetTelemetry()
+for packet, packetID, headerPacket in telemetryStream:
     if not packet:
         continue
 
-    # Check by packet ID, if the protocol provides one
     if packetID == 6:
-        pass  # Process data here
-
-    # Or check by packet name
-    packetName = packet.__name__
-    if packetName == 'PacketCarTelemetryData':
-        pass  # Process data here
+        pass  # Process the decoded packet here
 ```
 
-### Multi-Threaded Mode
+### 2. Multi-threaded read-only iterable
 
-Runs a full telemetry server with a dedicated network listener thread plus any number of worker threads, so you can process data continuously without blocking on network I/O. Best for dashboards, overlays, and long-running applications.
+With the default multi-threaded setting, `GetTelemetry()` starts the package's `_network_listener` on its own thread and returns a `ReadOnlyStorage` object. The object is iterable, so the calling thread can consume the latest decoded data without receiving UDP or shared-memory packets itself. Iteration yields the latest-data mapping.
 
-Defined in [`main.py`](src/RaceTelemetry/main.py) as `telemetryManager.StartTelemetry()`:
-
-- Starts a network listener thread that continuously receives data
-- Provides a thread-safe central store (`CentralStorage`)
-- Lets multiple worker threads process data concurrently via read-only access
-
-More examples: [`tests/Game_Specific`](tests/Game_Specific)
+This mode is useful when the main thread should remain responsible for presentation or control logic while packet reception continues in the background. Stop it with `StopTelemetry()` when the loop should end.
 
 ```python
-from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.F1_2024_struct import MetaData
+telemetry = TelemetryManager()
+telemetry.updateMeta(MetaData)
 
-# Define a worker thread function
-def my_worker_thread(worker_id: int, ro_storage, stop_event):
+telemetryStream = telemetry.GetTelemetry()
+for data in telemetryStream:
+    telemetryData = data.get("TelemetryData")
+    if telemetryData:
+        pass  # Process the latest decoded telemetry
+
+    # Call telemetry.StopTelemetry() when the application should stop.
+```
+
+### 3. Multi-threaded listener with worker threads
+
+Register one or more worker functions with `addWorkerThread()` and call `StartTelemetry()`. The `_network_listener` runs on its own thread, and each registered worker runs on its own thread. Workers receive a `ReadOnlyStorage` object and a shared `stop_event`; they should repeatedly take snapshots and exit when the event is set.
+
+This mode is best for dashboards, overlays, logging, and other long-running applications where telemetry processing should continue independently of the main thread. `StartTelemetry()` blocks while the system is running. Stop it from the main thread with `StopTelemetry()` or from a worker with `stop_event.set()`.
+
+```python
+def displaySpeed(worker_id, ro_storage, stop_event):
     while not stop_event.is_set():
-        snapshot = ro_storage.snapshot()
+        data = ro_storage.snapshot().get("latestData")
+        telemetryData = data.get("TelemetryData") if data else None
+        if telemetryData:
+            pass  # Process telemetry in this worker
 
-        # Access telemetry data
-        data = snapshot.get("latestData")
-        if data:
-            telemetry = data.get("PacketCarTelemetryData")
-            if telemetry:
-                pass  # Process data here
-
-# Initialise the manager
-activeThreads = TelemetryManager()
-
-# Tell it which game's protocol to use
-activeThreads.updateMeta(MetaData)
-
-# Register one or more worker threads
-activeThreads.addWorkerThread(my_worker_thread)
-
-# Start the telemetry system — blocks until stopped
-activeThreads.StartTelemetry()
+telemetry = TelemetryManager()
+telemetry.updateMeta(MetaData)
+telemetry.addWorkerThread(displaySpeed)
+telemetry.StartTelemetry()
 ```
 
 ## API Reference
 
-| Method                 | Parameters                                                                                                                                             | Description                                                                                                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TelemetryManager()` | None                                                                                                                                                   | Creates a new telemetry manager instance, which handles network communication, data storage, and threading.                                                                                               |
-| `.updateMeta()`      | `MetaData` (class) — see [Adding Support for a New Game](#adding-support-for-a-new-game)                                                             | Applies game-specific metadata to configure packet structures, ports, and data handling.**Must be called before starting telemetry.**                                                               |
-| `.updateLocalIP()`   | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`                                                                                                | Sets the local IP address the telemetry server listens on for incoming packets.                                                                                                                           |
-| `.updateSendIP()`    | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`                                                                                                | Sets the destination IP address used for heartbeats and handshake packets.                                                                                                                                |
-| `.addWorkerThread()` | `mainFunc` (callable) with signature `def worker_function(worker_id: int, ro_storage, stop_event):`                                                | Registers a worker thread function to process telemetry data concurrently. Worker threads receive read-only snapshots, keeping access thread-safe.                                                        |
-| `.manualStop()`      | `target` (bool) — `True` to stop                                                                                                                  | Manually triggers a stop signal from outside the main thread or telemetry loop.                                                                                                                           |
-| `.isSharedMemory()`  | `target` (bool) — `True` for shared memory, `False` for UDP                                                                                     | Switches between UDP and shared memory as the data source. Shared memory is faster but only available on the local machine.                                                                               |
-| `.setEnumMode()`     | `target` (int): `0` (default) returns full enum members with name and value; `1` returns raw integer values; `2` returns enum names as strings | Configures how enum fields are represented in decoded packet data.                                                                                                                                        |
-| `.GetTelemetry()`    | None                                                                                                                                                   | Yields telemetry packets one at a time, for**single-threaded** use.                                                                                                                                 |
-| `.StartTelemetry()`  | None                                                                                                                                                   | Starts the telemetry system with all configured settings, creating the network listener and any registered worker threads.**Blocks until a stop signal is received** (Ctrl+C or `.manualStop()`). |
+|   Method    | Parameters  |   Description |
+| ----------- | ----------- | ------------- |
+| `TelemetryManager()` | None                             | Creates a new telemetry manager instance, which handles network communication, data storage, and threading.             |
+| `.updateMeta()`      | `MetaData` (class) — see [Adding Support for a New Game](#adding-support-for-a-new-game)    | Applies game-specific metadata to configure packet structures, ports, and data handling.**Must be called before starting telemetry.**    |
+| `.updateLocalIP()`   | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`      | Sets the local IP address the telemetry server listens on for incoming packets.           |
+| `.updateSendIP()`    | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`      | Sets the destination IP address used for heartbeats and handshake packets.                |
+| `.addWorkerThread()` | `mainFunc` (callable) with signature `def worker_function(worker_id: int, ro_storage, stop_event):`    | Registers a worker thread function to process telemetry data concurrently. Worker threads receive read-only snapshots, keeping access thread-safe.    |
+| `.manualStop()`      | `target` (bool) — `True` to stop                       | Manually triggers a stop signal from outside the main thread or telemetry loop.                                                                       |
+| `.isMultiThreaded()` | `target` (bool), default `True`                        | Selects whether`GetTelemetry()` starts the listener and returns read-only storage (`True`) or returns a packet generator (`False`).                   |
+| `.isSharedMemory()`  | `target` (bool) — `True` for shared memory, `False` for UDP        | Switches between UDP and shared memory as the data source. Shared memory is faster but only available on the local machine.                           |
+| `.setEnumMode()`     | `target` (int): `0` (default) returns full enum members with name and value; `1` returns raw integer values; `2` returns enum names as strings | Configures how enum fields are represented in decoded packet data.    |
+| `.GetTelemetry()`    | None   | In single-threaded mode, returns a generator of`(packet, packetID, headerPacket)` tuples. In multi-threaded mode, starts the listener and returns `ReadOnlyStorage`.                                          |
+| `.StartTelemetry()`  | None   | Starts the telemetry system with all configured settings, creating the network listener and any registered worker threads.**Blocks until a stop signal is received** (Ctrl+C or `.manualStop()`).             |
+| `.StopTelemetry()`   | None   | Stops the network listener and worker threads. Can be called from the main thread. Used`stop_event().set()` to trigger the stop signal within a worker thread.                                                |
 
 ## Adding Support for a New Game
 
-Support for a new game is added by defining its packet structure — no changes to the core package are needed.
+Support for a new game is added by defining its packet structure; no changes to the core package are needed.
 
 ### Step 1: Define the Packet Structure
 
@@ -288,18 +275,18 @@ activeThreads.StartTelemetry()
 
 ### Step 3: Define the MetaData Class
 
-| Field                 | Type                            | Description                                                                            |
-| --------------------- | ------------------------------- | -------------------------------------------------------------------------------------- |
-| `port`              | `int`                         | UDP port the data is received on                                                       |
-| `heartBeatPort`     | `int`                         | UDP port to send a heartbeat to                                                        |
-| `heartBeatFunc`     | function                        | Heartbeat function                                                                     |
-| `handShakePort`     | `int`                         | UDP port to send a handshake to                                                        |
-| `handShakeFunc`     | `tuple[function, function]`   | Start and stop handshake functions                                                     |
-| `decryptionFunc`    | function                        | Data decryption function                                                               |
-| `headerInfo`        | type                            | The header struct class, if the protocol uses one                                      |
-| `packetIDAttribute` | `str`                         | The header packet attribute that identifies the packet ID                              |
-| `sharedMemoryName`  | `str` or `dict[str, str]`   | Name of the shared memory segment, or a dictionary mapping packet name to segment name |
-| `packetInfo`        | `dict[int, tuple[type, ...]]` | Game packet mapping — see below                                                       |
+| Field                    | Type                            | Description                                                                            |
+| ------------------------ | ------------------------------- | -------------------------------------------------------------------------------------- |
+| `port`                 | `int`                         | UDP port the data is received on                                                       |
+| `heartBeatPort`        | `int`                         | UDP port to send a heartbeat to                                                        |
+| `heartBeatFunc`        | function                        | Heartbeat function                                                                     |
+| `handShakePort`        | `int`                         | UDP port to send a handshake to                                                        |
+| `handShakeFunc`        | `tuple[function, function]`   | Start and stop handshake functions                                                     |
+| `decryptionFunc`       | function                        | Data decryption function                                                               |
+| `headerInfo`           | type                            | The header struct class, if the protocol uses one                                      |
+| `packetIDAttribute`    | `str`                         | The header packet attribute that identifies the packet ID                              |
+| `allSharedMemoryNames` | `str` or `dict[str, str]`   | Name of the shared memory segment, or a dictionary mapping packet name to segment name |
+| `packetInfo`           | `dict[int, tuple[type, ...]]` | Game packet mapping — see below                                                       |
 
 #### PacketInfo
 
@@ -361,7 +348,7 @@ class MetaData:
     packetIDAttribute: str = "m_packetId"
 
     # Only needed for shared memory
-    sharedMemoryName: str | None | dict[str, str] = "Local\\SCSTelemetry"
+    allSharedMemoryNames: str | None | dict[str, str] = "Local\\SCSTelemetry"
 
     # Standard packet mapping
     packetInfo: dict[int, tuple[type, ...]] = {
@@ -437,6 +424,7 @@ Decoding is driven entirely by the `packetInfo` dictionary you defined. If packe
 | Assetto Corsa EVO          | ⚠️ Untested |
 | Euro Truck Simulator 2     | ✅            |
 | Project CARS               | ⚠️ Untested |
+| Project CARS 2             | ⚠️ Untested |
 
 Don't see your game listed? See [Adding Support for a New Game](#adding-support-for-a-new-game) — contributions of new packet structures are welcome.
 
