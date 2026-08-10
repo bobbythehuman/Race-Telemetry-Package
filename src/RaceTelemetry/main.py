@@ -4,6 +4,7 @@ using ctypes packet definitions, and hands them off to worker threads via a
 read-only snapshot of the latest data.
 """
 
+from __future__ import annotations
 import ctypes
 import logging
 import re

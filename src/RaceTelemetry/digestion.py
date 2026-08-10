@@ -12,6 +12,7 @@ transformations along the way:
 - nested Structures/Unions -> recursively ingested SimpleNamespace objects
 """
 
+from __future__ import annotations
 import ctypes
 import logging
 from enum import Enum
