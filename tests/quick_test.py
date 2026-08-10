@@ -16,6 +16,23 @@ telemetry = TelemetryManager()
 telemetry.updateMeta(MetaData)
 
 
+def displaySpeed(worker_id: int, ro_storage, stop_event):
+    print(f"[THRD] [INFO]\tWorker {worker_id} started.")
+    while not stop_event.is_set():
+        snapshot = ro_storage.snapshot()
+
+        data = snapshot.get("latestData")
+        if data:
+            telemetry = data.get("TelemetryData")
+            if telemetry:
+                packetSpeed = telemetry.speed
+                speedValue = round(packetSpeed * 3.6, 2)
+
+                print(f"{speedValue} KPH")
+
+    print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
+
+
 """multi-threaded version with GetTelemetry() generator"""
 telemetry.isMultiThreaded(True)
 telemetryStream = telemetry.GetTelemetry()
@@ -29,6 +46,11 @@ for data in telemetryStream:
         speed = a.speed
         speedValue = round(speed * 2.237, 2)  # convert m/s to MPH
         print(f"Speed: {speedValue} MPH")
+
+        if a.gear == "":
+            print("Gear: Reverse")
+            telemetry.StopTelemetry()
+            break
 
 
 """single-threaded version with GetTelemetry() generator"""
@@ -47,3 +69,8 @@ for data in telemetryStream:
 #         speedValue = round(packetSpeed * 2.237, 2)
 
 #         print(f"{speedValue} MPH")
+
+
+"""multi-threaded version with StartTelemetry()"""
+# telemetry.addWorkerThread(displaySpeed)
+# telemetry.StartTelemetry()
