@@ -39,11 +39,11 @@ pip install RaceTelemetry
 
 ```python
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.F1_2024_struct import MetaData
+from RaceTelemetry.DataStructures import F1_2024_MetaData
 
 # Create the manager and tell it which game protocol to expect
 telemetry = TelemetryManager()
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(F1_2024_MetaData)
 
 # Select single-threaded mode, then start pulling packets
 telemetry.isMultiThreaded(False)
