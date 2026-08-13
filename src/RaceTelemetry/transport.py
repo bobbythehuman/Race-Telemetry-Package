@@ -81,8 +81,8 @@ class UDPTransport:
 
         try:
             sock.bind((UDP_IP, UDP_PORT))
-        except OSError:
-            LOGGER.error("Only one usage of each socket address")
+        except OSError as e:
+            LOGGER.error("Only one usage of each socket address, %s", e)
             self.supervisor._trigger_stop()
         else:
             LOGGER.info("Server started on %r:%r", UDP_IP, UDP_PORT)
@@ -98,7 +98,7 @@ class UDPTransport:
 
         finally:
             sock.close()
-            LOGGER.info("Server shutting down.")
+            LOGGER.info("Socket closed.")
 
     def _process_loop(self, sock: socket.socket) -> tuple[SimpleNamespace | None, int, SimpleNamespace | None]:
         """

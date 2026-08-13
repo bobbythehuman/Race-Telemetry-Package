@@ -5,9 +5,7 @@ read-only snapshot of the latest data.
 """
 
 from __future__ import annotations
-import ctypes
 import logging
-import re
 
 from datetime import datetime
 from types import SimpleNamespace
