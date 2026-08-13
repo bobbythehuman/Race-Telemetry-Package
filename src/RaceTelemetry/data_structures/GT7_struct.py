@@ -126,7 +126,7 @@ class PacketAData(DataTypes.STRUCTURE):
         ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
         ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
         ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("UNKNOWNFLOATS1",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
         ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
         ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
         ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
@@ -186,7 +186,7 @@ class PacketBData(DataTypes.STRUCTURE):
         ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
         ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
         ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("UNKNOWNFLOATS2",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
         ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
         ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
         ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
@@ -254,7 +254,7 @@ class PacketTildaData(DataTypes.STRUCTURE):
         ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
         ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
         ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("UNKNOWNFLOATS3",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
         ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
         ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
         ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
@@ -330,7 +330,7 @@ class PacketCData(DataTypes.STRUCTURE):
         ("wheelRPS",                DataTypes.FLOAT * 4),     # Revolutions per second of tyres in rads
         ("tyreRadius",              DataTypes.FLOAT * 4),     # Radius of the tyre in meters
         ("suspHeight",              DataTypes.FLOAT * 4),     # Suspension height of the car
-        ("UNKNOWNFLOATS",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
+        ("UNKNOWNFLOATS4",           DataTypes.FLOAT * 8),     # Unknown float (from original source)
         ("clutch",                  DataTypes.FLOAT),         # Clutch (RANGE: 0.0 -> 1.0)
         ("clutchEngagement",        DataTypes.FLOAT),         # Clutch Engangement (RANGE: 0.0 -> 1.0)
         ("RPMFromClutchToGearbox",  DataTypes.FLOAT),         # Pretty much same as engine RPM, is 0 when clutch is depressed
@@ -355,7 +355,7 @@ class PacketCData(DataTypes.STRUCTURE):
         # For Packet C
         ("surfaceType",     DataTypes.CHAR * 4),          # The kind of surface in contact with the tyres (T: tarmac, C: curb/kerb D: Dirt/Grass)
         ("currentLap",      DataTypes.SIGNED_INT32),      # The current lap being set in milliseconds
-        ("UNKNOWNFLOATS",   DataTypes.FLOAT * 3),         # Unknown float
+        ("UNKNOWNFLOATS5",   DataTypes.FLOAT * 3),         # Unknown float
         ("carCategory",     DataTypes.CHAR * 4),          # Null terminated string of car category (GR3, GRX etc.)
     ]
 
