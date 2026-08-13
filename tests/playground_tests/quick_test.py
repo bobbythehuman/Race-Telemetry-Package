@@ -1,5 +1,6 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.BNG_struct import MetaData
+# from RaceTelemetry.data_structures.BNG_struct import MetaData
+from RaceTelemetry.DataStructures import BNG_MetaData
 
 from time import sleep
 import logging
@@ -13,7 +14,7 @@ root_logger.setLevel(logging.DEBUG)
 ###
 
 telemetry = TelemetryManager()
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(BNG_MetaData)
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -34,23 +35,23 @@ def displaySpeed(worker_id: int, ro_storage, stop_event):
 
 
 """multi-threaded version with GetTelemetry() generator"""
-telemetry.isMultiThreaded(True)
-telemetryStream = telemetry.GetTelemetry()
-for data in telemetryStream:
-    # print(data)
-    if not isinstance(data, dict):
-        continue
+# telemetry.isMultiThreaded(True)
+# telemetryStream = telemetry.GetTelemetry()
+# for data in telemetryStream:
+#     # print(data)
+#     if not isinstance(data, dict):
+#         continue
 
-    a = data.get("TelemetryData")
-    if a:
-        speed = a.speed
-        speedValue = round(speed * 2.237, 2)  # convert m/s to MPH
-        print(f"Speed: {speedValue} MPH")
+#     a = data.get("TelemetryData")
+#     if a:
+#         speed = a.speed
+#         speedValue = round(speed * 2.237, 2)  # convert m/s to MPH
+#         print(f"Speed: {speedValue} MPH")
 
-        if a.gear == "":
-            print("Gear: Reverse")
-            telemetry.StopTelemetry()
-            break
+#         if a.gear == "":
+#             print("Gear: Reverse")
+#             telemetry.StopTelemetry()
+#             break
 
 
 """single-threaded version with GetTelemetry() generator"""
@@ -72,5 +73,5 @@ for data in telemetryStream:
 
 
 """multi-threaded version with StartTelemetry()"""
-# telemetry.addWorkerThread(displaySpeed)
-# telemetry.StartTelemetry()
+telemetry.addWorkerThread(displaySpeed)
+telemetry.StartTelemetry()
