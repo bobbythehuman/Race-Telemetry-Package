@@ -4,6 +4,7 @@ Pattern-level tests that apply to every `<GAME>_struct.py` module.
 MetaData should follow the same pattern across every game,
 while the packet data structures themselves are game-specific.
 """
+
 from __future__ import annotations
 
 import ctypes
@@ -17,7 +18,6 @@ import pytest
 # import F1_2019_struct
 # import GT7_struct
 from ..src.RaceTelemetry.DataStructures import *
-
 
 MODULES = [
     pytest.param(AC_SM_MetaData, id="AC_SM"),
@@ -111,8 +111,7 @@ class TestMetaDataPattern:
         assert isinstance(meta.packetIDAttribute, str) and meta.packetIDAttribute
         assert is_ctypes_struct_or_union(meta.headerInfo)
         assert meta.packetIDAttribute in field_names(meta.headerInfo), (
-            f"packetIDAttribute {meta.packetIDAttribute!r} is not a field on "
-            f"headerInfo {meta.headerInfo.__name__}"
+            f"packetIDAttribute {meta.packetIDAttribute!r} is not a field on " f"headerInfo {meta.headerInfo.__name__}"
         )
 
     def test_shared_memory_names_is_none_str_or_dict(self, module):
@@ -130,8 +129,7 @@ class TestMetaDataPattern:
             assert structs, f"packetInfo[{packet_id}] has no structs"
             for struct_cls in structs:
                 assert is_ctypes_struct_or_union(struct_cls), (
-                    f"packetInfo[{packet_id}] contains {struct_cls!r}, "
-                    "which is not a ctypes Structure/Union"
+                    f"packetInfo[{packet_id}] contains {struct_cls!r}, " "which is not a ctypes Structure/Union"
                 )
 
 
@@ -170,10 +168,7 @@ class TestPacketStructSanity:
             dupes = duplicate_field_names(struct_cls)
             if dupes:
                 offenders[struct_cls.__name__] = dupes
-        assert not offenders, (
-            "Duplicate field name(s) found - the earlier field(s) are "
-            f"silently unreadable: {offenders}"
-        )
+        assert not offenders, "Duplicate field name(s) found - the earlier field(s) are " f"silently unreadable: {offenders}"
 
     def test_enums_dict_only_references_real_field_names(self, module):
         """`_enums_` is a hint to downstream code about which fields should be
@@ -215,13 +210,9 @@ class TestPacketStructSanity:
         for struct_cls in all_packet_structs(module):
             if duplicate_field_names(struct_cls):
                 continue
-            offsets = [
-                getattr(struct_cls, name).offset for name in field_names(struct_cls)
-            ]
-            assert offsets == sorted(offsets), (
-                f"{struct_cls.__name__} fields are not laid out in "
-                "declaration order"
-            )
+            offsets = [getattr(struct_cls, name).offset for name in field_names(struct_cls)]
+            assert offsets == sorted(offsets), f"{struct_cls.__name__} fields are not laid out in " "declaration order"
+
 
 # ----------------------------------------------------------------------------
 # Shared Helpers
@@ -242,6 +233,7 @@ This module has no test_ prefix so pytest won't collect it directly - it's
 imported by the real test files.
 """
 
+
 def field_names(struct_cls: type) -> list[str]:
     """Return the declared field names of a ctypes Structure/Union."""
     return [name for name, *_ in struct_cls._fields_]
@@ -261,8 +253,7 @@ def assert_no_padding_gaps(struct_cls: type) -> None:
     change introducing alignment padding despite `_pack_ = 1` being set.
     """
     assert getattr(struct_cls, "_pack_", None) == 1, (
-        f"{struct_cls.__name__} is not declared with _pack_ = 1; "
-        "this check only makes sense for packed structures."
+        f"{struct_cls.__name__} is not declared with _pack_ = 1; " "this check only makes sense for packed structures."
     )
     running_offset = 0
     for name, field_type, *_ in struct_cls._fields_:
@@ -304,6 +295,4 @@ def all_packet_structs(meta_data_cls: type) -> Iterable[type]:
 
 
 def is_ctypes_struct_or_union(obj: object) -> bool:
-    return isinstance(obj, type) and issubclass(
-        obj, (ctypes.Structure, ctypes.Union, ctypes.LittleEndianStructure, ctypes.BigEndianStructure)
-    )
+    return isinstance(obj, type) and issubclass(obj, (ctypes.Structure, ctypes.Union, ctypes.LittleEndianStructure, ctypes.BigEndianStructure))

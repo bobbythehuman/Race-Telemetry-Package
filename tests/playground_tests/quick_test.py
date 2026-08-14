@@ -1,4 +1,5 @@
 from RaceTelemetry import TelemetryManager
+
 # from RaceTelemetry.data_structures.BNG_struct import MetaData
 from RaceTelemetry.DataStructures import BNG_MetaData
 
