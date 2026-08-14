@@ -1,0 +1,85 @@
+"""Backward-compatible lazy-load export for the metadata classes."""
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+from . import data_structures
+
+if TYPE_CHECKING:
+    from .data_structures import (
+        AC_SM_MetaData,
+        AC_UDP_MetaData,
+        ACC_MetaData,
+        ACE_MetaData,
+        BNG_MetaData,
+        Dirt_4_MetaData,
+        Dirt_Rally_MetaData,
+        ETS2_MetaData,
+        F1_2016_MetaData,
+        F1_2017_MetaData,
+        F1_2018_MetaData,
+        F1_2019_MetaData,
+        F1_2020_MetaData,
+        F1_2021_MetaData,
+        F1_2022_MetaData,
+        F1_2023_MetaData,
+        F1_2024_MetaData,
+        F1_2025_MetaData,
+        F1_2026_MetaData,
+        FH4_MetaData,
+        FH5_MetaData,
+        FH6_MetaData,
+        FM7_MetaData,
+        FM8_MetaData,
+        GT7_MetaData,
+        IRacing_MetaData,
+        PC2_MetaData,
+        PC_SM_MetaData,
+        PC_UDP_MetaData,
+    )
+
+__all__ = [
+    "AC_SM_MetaData",
+    "AC_UDP_MetaData",
+    "ACC_MetaData",
+    "ACE_MetaData",
+    "BNG_MetaData",
+    "Dirt_4_MetaData",
+    "Dirt_Rally_MetaData",
+    "ETS2_MetaData",
+    "F1_2016_MetaData",
+    "F1_2017_MetaData",
+    "F1_2018_MetaData",
+    "F1_2019_MetaData",
+    "F1_2020_MetaData",
+    "F1_2021_MetaData",
+    "F1_2022_MetaData",
+    "F1_2023_MetaData",
+    "F1_2024_MetaData",
+    "F1_2025_MetaData",
+    "F1_2026_MetaData",
+    "FH4_MetaData",
+    "FH5_MetaData",
+    "FH6_MetaData",
+    "FM7_MetaData",
+    "FM8_MetaData",
+    "GT7_MetaData",
+    "IRacing_MetaData",
+    "PC2_MetaData",
+    "PC_SM_MetaData",
+    "PC_UDP_MetaData",
+]
+
+assert __all__ == data_structures.__all__, "DataStructures.__all__ has drifted from data_structures.__all__"
+
+
+def __getattr__(name: str):
+    """Lazy-load metadata classes via data_structures."""
+    if name not in __all__:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    return getattr(data_structures, name)
+
+
+def __dir__() -> list[str]:
+    """List all available metadata classes."""
+    return sorted(__all__)

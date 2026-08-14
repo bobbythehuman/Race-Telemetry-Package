@@ -11,11 +11,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "RaceTelemetry" # this is the PyPI name (can differ from import name)
-version = "v4.7.8-1"    # [major server] . [minor server] . [data structure version] - [package version]
+version = "v5.8.9-1"    # [major server] . [minor server] . [data structure version] - [package version]
 authors = [{ name = "bobbythehuman" }]
 description = "A telemetry package that can extract UDP and Shared Memory data from most racing games."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.7" # some data structures files require 3.11 cause of enum.strEnum
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

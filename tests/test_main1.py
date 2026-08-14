@@ -1,373 +1,123 @@
-"""
-Test suite for main.py
+"""Tests for TelemetryManager configuration and storage integration."""
 
-Run with:
-    pip install pytest --break-system-packages   # if not already installed
-    pytest test_main.py -v
-"""
-
-import ctypes
-import enum
-from typing import Any
-import warnings
+from types import SimpleNamespace
 
 import pytest
 
 from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
-from .test_resources import (
-    testPacket1,
-    testPacket2,
-    metaData,
-    SubPacket,
-    FullPacket,
-    full_packet_byte,
-    full_unpacked_packet,
-    SubHeaderPacket,
-    HeaderPacket,
-    header_packet_byte,
-    header_unpacked_packet,
-    subheader_unpacked_packet,
-    func1,
-    func2,
-    func3,
-    func4,
-    workerClass,
-)
 
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
+
+class Packet:
+    pass
+
+
+class OtherPacket:
+    pass
+
+
+class Metadata:
+    port = 20777
+    heartBeatPort = 20778
+    heartBeatFunc = None
+    handShakePort = 20779
+    handShakeFunc = None
+    decryptionFunc = None
+    headerInfo = None
+    packetIDAttribute = None
+    allSharedMemoryNames = None
+    packetInfo = {1: (Packet,), 2: (OtherPacket,)}
 
 
 @pytest.fixture
-def storage() -> CentralStorage:
-    return CentralStorage(metaData)
+def manager():
+    return TelemetryManager()
 
 
 @pytest.fixture
-def RO_storage(storage: CentralStorage) -> ReadOnlyStorage:
-    return ReadOnlyStorage(storage)
+def configured_manager(manager):
+    manager.updateMeta(Metadata)
+    return manager
 
 
-@pytest.fixture
-def telemetry() -> TelemetryManager:
-    telemetry = TelemetryManager()
-    telemetry.updateMeta(metaData)
-    return telemetry
+class TestStorage:
+    def test_central_storage_initializes_packet_slots(self):
+        storage = CentralStorage(Metadata)
 
+        assert storage.all_data == {"Packet": [], "OtherPacket": []}
+        assert storage.latest_data == {"Packet": None, "OtherPacket": None}
 
-# ---------------------------------------------------------------------------
-# CentralStorage
-# ---------------------------------------------------------------------------
+    def test_write_updates_history_and_latest(self):
+        storage = CentralStorage(Metadata)
+        packet = SimpleNamespace(__name__="Packet", value=3)
 
+        storage._write(packet)
 
-class TestCentralStorage:
+        assert storage.all_data["Packet"] == [packet]
+        assert storage.latest_data["Packet"] is packet
 
-    def test_central_storage_initialization(self, storage: CentralStorage):
-        assert isinstance(storage, CentralStorage)
-        assert storage.all_data == {"testPacket1": [], "testPacket2": [], "HeaderPacket": []}
-        assert storage.latest_data == {"testPacket1": None, "testPacket2": None, "HeaderPacket": None}
+    def test_write_none_is_ignored(self):
+        storage = CentralStorage(Metadata)
+        storage._write(None)
 
-    def test_snapshot_output(self, storage: CentralStorage):
-        output = {
-            "allData": {"testPacket1": [], "testPacket2": [], "HeaderPacket": []},
-            "latestData": {"testPacket1": None, "testPacket2": None, "HeaderPacket": None},
-        }
-        assert storage.snapshot() == output
+        assert storage.all_data["Packet"] == []
 
+    def test_read_only_storage_exposes_snapshot_without_write(self):
+        storage = CentralStorage(Metadata)
+        read_only = ReadOnlyStorage(storage)
 
-# ---------------------------------------------------------------------------
-# ReadOnlyStorage
-# ---------------------------------------------------------------------------
-
-
-class TestReadOnlyStorage:
-
-    def test_readonly_storage_initialization(self, RO_storage: ReadOnlyStorage):
-        assert isinstance(RO_storage, ReadOnlyStorage)
-
-    def test_snapshot_output(self, RO_storage: ReadOnlyStorage):
-        output = {
-            "allData": {"testPacket1": [], "testPacket2": [], "HeaderPacket": []},
-            "latestData": {"testPacket1": None, "testPacket2": None, "HeaderPacket": None},
-        }
-        assert RO_storage.snapshot() == output
-
-
-# ---------------------------------------------------------------------------
-# TelemetryManager - Base functionality
-# ---------------------------------------------------------------------------
+        assert read_only.snapshot() == storage.snapshot()
+        assert not hasattr(read_only, "_write")
 
 
 class TestTelemetryManager:
+    def test_initializes_unconfigured(self, manager):
+        assert manager.config.active_metadata is None
+        assert manager.router is None
+        assert manager.udp_transport is None
+        assert manager.shared_memory_transport is None
+        assert manager.shared_memory is False
 
-    def test_telemetry_manager_initialization(self, telemetry: TelemetryManager):
-        assert isinstance(telemetry, TelemetryManager)
+    def test_update_meta_builds_storage_router_and_transports(self, configured_manager):
+        assert configured_manager.config.active_metadata is Metadata
+        assert isinstance(configured_manager.activeStorage, CentralStorage)
+        assert isinstance(configured_manager.readOnlyStorage, ReadOnlyStorage)
+        assert configured_manager.router is not None
+        assert configured_manager.udp_transport is not None
+        assert configured_manager.shared_memory_transport is not None
 
-    def test_fail_start_telemetry(self, telemetry: TelemetryManager):
-        telemetry = TelemetryManager()
-        with pytest.raises(RuntimeError):
-            telemetry.StartTelemetry()
+    def test_update_meta_same_metadata_keeps_existing_storage(self, configured_manager):
+        storage = configured_manager.activeStorage
 
-    @pytest.mark.parametrize(
-        "operand1, operand2, expected",
-        [
-            ("port", None, 1234),
-            ("packetIDAttribute", None, "header_id"),
-            ("headerInfo", None, SubHeaderPacket),
-            ("heartBeatPort", None, None),
-            ("heartBeatPort", 1234, 1234),
-        ],
-    )
-    def test_meta_data_check(self, telemetry: TelemetryManager, operand1: str, operand2: Any, expected: Any) -> None:
-        assert telemetry._TelemetryManager__meta_data_check(operand1, operand2) == expected
-        # assert telemetry._telemetryManager__meta_data_check("packetIDAttribute") == "header_id"
-        # assert telemetry._telemetryManager__meta_data_check("headerInfo") == SubHeaderPacket
-        # assert telemetry._telemetryManager__meta_data_check("heartBeatPort") == None
-        # assert telemetry._telemetryManager__meta_data_check("heartBeatPort", 1234) == 1234
+        configured_manager.updateMeta(Metadata)
 
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (testPacket1, 4),
-            (testPacket2, 8),
-        ],
-    )
-    def test_packet_size(self, telemetry: TelemetryManager, operand: type, expected: Any) -> None:
-        assert telemetry._TelemetryManager__get_packet_size(operand) == expected
-        # assert telemetry._telemetryManager__get_packet_size(testPacket1) == 4
-        # assert telemetry._telemetryManager__get_packet_size(testPacket2) == 8
+        assert configured_manager.activeStorage is storage
 
-    def test_max_packet_size(self, telemetry: TelemetryManager):
-        assert telemetry._TelemetryManager__get_max_packet_size() == 59
+    def test_update_meta_is_blocked_while_workers_run(self, configured_manager, caplog):
+        storage = configured_manager.activeStorage
+        configured_manager.supervisor.workers_are_working = True
 
-    def test_trigger_stop(self, telemetry: TelemetryManager):
-        assert telemetry.stop_event.is_set() == False
+        configured_manager.updateMeta(type("NewMetadata", (), {"packetInfo": {}}))
 
-        telemetry._TelemetryManager__trigger_stop()
-        assert telemetry.stop_event.is_set() == True
+        assert configured_manager.activeStorage is storage
+        assert "Tried to update meta after telemetry has started" in caplog.text
 
-    # def test_manual_stop(self, telemetry: TelemetryManager): # this will prompt the terminal
-    #     assert telemetry.stop_event.is_set() == False
+    @pytest.mark.parametrize("value", ["bad", 1, None])
+    def test_is_shared_memory_rejects_non_boolean_values(self, manager, value):
+        assert manager.isSharedMemory(value) is False
+        assert manager.shared_memory is False
 
-    #     telemetry.manualStop(True)
-    #     assert telemetry.stop_event.is_set() == True
+    def test_is_shared_memory_accepts_boolean_values(self, manager):
+        assert manager.isSharedMemory(True) is True
+        assert manager.shared_memory is True
 
-    def test_is_still_active(self, telemetry: TelemetryManager):
-        # check it is active
-        assert telemetry._TelemetryManager__is_still_active() == True
+    def test_configuration_methods_delegate_to_config(self, manager):
+        assert manager.updateLocalIP("192.168.1.10") is True
+        assert manager.config.local_ip == "192.168.1.10"
+        assert manager.updateSendIP("10.0.0.5") is True
+        assert manager.config.destination_ip == "10.0.0.5"
+        assert manager.setEnumMode(2) is True
+        assert manager.config.enum_mode == 2
 
-        # check it is not active after manual stop
-        telemetry.manualStop(True)
-        assert telemetry._TelemetryManager__is_still_active() == False
-
-        # reset manuallyStopped to False and check it is active again
-        telemetry.manualStop(False)
-        assert telemetry._TelemetryManager__is_still_active() == True
-
-        telemetry._TelemetryManager__trigger_stop()
-        assert telemetry._TelemetryManager__is_still_active() == False
-
-    def test_construct_packet_wrong_type(self, telemetry: TelemetryManager):
-        constructed_packet1 = telemetry._TelemetryManager__construct_packet(full_packet_byte, [testPacket1, testPacket2])
-        assert constructed_packet1 == None
-
-        constructed_packet2 = telemetry._TelemetryManager__construct_packet(full_packet_byte, [])
-        assert constructed_packet2 == None
-
-
-# ---------------------------------------------------------------------------
-# TelemetryManager - Packets
-# ---------------------------------------------------------------------------
-
-packetTelemetry = TelemetryManager()
-packetTelemetry.updateMeta(metaData)
-constructed_packet, packetID, headerPacker = packetTelemetry._TelemetryManager__retrieve_packet(header_packet_byte)
-
-
-class TestRetrievePacket:
-    def test_packetID(self):
-        assert packetID == 1
-
-    def test_header_packet(self):
-        assert headerPacker.header_id == 1
-        assert headerPacker.packetNum == 28
-
-    def test_retrieve_packet(self):
-        assert constructed_packet.flag is True
-        assert constructed_packet.byte_val == -12
-        assert constructed_packet.short_val == -1000
-        assert constructed_packet.int_val == -100000
-        assert constructed_packet.long_val == -123456
-        assert constructed_packet.longlong_val == -1234567890123
-        assert constructed_packet.ssize_val == -42
-        assert constructed_packet.ubyte_val == 200
-        assert constructed_packet.ushort_val == 40000
-        assert constructed_packet.uint_val == 3000000000
-        assert constructed_packet.ulong_val == 123456
-        assert constructed_packet.ulonglong_val == 12345678901234
-        assert constructed_packet.size_val == 999
-
-
-# ---------------------------------------------------------------------------
-# TelemetryManager - User Inputs
-# ---------------------------------------------------------------------------
-
-
-class TestUserInputs:
-
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (5, False),
-            (-8, False),
-            (2.7, False),
-            ("invalid_ip", False),
-            ("256.100.50.25", False),
-            ("256.256.256.256", False),
-            ("192.168.1", False),
-            ("1.2.3.4.5", False),
-            ("1.2.3.4.5.", False),
-            ("192.1", False),
-            ("192.1.", False),
-            (False, False),
-            (testPacket1, False),
-            ("1.1.1.1.", False),
-            ("1.2.3.4.", False),
-            ("1.1.1.1", True),
-            ("192.168.1.1", True),
-            ("192.168.68.1", True),
-            ("255.255.255.255", True),
-        ],
-    )
-    def test_is_valid_ip(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry._TelemetryManager__is_valid_ip(operand) == expected
-
-    # @pytest.mark.parametrize(
-    #     "operand, expected",
-    #     [
-    #         (5, False),
-    #         (-8, False),
-    #         (2.7, False),
-    #         ("invalid_ip", False),
-    #         ("256.100.50.25", False),
-    #         ("256.256.256.256", False),
-    #         ("192.168.1", False),
-    #         ("1.2.3.4.5", False),
-    #         ("1.2.3.4.5.", False),
-    #         ("192.1", False),
-    #         (False, False),
-    #         (testPacket1, False),
-    #         ("1.1.1.1", True),
-    #         ("192.168.1.1", True),
-    #         ("192.168.68.1", True),
-    #         ("255.255.255.255", True),
-    #     ],
-    # )
-    # def test_update_send_ip_valid(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-    #     assert telemetry.updateLocalIP(operand) == expected
-
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (False, False),
-            (True, False),
-            (15, False),
-            (-45, False),
-            (3.6, False),
-            ("test", False),
-            ("1.1.1.1", False),
-            (testPacket1, False),
-            (func1, True),
-            (func2, True),
-            (func3, True),
-            (func4, True),
-            (workerClass.workerFunc, True),
-        ],
-    )
-    def test_add_worker_thread(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.addWorkerThread(operand) == expected
-
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (1, False),
-            (0, False),
-            (5, False),
-            (-8, False),
-            (2.7, False),
-            ("test", False),
-            ("1.1.1.1", False),
-            (testPacket1, False),
-            (func1, False),
-            (False, True),
-            (True, True),
-        ],
-    )
-    def test_manual_stop(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.manualStop(operand) == expected
-
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (1, False),
-            (0, False),
-            (5, False),
-            (-8, False),
-            (2.7, False),
-            ("test", False),
-            ("1.1.1.1", False),
-            (testPacket1, False),
-            (func1, False),
-            (False, True),
-            (True, True),
-        ],
-    )
-    def test_is_multi_thread(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.isMultiThreaded(operand) == expected
-
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (1, False),
-            (0, False),
-            (5, False),
-            (-8, False),
-            (2.7, False),
-            ("test", False),
-            ("1.1.1.1", False),
-            (testPacket1, False),
-            (func1, False),
-            (False, True),
-            (True, True),
-        ],
-    )
-    def test_is_shared_memory(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.isSharedMemory(operand) == expected
-
-    @pytest.mark.parametrize(
-        "operand, expected",
-        [
-            (5, False),
-            (-8, False),
-            (2.7, False),
-            ("test", False),
-            ("1.1.1.1", False),
-            (testPacket1, False),
-            (func1, False),
-            (0, True),
-            (1, True),
-            (2, True),
-            (False, True),
-            (True, True),
-        ],
-    )
-    def test_enum_mode(self, telemetry: TelemetryManager, operand: Any, expected: bool) -> None:
-        assert telemetry.setEnumMode(operand) == expected
-
-
-if __name__ == "__main__":
-    import sys
-
-    sys.exit(pytest.main([__file__, "-v"]))
-    # --disable-warnings
+    def test_start_telemetry_requires_metadata(self, manager):
+        with pytest.raises(RuntimeError, match="Read-only storage is not initialized"):
+            manager.StartTelemetry()

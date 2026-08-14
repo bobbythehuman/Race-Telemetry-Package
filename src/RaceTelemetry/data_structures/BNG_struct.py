@@ -1,3 +1,5 @@
+from __future__ import annotations
+from collections.abc import Callable
 import ctypes
 from enum import Flag
 
@@ -109,14 +111,14 @@ class MetaData:
     
     # use if a heartbeat is needed
     heartBeatPort: int | None = None
-    heartBeatFunc: function | None = None
+    heartBeatFunc: Callable | None = None
     
     # use for itinial hand shake
     handShakePort: int | None = None
-    handShakeFunc: tuple | None = None
+    handShakeFunc: tuple[Callable, Callable] | None = None
     
     # use if the data needs decrypting
-    decryptionFunc: function | None = None
+    decryptionFunc: Callable | None = None
     
     # use if there is a header packet
     headerInfo: type | None = None

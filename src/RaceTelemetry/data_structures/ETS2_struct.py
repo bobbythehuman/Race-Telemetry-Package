@@ -1,3 +1,5 @@
+from __future__ import annotations
+from collections.abc import Callable
 import ctypes
 
 
@@ -164,11 +166,11 @@ class scsTelemetryMapData(DataTypes.STRUCTURE):
         ("fuelWarningFactor",       DataTypes.FLOAT),
         ("adblueCapacity",          DataTypes.FLOAT),
         ("adblueWarningFactor",     DataTypes.FLOAT),
-        ("airPressureWarning",      DataTypes.FLOAT),
-        ("airPressureEmergency",    DataTypes.FLOAT),
-        ("oilPressureWarning",      DataTypes.FLOAT),
-        ("waterTemperatureWarning", DataTypes.FLOAT),
-        ("batteryVoltageWarning",   DataTypes.FLOAT),
+        ("airPressureWarning1",      DataTypes.FLOAT),
+        ("airPressureEmergency1",    DataTypes.FLOAT),
+        ("oilPressureWarning1",      DataTypes.FLOAT),
+        ("waterTemperatureWarning1", DataTypes.FLOAT),
+        ("batteryVoltageWarning1",   DataTypes.FLOAT),
         ("engineRpmMax",            DataTypes.FLOAT),
         ("gearDifferential",        DataTypes.FLOAT),
         ("cargoMass",               DataTypes.FLOAT),
@@ -230,13 +232,13 @@ class scsTelemetryMapData(DataTypes.STRUCTURE):
         ("specialJob",                  DataTypes.BOOL),
         ("parkBrake",                   DataTypes.BOOL),
         ("motorBrake",                  DataTypes.BOOL),
-        ("airPressureWarning",          DataTypes.BOOL),
-        ("airPressureEmergency",        DataTypes.BOOL),
+        ("airPressureWarning2",          DataTypes.BOOL),
+        ("airPressureEmergency2",        DataTypes.BOOL),
         ("fuelWarning",                 DataTypes.BOOL),
         ("adblueWarning",               DataTypes.BOOL),
-        ("oilPressureWarning",          DataTypes.BOOL),
-        ("waterTemperatureWarning",     DataTypes.BOOL),
-        ("batteryVoltageWarning",       DataTypes.BOOL),
+        ("oilPressureWarning2",          DataTypes.BOOL),
+        ("waterTemperatureWarning2",     DataTypes.BOOL),
+        ("batteryVoltageWarning2",       DataTypes.BOOL),
         ("electricEnabled",             DataTypes.BOOL),
         ("engineEnabled",               DataTypes.BOOL),
         ("wipers",                      DataTypes.BOOL),
@@ -391,14 +393,14 @@ class MetaData:
     
     # use if a heartbeat is needed
     heartBeatPort: int | None = None
-    heartBeatFunc = None
+    heartBeatFunc: Callable | None = None
     
     # use for itinial hand shake
     handShakePort: int | None = None
-    handShakeFunc: tuple | None = None
+    handShakeFunc: tuple[Callable, Callable] | None = None
     
     # use if the data needs decrypting
-    decryptionFunc = None
+    decryptionFunc: Callable | None = None
     
     # use if there is a header packet
     headerInfo: type | None = None
