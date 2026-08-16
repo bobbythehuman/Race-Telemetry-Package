@@ -267,7 +267,9 @@ class TelemetryData(DataTypes.STRUCTURE):
         ("sRpm",                        DataTypes.UNSIGNED_SHORT),  # RPM of drivetrain
         ("sMaxRpm",                     DataTypes.UNSIGNED_SHORT),  # Maximum RPM
         ("sSteering",                   DataTypes.SIGNED_BYTE),     # Filtered steering input (- = left, + = right) (RANGE: -127 -> 127)
-        ("sGearNumGears",               DataTypes.UNSIGNED_BYTE),   # Data for number of gears in the car and currently selected gear
+        # ("sGearNumGears",               DataTypes.UNSIGNED_BYTE),   # Data for number of gears in the car and currently selected gear
+        ("sGear",                       DataTypes.UNSIGNED_BYTE),   # currently selected gear
+        ("sNumGears",                   DataTypes.UNSIGNED_BYTE),   # Data for number of gears in the car
         ("sBoostAmount",                DataTypes.UNSIGNED_BYTE),   # Current amount of boost as a percentage
         ("sCrashState",                 DataTypes.UNSIGNED_BYTE),   # Crash damage state of car
         ("sOdometerKM",                 DataTypes.FLOAT),           # Odomoter of the car in km

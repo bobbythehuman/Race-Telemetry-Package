@@ -1,10 +1,9 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.PC2_struct import MetaData
-
+from RaceTelemetry.DataStructures import PC2_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(PC2_MetaData)
 
 for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:
