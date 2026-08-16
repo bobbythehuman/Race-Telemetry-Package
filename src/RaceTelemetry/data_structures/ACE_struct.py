@@ -335,7 +335,7 @@ class SPageFileGraphicEvoData(DataTypes.STRUCTURE):
         ACEVO_STATUS: ("status",),
         ACEVO_CAR_LOCATION: ("car_location",),
         ACEVO_FLAG_TYPE: ("flag", "global_flag",),
-        ACEVO_ENGINE_TYPE: ("flag",),
+        ACEVO_ENGINE_TYPE: ("engine_type",),
     }
     _fields_ = [
         ("packetId",                            DataTypes.SIGNED_INT),		# Incrementing counter — detect new frames by comparing to previous value
