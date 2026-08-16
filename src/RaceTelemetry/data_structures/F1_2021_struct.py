@@ -7,7 +7,7 @@ from sys import version_info
 
 if version_info < (3, 11):
     from enum import Enum
-    BaseStrEnum = str, Enum  # tuple of bases for older versions
+    BaseStrEnum = (str, Enum)  # tuple of bases for older versions
     
     raise RuntimeError(
         "StrEnum requires Python 3.11 or higher "
@@ -15,7 +15,7 @@ if version_info < (3, 11):
     )
 else:
     from enum import StrEnum
-    BaseStrEnum = StrEnum  # use StrEnum directly for Python 3.11 and above
+    BaseStrEnum = (StrEnum,)  # tuple with StrEnum for Python 3.11+
 
 
 class DataTypes:
