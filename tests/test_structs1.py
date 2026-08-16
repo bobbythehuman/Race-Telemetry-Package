@@ -13,10 +13,6 @@ from collections.abc import Callable
 
 import pytest
 
-# import BNG_struct
-# import ETS2_struct
-# import F1_2019_struct
-# import GT7_struct
 from ..src.RaceTelemetry.DataStructures import *
 
 MODULES = [
@@ -46,8 +42,8 @@ MODULES = [
     pytest.param(FM8_MetaData, id="FM8"),
     pytest.param(GT7_MetaData, id="GT7"),
     pytest.param(PC_SM_MetaData, id="PC_SM"),
-    # pytest.param(PC_UDP_MetaData, id="PC_UDP"),
-    # pytest.param(PC2_MetaData, id="PC2"),
+    pytest.param(PC_UDP_MetaData, id="PC_UDP"),
+    pytest.param(PC2_MetaData, id="PC2"),
 ]
 
 
@@ -251,18 +247,47 @@ def assert_no_padding_gaps(struct_cls: type) -> None:
     verifies each field's real offset equals the running total of the sizes
     of the fields before it - i.e. nothing silently shifted due to a type
     change introducing alignment padding despite `_pack_ = 1` being set.
+    
+    Note: Bit fields (where the tuple has a third element specifying bit width)
+    may share a byte with the previous field, so they don't always increment
+    the offset.
     """
     assert getattr(struct_cls, "_pack_", None) == 1, (
         f"{struct_cls.__name__} is not declared with _pack_ = 1; " "this check only makes sense for packed structures."
     )
     running_offset = 0
-    for name, field_type, *_ in struct_cls._fields_:
+    prev_was_bit_field = False
+    prev_offset = None
+    
+    for name, field_type, *rest in struct_cls._fields_:
         actual = field_offset(struct_cls, name)
-        assert actual == running_offset, (
-            f"{struct_cls.__name__}.{name}: expected offset {running_offset}, "
-            f"got {actual} (unexpected gap/overlap of {actual - running_offset} bytes)"
-        )
-        running_offset += ctypes.sizeof(field_type)
+        bit_width = rest[0] if rest else None
+        
+        if bit_width:
+            # Bit field: may share a byte with the previous field.
+            if prev_was_bit_field and actual == prev_offset:
+                # Multiple bit fields in the same byte: OK
+                pass
+            elif actual >= running_offset:
+                # Starting a new byte for this bit field
+                running_offset = actual + 1
+            else:
+                # Bit field is behind expected position: error
+                raise AssertionError(
+                    f"{struct_cls.__name__}.{name}: bit field at offset {actual}, "
+                    f"but already at {running_offset} (unexpected gap/overlap)"
+                )
+            prev_was_bit_field = True
+            prev_offset = actual
+        else:
+            # Non-bit field: must follow immediately after.
+            assert actual == running_offset, (
+                f"{struct_cls.__name__}.{name}: expected offset {running_offset}, "
+                f"got {actual} (unexpected gap/overlap of {actual - running_offset} bytes)"
+            )
+            running_offset += ctypes.sizeof(field_type)
+            prev_was_bit_field = False
+            prev_offset = None
 
 
 def duplicate_field_names(struct_cls: type) -> set[str]:
