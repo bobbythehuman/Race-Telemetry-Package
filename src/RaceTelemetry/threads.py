@@ -55,6 +55,7 @@ class ThreadSupervisor:
             daemon=True,
         )
         self.worker_threads.update({self.thread_count: workerThread})
+        LOGGER.debug("New worker thread added, %r", mainFunc.__name__)
         return True
 
     def manual_stop(self, target: bool) -> bool:
@@ -65,6 +66,7 @@ class ThreadSupervisor:
             return False
 
         self.manually_stopped = target
+        LOGGER.debug("manually_stopped has been set to %s.", self.manually_stopped)
         return True
 
     def is_multi_threaded(self, target: bool = True) -> bool:

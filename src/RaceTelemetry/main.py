@@ -123,11 +123,16 @@ class TelemetryManager:
         return self.supervisor.add_worker_thread(mainFunc, self.readOnlyStorage)
 
     def manualStop(self, target: bool) -> bool:
-        """Manually stop the program, via the terminal"""
+        """
+        Manually stop the program, via the terminal.
+        Enter Q to stop the program."""
         return self.supervisor.manual_stop(target)
 
     def isMultiThreaded(self, target: bool = True) -> bool:
-        """Currently does nothing"""
+        """
+        Call this to set whether ReadOnlyStorage retrieves data on its own thread.
+        Default is True.
+        """
         return self.supervisor.is_multi_threaded(target)
 
     # -- telemetry -------------------------------------------------------
@@ -138,6 +143,7 @@ class TelemetryManager:
         This function runs in a separate thread and should not be called directly.
         """
         if self.activeStorage is None:
+            LOGGER.error("Storage instance is not initialized.")
             raise ValueError("Storage instance is not initialized.")
 
         for packet, packetID, headerPacket in self._telemetry_generator():

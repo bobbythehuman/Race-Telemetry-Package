@@ -71,6 +71,7 @@ class ReadOnlyStorage:
         LOGGER.debug("ReadOnlyStorage initialized.")
 
     def __iter__(self) -> "ReadOnlyStorage":
+        LOGGER.debug("ReadOnlyStorage returned an iterable object of itself.")
         return self
 
     def __next__(self) -> dict[str, Any]:

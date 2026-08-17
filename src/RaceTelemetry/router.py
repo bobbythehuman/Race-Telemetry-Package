@@ -96,7 +96,7 @@ class PacketRouter:
             if hasattr(headerPacket, self.config.packet_id_attr):
                 packetID = int(getattr(headerPacket, self.config.packet_id_attr))
             else:
-                LOGGER.warning("[NTWK] [Warning]\tHeader packet %r doesnt contain the ID attribute %r", headerPacket, self.config.packet_id_attr)
+                LOGGER.warning("Header packet %r doesnt contain the ID attribute %r", headerPacket, self.config.packet_id_attr)
                 packetID = 0
         else:
             headerPacket = None

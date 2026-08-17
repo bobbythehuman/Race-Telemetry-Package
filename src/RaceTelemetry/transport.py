@@ -51,8 +51,6 @@ class UDPTransport:
         handShakeDestination = (self.config.destination_ip, self.config.handshake_port)
         if not self.config.handshake_func:
             return
-            # LOGGER.error("Handshake function is not defined.")
-            # raise ValueError("Handshake function is not defined.")
 
         if mode == "start":
             LOGGER.info("Calling handshake function for start.")
@@ -206,6 +204,7 @@ class SharedMemoryTransport:
 
             LOGGER.info("Server started for %r with sizes %r bytes", SMNames, [size for size in sharedMemoryInfo.values()])
         else:
+            LOGGER.error("Shared memory name must be a string or a dict mapping packet names to shared memory names. Currently it is %r", allSharedMemoryNames.__class__.__name__)
             raise ValueError("Shared memory name must be a string or a dict mapping packet names to shared memory names.")
 
         return sharedMemoryInfo

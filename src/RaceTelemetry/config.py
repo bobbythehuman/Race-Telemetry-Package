@@ -54,6 +54,7 @@ class TelemetryConfig:
             return False
 
         self.local_ip = ip
+        LOGGER.debug("Local IP has been set to %s", self.local_ip)
         return True
 
     def update_send_ip(self, ip: str) -> bool:
@@ -62,6 +63,7 @@ class TelemetryConfig:
 
         self.destination_ip = ip
         self._update_heartbeat_destination()
+        LOGGER.debug("Destination IP has been set to %s", self.destination_ip)
         return True
 
     def set_enum_mode(self, target: int = 0) -> bool:
@@ -72,6 +74,7 @@ class TelemetryConfig:
             return False
 
         self.enum_mode = target
+        LOGGER.debug("Enum Mode has been set to %s", self.enum_mode)
         return True
 
     def _meta_data_check(self, name: str, default_value: Any = None) -> Any:
