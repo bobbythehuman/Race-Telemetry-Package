@@ -74,7 +74,25 @@ echo Pytest checks passed.
 echo.
 
 REM ---------------------------------------------
-REM 4. Build the package
+REM 4. Packing files
+REM ---------------------------------------------
+echo Packing and compressing files...
+
+cmd /c package_program.bat
+
+if errorlevel 1 (
+    echo.
+    echo Packing failed. Build aborted.
+    pause
+    exit /b 1
+)
+
+echo Packing finished. Files in Packaged_Program\:
+dir /b Packaged_Program
+echo.
+
+REM ---------------------------------------------
+REM 5. Build the package
 REM ---------------------------------------------
 echo Building package...
 python -m build
@@ -92,7 +110,7 @@ dir /b dist
 echo.
 
 REM ---------------------------------------------
-REM 5. Wait for user confirmation before uploading
+REM 6. Wait for user confirmation before uploading
 REM ---------------------------------------------
 echo You are about to upload to: %TARGET_NAME%
 set /p CONFIRM="Proceed with upload? (Y/N): "
