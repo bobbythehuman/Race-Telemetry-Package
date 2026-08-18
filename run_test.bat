@@ -1,1 +1,0 @@
-pytest .\tests\test_config1.py .\tests\test_digestion1.py .\tests\test_digestion2.py .\tests\test_main1.py .\tests\test_main2.py  .\tests\test_router1.py .\tests\test_storage1.py .\tests\test_threads1.py .\tests\test_transport1.py .\tests\test_structs1.py .\tests\test_structs2.py --disable-warnings
