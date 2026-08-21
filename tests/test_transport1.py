@@ -82,7 +82,7 @@ def config():
 @pytest.fixture
 def udp_transport(config, router, supervisor):
     transport = UDPTransport(config=config, router=router, supervisor=supervisor)
-    # In real usage, get_udp_packets() sets FULLBUFFERSIZE before the loop
+    # In real usage, get_packets() sets FULLBUFFERSIZE before the loop
     # ever calls _process_loop(). Tests that exercise _process_loop()
     # directly must replicate that setup step themselves.
     transport.FULLBUFFERSIZE = 1500
@@ -167,7 +167,7 @@ class TestCallHandshake:
 
 
 # ---------------------------------------------------------------------------
-# UDPTransport.get_udp_packets
+# UDPTransport.get_packets
 # ---------------------------------------------------------------------------
 
 
@@ -177,14 +177,14 @@ class TestGetUdpPackets:
         udp_transport.config.destination_ip = None
 
         with pytest.raises(ValueError, match="Destination IP"):
-            next(udp_transport.get_udp_packets())
+            next(udp_transport.get_packets())
 
     def test_raises_when_heartbeat_configured_without_destination_ip(self, udp_transport):
         udp_transport.config.heartbeat_func = MagicMock()
         udp_transport.config.destination_ip = None
 
         with pytest.raises(ValueError, match="Destination IP"):
-            next(udp_transport.get_udp_packets())
+            next(udp_transport.get_packets())
 
     @patch("RaceTelemetry.src.RaceTelemetry.transport.socket.socket")
     def test_happy_path_binds_handshakes_and_yields_expected_number_of_packets(self, mock_socket_cls, udp_transport, router, supervisor):
@@ -198,7 +198,7 @@ class TestGetUdpPackets:
         udp_transport.config.destination_ip = "10.0.0.5"
 
         with patch.object(udp_transport, "_process_loop", return_value=("pkt", 1, "hdr")) as mock_loop:
-            results = list(udp_transport.get_udp_packets())
+            results = list(udp_transport.get_packets())
 
         mock_socket_cls.assert_called_once_with(socket.AF_INET, socket.SOCK_DGRAM)
         mock_sock.settimeout.assert_called_once_with(1.0)
@@ -215,7 +215,7 @@ class TestGetUdpPackets:
         mock_sock.bind.side_effect = OSError("Only one usage of each socket address")
         mock_socket_cls.return_value = mock_sock
 
-        results = list(udp_transport.get_udp_packets())
+        results = list(udp_transport.get_packets())
 
         assert results == []  # generator produced nothing
         supervisor._trigger_stop.assert_called_once()
@@ -227,7 +227,7 @@ class TestGetUdpPackets:
         mock_socket_cls.return_value = mock_sock
         supervisor._is_still_active.return_value = False  # loop body never runs
 
-        list(udp_transport.get_udp_packets())
+        list(udp_transport.get_packets())
 
         mock_sock.close.assert_called_once()
 
@@ -240,9 +240,9 @@ class TestGetUdpPackets:
 class TestProcessLoop:
     """
     Note: ``_process_loop`` reads ``self.FULLBUFFERSIZE``, which is only
-    ever set inside ``get_udp_packets`` (never in ``__init__``). The
+    ever set inside ``get_packets`` (never in ``__init__``). The
     ``udp_transport`` fixture sets it manually so these tests can call
-    ``_process_loop`` in isolation, mirroring what ``get_udp_packets``
+    ``_process_loop`` in isolation, mirroring what ``get_packets``
     would have done before entering its loop.
     """
 
@@ -436,7 +436,7 @@ class TestSetupMaps:
 
 
 # ---------------------------------------------------------------------------
-# SharedMemoryTransport.get_shared_packets
+# SharedMemoryTransport.get_packets
 # ---------------------------------------------------------------------------
 
 
@@ -445,7 +445,7 @@ class TestGetSharedPackets:
         sm_transport.config.all_shared_memory_names = None
 
         with pytest.raises(ValueError, match="Shared memory name is not set"):
-            next(sm_transport.get_shared_packets())
+            next(sm_transport.get_packets())
 
     def test_yields_packet_for_nonzero_data_and_skips_all_zero_data(self, sm_transport, router, supervisor):
         sm_transport.config.all_shared_memory_names = "SomeMap"
@@ -458,7 +458,7 @@ class TestGetSharedPackets:
 
         setup_result = {zero_map: 3, live_map: 3}
         with patch.object(sm_transport, "setup_maps", return_value=setup_result):
-            results = list(sm_transport.get_shared_packets())
+            results = list(sm_transport.get_packets())
 
         # zero_map contributes nothing; live_map yields exactly one packet
         assert results == [router.retrieve_packet.return_value]
@@ -474,7 +474,7 @@ class TestGetSharedPackets:
         live_map.read.return_value = b"\x01"
 
         with patch.object(sm_transport, "setup_maps", return_value={live_map: 1}):
-            list(sm_transport.get_shared_packets())
+            list(sm_transport.get_packets())
 
         live_map.seek.assert_called_once_with(0)
 
@@ -486,7 +486,7 @@ class TestGetSharedPackets:
         broken_map.seek.side_effect = KeyboardInterrupt
 
         with patch.object(sm_transport, "setup_maps", return_value={broken_map: 1}):
-            results = list(sm_transport.get_shared_packets())
+            results = list(sm_transport.get_packets())
 
         supervisor._trigger_stop.assert_called_once()
         assert results == []
@@ -499,7 +499,7 @@ class TestGetSharedPackets:
         broken_map.read.side_effect = OSError("shared memory gone")
 
         with patch.object(sm_transport, "setup_maps", return_value={broken_map: 1}):
-            results = list(sm_transport.get_shared_packets())
+            results = list(sm_transport.get_packets())
 
         supervisor._trigger_stop.assert_called_once()
         assert results == []
@@ -510,7 +510,7 @@ class TestGetSharedPackets:
 
         m1, m2 = MagicMock(), MagicMock()
         with patch.object(sm_transport, "setup_maps", return_value={m1: 10, m2: 10}):
-            list(sm_transport.get_shared_packets())
+            list(sm_transport.get_packets())
 
         m1.close.assert_called_once()
         m2.close.assert_called_once()

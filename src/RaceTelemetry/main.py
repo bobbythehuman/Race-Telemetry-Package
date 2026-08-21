@@ -43,8 +43,9 @@ class TelemetryManager:
         self.readOnlyStorage: ReadOnlyStorage | None = None
 
         self.router: PacketRouter | None = None
-        self.udp_transport: UDPTransport | None = None
-        self.shared_memory_transport: SharedMemoryTransport | None = None
+        # self.udp_transport: UDPTransport | None = None
+        # self.shared_memory_transport: SharedMemoryTransport | None = None
+        self.transport_mode_class: UDPTransport | SharedMemoryTransport | None = None
 
         self.shared_memory: bool = False
 
@@ -73,8 +74,8 @@ class TelemetryManager:
             self.activeStorage = CentralStorage(self.config.active_metadata)
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
             self.router = PacketRouter(self.config)
-            self.udp_transport = UDPTransport(self.config, self.router, self.supervisor)
-            self.shared_memory_transport = SharedMemoryTransport(self.config, self.router, self.supervisor)
+            # self.udp_transport = UDPTransport(self.config, self.router, self.supervisor)
+            # self.shared_memory_transport = SharedMemoryTransport(self.config, self.router, self.supervisor)
 
     def updateLocalIP(self, ip: str) -> bool:
         """
@@ -135,6 +136,25 @@ class TelemetryManager:
         """
         return self.supervisor.is_multi_threaded(target)
 
+    # -- transport -------------------------------------------------------
+    
+    def _fetchTransport(self):
+        if not self.router:
+            LOGGER.error("Packet Router is not initialized. Call updateMeta() before attempt to start.")
+            raise RuntimeError("Packet Router is not initialized. Call updateMeta() before attempt to start.")
+            
+        transportArg: tuple[TelemetryConfig, PacketRouter, ThreadSupervisor] = (self.config, self.router, self.supervisor)
+        
+        LOGGER.debug("Fetching and initializing transport mode.")
+        
+        if self.shared_memory:
+            from .transport import SharedMemoryTransport
+            self.transport_mode_class = SharedMemoryTransport(*transportArg)
+        else:
+            from .transport import UDPTransport
+            self.transport_mode_class = UDPTransport(*transportArg)
+
+            
     # -- telemetry -------------------------------------------------------
 
     def _network_listener(self) -> None:
@@ -155,14 +175,15 @@ class TelemetryManager:
         Generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         This function is used internally by GetTelemetry() and should not be called directly.
         """
-        if not self.shared_memory_transport or not self.udp_transport:
+        if not self.transport_mode_class:
             LOGGER.error("Telemetry transports are not initialized. Call updateMeta() before GetTelemetry().")
             return
 
-        if self.shared_memory:
-            yield from self.shared_memory_transport.get_shared_packets()
-        else:
-            yield from self.udp_transport.get_udp_packets()
+        yield from self.transport_mode_class.get_packets()
+        # if self.shared_memory:
+        #     yield from self.shared_memory_transport.get_packets()
+        # else:
+        #     yield from self.udp_transport.get_packets()
 
     def GetTelemetry(self) -> ReadOnlyStorage | Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
@@ -172,6 +193,8 @@ class TelemetryManager:
         if self.readOnlyStorage is None:
             LOGGER.error("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
             raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+        
+        self._fetchTransport()
 
         if self.supervisor.multi_threaded:
             LOGGER.info("Using multi-threaded telemetry with generator.")
@@ -192,7 +215,8 @@ class TelemetryManager:
             raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
         LOGGER.info("Start at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
-
+        
+        self._fetchTransport()
         self.supervisor._start_threads(network_target=self._network_listener)
         LOGGER.info("Running — press Ctrl+C to stop.")
 

@@ -59,7 +59,7 @@ class UDPTransport:
             LOGGER.info("Calling handshake function for stop.")
             self.config.handshake_func[1](sock, handShakeDestination)
 
-    def get_udp_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
+    def get_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         """
@@ -209,7 +209,7 @@ class SharedMemoryTransport:
 
         return sharedMemoryInfo
 
-    def get_shared_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
+    def get_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet from shared memory.
         """

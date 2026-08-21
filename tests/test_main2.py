@@ -29,18 +29,20 @@ def manager():
 class TestTelemetryGenerator:
     def test_udp_generator_is_selected_by_default(self, manager):
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]
-        manager.udp_transport.get_udp_packets = MagicMock(return_value=iter(expected))
+        manager._fetchTransport()
+        manager.transport_mode_class.get_packets = MagicMock(return_value=iter(expected))
 
         assert list(manager._telemetry_generator()) == expected
-        manager.udp_transport.get_udp_packets.assert_called_once_with()
+        manager.transport_mode_class.get_packets.assert_called_once_with()
 
     def test_shared_memory_generator_is_selected_when_enabled(self, manager):
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]
         manager.shared_memory = True
-        manager.shared_memory_transport.get_shared_packets = MagicMock(return_value=iter(expected))
+        manager._fetchTransport()
+        manager.transport_mode_class.get_packets = MagicMock(return_value=iter(expected))
 
         assert list(manager._telemetry_generator()) == expected
-        manager.shared_memory_transport.get_shared_packets.assert_called_once_with()
+        manager.transport_mode_class.get_packets.assert_called_once_with()
 
     def test_generator_is_empty_until_metadata_is_configured(self):
         manager = TelemetryManager()
