@@ -174,7 +174,7 @@ def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> An
 # ---------------------------------------------------------------------------
 
 
-def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -> SimpleNamespace:
+def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | SimpleNamespace | None, enumMode: int = 0) -> SimpleNamespace | None:
     """
     Takes a packet and dynamically ingests it, converting:
     - floats to rounded floats
@@ -183,6 +183,10 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union, enumMode: int = 0) -
     - recursively ingests any nested classes
     - fields with a declared _enums_ mapped to their enum type
     """
+
+    if not packet:
+        return None
+
     packetName = packet.__class__.__name__
     newPacket = SimpleNamespace()
     newPacket.__name__ = packetName

@@ -3,10 +3,7 @@ import logging
 import mmap
 import socket
 
-from types import SimpleNamespace
-from typing import Generator, TYPE_CHECKING
-
-from .router import PacketRouter
+from typing import Any, Generator, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from RaceTelemetry.main import TelemetryConfig, ThreadSupervisor
@@ -15,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# UDP transport — socket lifecycle only.
+# UDP transport
 # ---------------------------------------------------------------------------
 
 
@@ -27,10 +24,8 @@ class UDPTransport:
 
     HEARTBEAT_INTERVAL: int = 5
 
-    # def __init__(self, config: TelemetryConfig, router: PacketRouter, stop_event: threading.Event) -> None:
-    def __init__(self, config: TelemetryConfig, router: PacketRouter, supervisor: ThreadSupervisor) -> None:
+    def __init__(self, config: TelemetryConfig, supervisor: ThreadSupervisor) -> None:
         self.config = config
-        self.router = router
 
         # can work, but skips the _trigger_stop and _is_still_active functions, which may be important for some use cases
         # self.stop_event = stop_event
@@ -59,7 +54,7 @@ class UDPTransport:
             LOGGER.info("Calling handshake function for stop.")
             self.config.handshake_func[1](sock, handShakeDestination)
 
-    def get_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
+    def retreive_packets(self) -> Generator[bytes | Any]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         """
@@ -67,7 +62,7 @@ class UDPTransport:
         UDP_IP = self.config.local_ip
         UDP_PORT = self.config.main_port
 
-        self.FULLBUFFERSIZE = self.router.get_max_packet_size()
+        self.FULLBUFFERSIZE = self.config.get_max_packet_size()
 
         if (self.config.handshake_func or self.config.heartbeat_func) and not self.config.destination_ip:
             LOGGER.error("Destination IP must be set for handshakes or heartbeats.")
@@ -97,8 +92,9 @@ class UDPTransport:
         finally:
             sock.close()
             LOGGER.info("Socket closed.")
+        return
 
-    def _process_loop(self, sock: socket.socket) -> tuple[SimpleNamespace | None, int, SimpleNamespace | None]:
+    def _process_loop(self, sock: socket.socket) -> bytes | Any:
         """
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
@@ -111,16 +107,13 @@ class UDPTransport:
             LOGGER.error("Decryption Function is not a function.")
             raise ValueError("Decryption Function is not a function.")
 
-        packet = None
-        packetID = 0
-        headerPacket = None
-
         if self.config.heartbeat_func:
             self._packet_counter += 1
             if self._packet_counter % self.HEARTBEAT_INTERVAL == 0:
                 self.config.heartbeat_func(sock, self.heartBeatDestination)
                 self._packet_counter = 0
 
+        data: bytes | Any | None = None
         try:
             data, _ = sock.recvfrom(self.FULLBUFFERSIZE)  # TODO could verify ip matches destination IP
         except TimeoutError:
@@ -140,13 +133,11 @@ class UDPTransport:
         else:
             if self.config.decryption_func:
                 data = self.config.decryption_func(data)
-
-            packet, packetID, headerPacket = self.router.retrieve_packet(data)
-        return packet, packetID, headerPacket
+        return data
 
 
 # ---------------------------------------------------------------------------
-# Shared-memory transport — mmap lifecycle only.
+# Shared-memory transport
 # ---------------------------------------------------------------------------
 
 
@@ -156,10 +147,8 @@ class SharedMemoryTransport:
     This class manages the lifecycle of shared memory mappings and provides a generator to yield packets.
     """
 
-    # def __init__(self, config: TelemetryConfig, router: PacketRouter, stop_event: threading.Event) -> None:
-    def __init__(self, config: TelemetryConfig, router: PacketRouter, supervisor: ThreadSupervisor) -> None:
+    def __init__(self, config: TelemetryConfig, supervisor: ThreadSupervisor) -> None:
         self.config = config
-        self.router = router
 
         # can work, but skips the _trigger_stop and _is_still_active functions, which may be important for some use cases
         # self.stop_event = stop_event
@@ -169,15 +158,16 @@ class SharedMemoryTransport:
 
     def connect_map(self, name: str, struct: type | None = None) -> dict[mmap.mmap, int]:
         if struct:
-            SMSize = self.router.get_packet_size(struct)
+            SMSize = self.config.get_packet_size(struct)
         else:
-            SMSize = self.router.get_max_packet_size()
+            SMSize = self.config.get_max_packet_size()
         SMMap = mmap.mmap(-1, SMSize, tagname=name, access=mmap.ACCESS_READ)
         return {SMMap: SMSize}
 
     def setup_maps(self, allSharedMemoryNames: str | dict[str, str]) -> dict[mmap.mmap, int]:
         """
-        Set up shared memory mappings based on the provided names and return a dictionary of mmap objects and their sizes.
+        Set up shared memory mappings based on the provided names.
+        Return a dictionary of mmap objects and their sizes.
         """
 
         if not self.config.packet_info:
@@ -186,12 +176,14 @@ class SharedMemoryTransport:
 
         sharedMemoryInfo = {}
 
+        # one entry point
         if isinstance(allSharedMemoryNames, str):
             SMInfo = self.connect_map(allSharedMemoryNames)
             sharedMemoryInfo.update(SMInfo)
 
             LOGGER.info("Server started on %r with size %r bytes" % (allSharedMemoryNames, SMInfo.values()))
 
+        # multiple entry points mapped to different struct
         elif isinstance(allSharedMemoryNames, dict):
             SMNames = []
             for packetID, packetInfo in self.config.packet_info.items():
@@ -204,12 +196,15 @@ class SharedMemoryTransport:
 
             LOGGER.info("Server started for %r with sizes %r bytes", SMNames, [size for size in sharedMemoryInfo.values()])
         else:
-            LOGGER.error("Shared memory name must be a string or a dict mapping packet names to shared memory names. Currently it is %r", allSharedMemoryNames.__class__.__name__)
+            LOGGER.error(
+                "Shared memory name must be a string or a dict mapping packet names to shared memory names. Currently it is %r",
+                allSharedMemoryNames.__class__.__name__,
+            )
             raise ValueError("Shared memory name must be a string or a dict mapping packet names to shared memory names.")
 
         return sharedMemoryInfo
 
-    def get_packets(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
+    def retreive_packets(self) -> Generator[bytes | Any]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet from shared memory.
         """
@@ -243,10 +238,9 @@ class SharedMemoryTransport:
                 for SMData in SMRawData:
                     if not any(SMData):
                         continue
-                    packet, packetID, headerPacket = self.router.retrieve_packet(SMData)
-
-                    yield packet, packetID, headerPacket
+                    yield SMData
 
         for SMMap in sharedMemoryInfo.keys():
             SMMap.close()
         LOGGER.info("Server shutting down.")
+        return

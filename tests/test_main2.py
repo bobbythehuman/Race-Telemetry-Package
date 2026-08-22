@@ -27,22 +27,32 @@ def manager():
 
 
 class TestTelemetryGenerator:
-    def test_udp_generator_is_selected_by_default(self, manager):
+    def test_udp_generator_is_selected_by_default(self, manager, monkeypatch):
+        raw_data = [b"raw-packet"]
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]
         manager._fetchTransport()
-        manager.transport_mode_class.get_packets = MagicMock(return_value=iter(expected))
+        manager._fetchDecoder()
+        monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
+        manager.transport_mode_class.retreive_packets = MagicMock(return_value=iter(raw_data))
+        manager.decoder_mode_class.decode_packet = MagicMock(return_value=expected[0])
 
         assert list(manager._telemetry_generator()) == expected
-        manager.transport_mode_class.get_packets.assert_called_once_with()
+        manager.transport_mode_class.retreive_packets.assert_called_once_with()
+        manager.decoder_mode_class.decode_packet.assert_called_once_with(raw_data[0])
 
-    def test_shared_memory_generator_is_selected_when_enabled(self, manager):
+    def test_shared_memory_generator_is_selected_when_enabled(self, manager, monkeypatch):
+        raw_data = [b"raw-packet"]
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]
         manager.shared_memory = True
         manager._fetchTransport()
-        manager.transport_mode_class.get_packets = MagicMock(return_value=iter(expected))
+        manager._fetchDecoder()
+        monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
+        manager.transport_mode_class.retreive_packets = MagicMock(return_value=iter(raw_data))
+        manager.decoder_mode_class.decode_packet = MagicMock(return_value=expected[0])
 
         assert list(manager._telemetry_generator()) == expected
-        manager.transport_mode_class.get_packets.assert_called_once_with()
+        manager.transport_mode_class.retreive_packets.assert_called_once_with()
+        manager.decoder_mode_class.decode_packet.assert_called_once_with(raw_data[0])
 
     def test_generator_is_empty_until_metadata_is_configured(self):
         manager = TelemetryManager()

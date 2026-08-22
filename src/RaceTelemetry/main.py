@@ -8,15 +8,17 @@ from __future__ import annotations
 import logging
 
 from datetime import datetime
-from types import SimpleNamespace
-from typing import Generator, Any, Callable
+from typing import Generator, Any, Callable, TYPE_CHECKING
 
-# from .digestion import dynamic_ingest
+from .digestion import dynamic_ingest
 from .config import TelemetryConfig
-from .router import PacketRouter
 from .threads import ThreadSupervisor
 from .transport import UDPTransport, SharedMemoryTransport
 from .storage import CentralStorage, ReadOnlyStorage
+
+if TYPE_CHECKING:
+    from types import SimpleNamespace
+    from .decoders import StaticDecoding
 
 # ---------------------------------------------------------------------------
 # Other Setups
@@ -42,12 +44,11 @@ class TelemetryManager:
         self.activeStorage: CentralStorage | None = None
         self.readOnlyStorage: ReadOnlyStorage | None = None
 
-        self.router: PacketRouter | None = None
-        # self.udp_transport: UDPTransport | None = None
-        # self.shared_memory_transport: SharedMemoryTransport | None = None
         self.transport_mode_class: UDPTransport | SharedMemoryTransport | None = None
+        self.decoder_mode_class: StaticDecoding | None = None
 
         self.shared_memory: bool = False
+        self.dynamic_packet: bool = False
 
         LOGGER.debug("TelemetryManager initialized.")
 
@@ -73,9 +74,6 @@ class TelemetryManager:
         if metadata_changed:
             self.activeStorage = CentralStorage(self.config.active_metadata)
             self.readOnlyStorage = ReadOnlyStorage(self.activeStorage)
-            self.router = PacketRouter(self.config)
-            # self.udp_transport = UDPTransport(self.config, self.router, self.supervisor)
-            # self.shared_memory_transport = SharedMemoryTransport(self.config, self.router, self.supervisor)
 
     def updateLocalIP(self, ip: str) -> bool:
         """
@@ -137,30 +135,40 @@ class TelemetryManager:
         return self.supervisor.is_multi_threaded(target)
 
     # -- transport -------------------------------------------------------
-    
+
     def _fetchTransport(self):
-        if not self.router:
-            LOGGER.error("Packet Router is not initialized. Call updateMeta() before attempt to start.")
-            raise RuntimeError("Packet Router is not initialized. Call updateMeta() before attempt to start.")
-            
-        transportArg: tuple[TelemetryConfig, PacketRouter, ThreadSupervisor] = (self.config, self.router, self.supervisor)
-        
+        transportArg: tuple[TelemetryConfig, ThreadSupervisor] = (self.config, self.supervisor)
+
         LOGGER.debug("Fetching and initializing transport mode.")
-        
+
         if self.shared_memory:
             from .transport import SharedMemoryTransport
+
             self.transport_mode_class = SharedMemoryTransport(*transportArg)
         else:
             from .transport import UDPTransport
+
             self.transport_mode_class = UDPTransport(*transportArg)
 
-            
+    def _fetchDecoder(self):
+        LOGGER.debug("Fetching and initializing decoder mode.")
+
+        if self.dynamic_packet:
+            pass
+        else:
+            from .decoders import StaticDecoding
+
+            self.decoder_mode_class = StaticDecoding(self.config)
+
     # -- telemetry -------------------------------------------------------
 
     def _network_listener(self) -> None:
         """
         Listens for incoming network packets and writes them to the active storage.
         This function runs in a separate thread and should not be called directly.
+        This function is used internally by GetTelemetry() and should not be called directly.
+        This function is used internally by StartTelemetry() and should not be called directly.
+
         """
         if self.activeStorage is None:
             LOGGER.error("Storage instance is not initialized.")
@@ -174,16 +182,26 @@ class TelemetryManager:
         """
         Generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         This function is used internally by GetTelemetry() and should not be called directly.
+        This function is used internally by _network_listener() and should not be called directly.
         """
         if not self.transport_mode_class:
-            LOGGER.error("Telemetry transports are not initialized. Call updateMeta() before GetTelemetry().")
+            LOGGER.error("Telemetry transports is not initialized. Call updateMeta() before attempting to start.")
             return
 
-        yield from self.transport_mode_class.get_packets()
-        # if self.shared_memory:
-        #     yield from self.shared_memory_transport.get_packets()
-        # else:
-        #     yield from self.udp_transport.get_packets()
+        if not self.decoder_mode_class:
+            LOGGER.error("Telemetry Decoder is not initialized. Call updateMeta() before attempting to start.")
+            raise RuntimeError("Telemetry Decoder is not initialized. Call updateMeta() before attempting to start.")
+
+        for data in self.transport_mode_class.retreive_packets():
+
+            decodedData, packetID, header = self.decoder_mode_class.decode_packet(data)
+
+            header = dynamic_ingest(header)
+            cleanedData = dynamic_ingest(decodedData, self.config.enum_mode)
+
+            yield cleanedData, packetID, header
+
+        return
 
     def GetTelemetry(self) -> ReadOnlyStorage | Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
@@ -193,7 +211,8 @@ class TelemetryManager:
         if self.readOnlyStorage is None:
             LOGGER.error("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
             raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
-        
+
+        self._fetchDecoder()
         self._fetchTransport()
 
         if self.supervisor.multi_threaded:
@@ -215,8 +234,10 @@ class TelemetryManager:
             raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
         LOGGER.info("Start at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
-        
+
+        self._fetchDecoder()
         self._fetchTransport()
+
         self.supervisor._start_threads(network_target=self._network_listener)
         LOGGER.info("Running — press Ctrl+C to stop.")
 

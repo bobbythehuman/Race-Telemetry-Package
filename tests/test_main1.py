@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
+from ..src.RaceTelemetry.decoders import StaticDecoding
 from ..src.RaceTelemetry.transport import SharedMemoryTransport, UDPTransport
 
 
@@ -73,15 +74,15 @@ class TestStorage:
 class TestTelemetryManager:
     def test_initializes_unconfigured(self, manager):
         assert manager.config.active_metadata is None
-        assert manager.router is None
         assert manager.transport_mode_class is None
+        assert manager.decoder_mode_class is None
         assert manager.shared_memory is False
+        assert manager.dynamic_packet is False
 
-    def test_update_meta_builds_storage_and_router(self, configured_manager):
+    def test_update_meta_builds_storage(self, configured_manager):
         assert configured_manager.config.active_metadata is Metadata
         assert isinstance(configured_manager.activeStorage, CentralStorage)
         assert isinstance(configured_manager.readOnlyStorage, ReadOnlyStorage)
-        assert configured_manager.router is not None
 
     def test_fetch_transport_selects_udp_by_default(self, configured_manager):
         configured_manager._fetchTransport()
@@ -94,6 +95,11 @@ class TestTelemetryManager:
         configured_manager._fetchTransport()
 
         assert isinstance(configured_manager.transport_mode_class, SharedMemoryTransport)
+
+    def test_fetch_decoder_selects_static_decoder_by_default(self, configured_manager):
+        configured_manager._fetchDecoder()
+
+        assert isinstance(configured_manager.decoder_mode_class, StaticDecoding)
 
     def test_update_meta_same_metadata_keeps_existing_storage(self, configured_manager):
         storage = configured_manager.activeStorage
