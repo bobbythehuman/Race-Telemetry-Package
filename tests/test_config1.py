@@ -6,6 +6,7 @@ Run with:  pytest test_config.py -v
 
 # from __future__ import annotations
 
+import ctypes
 import logging
 from unittest.mock import MagicMock
 
@@ -29,6 +30,14 @@ def make_metadata_cls(**overrides) -> type:
 
 class HeaderPacket:
     """Stand-in for a ctypes-style header struct class."""
+
+
+class SmallPacket(ctypes.Structure):
+    _fields_ = [("value", ctypes.c_uint16)]
+
+
+class LargePacket(ctypes.Structure):
+    _fields_ = [("value", ctypes.c_uint32)]
 
 
 @pytest.fixture
@@ -117,6 +126,34 @@ class TestUpdateMeta:
 
         spy.assert_called_once()
         assert cfg.active_metadata is other_cls
+
+
+class TestPacketSizing:
+    @pytest.mark.parametrize(
+        "packet, expected_size",
+        [(SmallPacket, 2), (LargePacket, 4)],
+    )
+    def test_get_packet_size_returns_ctypes_size(self, cfg, packet, expected_size):
+        assert cfg.get_packet_size(packet) == expected_size
+
+    def test_get_max_packet_size_returns_largest_registered_packet(self, cfg):
+        cfg.packet_info = {
+            1: (SmallPacket,),
+            2: (LargePacket, SmallPacket),
+        }
+
+        assert cfg.get_max_packet_size() == 4
+
+    @pytest.mark.parametrize("packet_info", [None, {}])
+    def test_get_max_packet_size_requires_packet_info(self, cfg, packet_info):
+        cfg.packet_info = packet_info
+
+        with pytest.raises(ValueError, match="Packet Info"):
+            cfg.get_max_packet_size()
+
+    def test_get_packet_size_rejects_non_ctypes_type(self, cfg):
+        with pytest.raises(TypeError):
+            cfg.get_packet_size(HeaderPacket)
 
 
 class TestUpdateIpAddresses:

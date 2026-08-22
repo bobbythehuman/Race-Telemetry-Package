@@ -1,6 +1,7 @@
 from __future__ import annotations
 import re
 import logging
+import ctypes
 
 from typing import Any, Callable
 
@@ -134,3 +135,23 @@ class TelemetryConfig:
             self.heartbeat_destination = (self.destination_ip, self.heartbeat_port)
         else:
             self.heartbeat_destination = None
+
+    def get_packet_size(self, packet: type) -> int:
+        """Helper function to get the size of a packet using ctypes.sizeof, which is needed for shared memory reading and UDP packet construction."""
+        size = ctypes.sizeof(packet)
+        return size
+
+    def get_max_packet_size(self) -> int:
+        """Helper function to get the maximum packet size from the packet info in the metadata, which is needed for setting the full buffer size if not provided in the metadata."""
+        if not self.packet_info:
+            LOGGER.error("Packet Info is empty.")
+            raise ValueError("Packet Info is empty.")
+
+        allSizes = []
+        for packetID, packetInfo in self.packet_info.items():
+            for packetStruct in packetInfo:
+                packetSize = self.get_packet_size(packetStruct)
+                allSizes.append(packetSize)
+
+        LOGGER.debug("Maximum packet size calculated: %r", max(allSizes) if allSizes else 0)
+        return max(allSizes) if allSizes else 0
