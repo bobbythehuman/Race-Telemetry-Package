@@ -35,6 +35,9 @@ class TelemetryConfig:
         self.all_shared_memory_names: str | None | dict[str, str] = None
         self.packet_info: dict[int, tuple[type, ...]] | None = None
 
+        self.transport_mode: str = "udp"
+        self.decoder_mode: str = "static"
+
         self.enum_mode: int = 0
 
         self.heartbeat_destination: tuple[str, int] | None = None
@@ -110,6 +113,9 @@ class TelemetryConfig:
         self.all_shared_memory_names = self._meta_data_check("allSharedMemoryNames")
 
         self.packet_info = self._meta_data_check("packetInfo", {})
+
+        self.transport_mode = self._meta_data_check("transportMode", "udp")
+        self.decoder_mode = self._meta_data_check("decoderMode", "static")
 
         LOGGER.debug("Metadata unpacked: %r", self.active_metadata.__name__ if self.active_metadata else None)
 

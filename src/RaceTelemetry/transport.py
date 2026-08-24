@@ -244,3 +244,11 @@ class SharedMemoryTransport:
             SMMap.close()
         LOGGER.info("Server shutting down.")
         return
+
+
+# --- Transport Registor ---------------------------
+
+TRANSPORT_REGISTER: dict[str, type] = {
+    "udp": UDPTransport,
+    "shared_memory": SharedMemoryTransport,
+}

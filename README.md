@@ -93,7 +93,7 @@ Data lives in `CentralStorage`, which is protected by thread-safe locking. Worke
 
 ## Usage
 
-The package provides three ways to consume telemetry. All three require `updateMeta(MetaData)` first. UDP is used by default; call `isSharedMemory(True)` before starting if the selected game uses shared memory.
+The package provides three ways to consume telemetry. All three require `updateMeta(MetaData)` first. Metadata uses UDP and static decoding by default. A metadata class can opt into another combination by setting `transportMode` to `"udp"` or `"shared_memory"` and `decoderMode` to `"static"` or `"iracing_dynamic"` before you start telemetry.
 
 More examples: [`tests/Game_Specific`](tests/Game_Specific)
 
@@ -164,8 +164,7 @@ telemetry.StartTelemetry()
 | `.updateSendIP()`    | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`      | Sets the destination IP address used for heartbeats and handshake packets.                |
 | `.addWorkerThread()` | `mainFunc` (callable) with signature `def worker_function(worker_id: int, ro_storage, stop_event):`    | Registers a worker thread function to process telemetry data concurrently. Worker threads receive read-only snapshots, keeping access thread-safe.    |
 | `.manualStop()`      | `target` (bool) — `True` to stop                       | Manually triggers a stop signal from outside the main thread or telemetry loop.                                                                       |
-| `.isMultiThreaded()` | `target` (bool), default `True`                        | Selects whether`GetTelemetry()` starts the listener and returns read-only storage (`True`) or returns a packet generator (`False`).                   |
-| `.isSharedMemory()`  | `target` (bool) — `True` for shared memory, `False` for UDP        | Switches between UDP and shared memory as the data source. Shared memory is faster but only available on the local machine.                           |
+| `.isMultiThreaded()` | `target` (bool), default `True`                        | Selects whether `GetTelemetry()` starts the listener and returns read-only storage (`True`) or returns a packet generator (`False`).               |
 | `.setEnumMode()`     | `target` (int): `0` (default) returns full enum members with name and value; `1` returns raw integer values; `2` returns enum names as strings | Configures how enum fields are represented in decoded packet data.    |
 | `.GetTelemetry()`    | None   | In single-threaded mode, returns a generator of`(packet, packetID, headerPacket)` tuples. In multi-threaded mode, starts the listener and returns `ReadOnlyStorage`.                                          |
 | `.StartTelemetry()`  | None   | Starts the telemetry system with all configured settings, creating the network listener and any registered worker threads.**Blocks until a stop signal is received** (Ctrl+C or `.manualStop()`).             |
@@ -275,18 +274,20 @@ activeThreads.StartTelemetry()
 
 ### Step 3: Define the MetaData Class
 
-| Field                    | Type                            | Description                                                                            |
-| ------------------------ | ------------------------------- | -------------------------------------------------------------------------------------- |
-| `port`                 | `int`                         | UDP port the data is received on                                                       |
-| `heartBeatPort`        | `int`                         | UDP port to send a heartbeat to                                                        |
-| `heartBeatFunc`        | function                        | Heartbeat function                                                                     |
-| `handShakePort`        | `int`                         | UDP port to send a handshake to                                                        |
-| `handShakeFunc`        | `tuple[function, function]`   | Start and stop handshake functions                                                     |
-| `decryptionFunc`       | function                        | Data decryption function                                                               |
-| `headerInfo`           | type                            | The header struct class, if the protocol uses one                                      |
-| `packetIDAttribute`    | `str`                         | The header packet attribute that identifies the packet ID                              |
-| `allSharedMemoryNames` | `str` or `dict[str, str]`   | Name of the shared memory segment, or a dictionary mapping packet name to segment name |
-| `packetInfo`           | `dict[int, tuple[type, ...]]` | Game packet mapping — see below                                                       |
+| Field                     | Type                          | Description                                                                               |
+| ------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------- |
+| `port`                    | `int`                         | UDP port the data is received on                                                          |
+| `heartBeatPort`           | `int`                         | UDP port to send a heartbeat to                                                           |
+| `heartBeatFunc`           | function                      | Heartbeat function                                                                        |
+| `handShakePort`           | `int`                         | UDP port to send a handshake to                                                           |
+| `handShakeFunc`           | `tuple[function, function]`   | Start and stop handshake functions                                                        |
+| `decryptionFunc`          | function                      | Data decryption function                                                                  |
+| `headerInfo`              | type                          | The header struct class, if the protocol uses one                                         |
+| `packetIDAttribute`       | `str`                         | The header packet attribute that identifies the packet ID                                 |
+| `allSharedMemoryNames`    | `str` or `dict[str, str]`     | Name of the shared memory segment, or a dictionary mapping packet name to segment name    |
+| `packetInfo`              | `dict[int, tuple[type, ...]]` | Game packet mapping — see below                                                           |
+| `transportMode`           | `str`                         | `"udp"` or `"shared_memory"`; defaults to `"udp"`                                         |
+| `decoderMode`             | `str`                         | `"static"` or `"iracing_dynamic"`; defaults to `"static"`                                 |
 
 #### PacketInfo
 
@@ -389,42 +390,43 @@ Decoding is driven entirely by the `packetInfo` dictionary you defined. If packe
 
 ### UDP
 
-| Game               | Status        |
-| ------------------ | ------------- |
-| Assetto Corsa      | ✅            |
-| BeamNG.drive       | ✅            |
-| Dirt 4             | ⚠️ Untested |
-| Dirt Rally         | ⚠️ Untested |
-| F1 2016            | ⚠️ Untested |
-| F1 2017            | ✅            |
-| F1 2018            | ✅            |
-| F1 2019            | ✅            |
-| F1 2020            | ✅            |
-| F1 2021            | ✅            |
-| F1 2022            | ✅            |
-| F1 2023            | ✅            |
-| F1 2024            | ✅            |
-| F1 2025            | ⚠️ Untested |
-| F1 2026 (2025 DLC) | ⚠️ Untested |
-| Forza Horizon 4    | ✅            |
-| Forza Horizon 5    | ✅            |
-| Forza Horizon 6    | ✅            |
-| Forza Motorsport 7 | ⚠️ Untested |
-| Forza Motorsport 8 | ✅            |
-| Gran Turismo 7     | ✅            |
-| Project CARS       | ✅            |
-| Project CARS 2     | ✅            |
+| Game               | Status       |
+| ------------------ | ------------ |
+| Assetto Corsa      | ✅           |
+| BeamNG.drive       | ✅           |
+| Dirt 4             | ⚠️ Untested  |
+| Dirt Rally         | ⚠️ Untested  |
+| F1 2016            | ⚠️ Untested  |
+| F1 2017            | ✅           |
+| F1 2018            | ✅           |
+| F1 2019            | ✅           |
+| F1 2020            | ✅           |
+| F1 2021            | ✅           |
+| F1 2022            | ✅           |
+| F1 2023            | ✅           |
+| F1 2024            | ✅           |
+| F1 2025            | ⚠️ Untested  |
+| F1 2026 (2025 DLC) | ⚠️ Untested  |
+| Forza Horizon 4    | ✅           |
+| Forza Horizon 5    | ✅           |
+| Forza Horizon 6    | ✅           |
+| Forza Motorsport 7 | ⚠️ Untested  |
+| Forza Motorsport 8 | ✅           |
+| Gran Turismo 7     | ✅           |
+| Project CARS       | ✅           |
+| Project CARS 2     | ✅           |
 
 ### Shared Memory
 
-| Game                       | Status        |
-| -------------------------- | ------------- |
-| Assetto Corsa              | ✅            |
-| Assetto Corsa Competizione | ⚠️ Untested |
-| Assetto Corsa EVO          | ⚠️ Untested |
-| Euro Truck Simulator 2     | ✅            |
-| Project CARS               | ⚠️ Untested |
-| Project CARS 2             | ⚠️ Untested |
+| Game                       | Status       |
+| -------------------------- | ------------ |
+| Assetto Corsa              | ✅           |
+| Assetto Corsa Competizione | ⚠️ Untested  |
+| Assetto Corsa EVO          | ⚠️ Untested  |
+| Euro Truck Simulator 2     | ✅           |
+| Project CARS               | ⚠️ Untested  |
+| Project CARS 2             | ⚠️ Untested  |
+| IRacing                    | ⚠️ Untested  |
 
 Don't see your game listed? See [Adding Support for a New Game](#adding-support-for-a-new-game) — contributions of new packet structures are welcome.
 
@@ -460,121 +462,60 @@ More debugging guides live in [`Supporting_Docs/`](./Supporting_Docs/), includin
 
 ### Community & Protocol Links
 
-| Game                          | Link                                                                                                                                                                                                                                                                                                                   | Notes                               |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Assetto Corsa (UDP)           | [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub)                                                                                                                                                                                                | Official Link                       |
-| Assetto Corsa (UDP)           | [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/)                                                                                                                                                                                          | PDF Download                        |
-| Assetto Corsa (shared memory) | [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/)                                                                                                                                                                                                |                                     |
-| Assetto Corsa Competizione    | [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)                                                                                                                                                                                          |                                     |
-| Assetto Corsa EVO             | [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)                                                                                                                                                                                          |                                     |
-| Assetto Corsa EVO             | [ACE_SharedFileOut_Documentation_v1](https://docs.google.com/document/d/1WzqMLkW2o_C0LGcvdMRelAV31ZIifux0CSHD9k6ddz0/edit?tab=t.0)                                                                                                                                                                                      |                                     |
-| BeamNG.drive                  | [Protocols](https://documentation.beamng.com/modding/protocols/)                                                                                                                                                                                                                                                        | Official Link                       |
-| Dirt 4                        | [Setting up UDP output](https://web.archive.org/web/20181117092858/http://forums.codemasters.com/discussion/52950/setting-up-udp-output-for-dirt-4)                                                                                                                                                                     |                                     |
-| Dirt 4                        | [Configuring UDP Output](https://www.scribd.com/document/350826037/UDP-output-setup)                                                                                                                                                                                                                                    |                                     |
-| Dirt Rally                    | [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)                                                                                                                                                                                                   |                                     |
-| Euro Truck Simulator 2        | [scs-sdk-plugin on GitHub](https://github.com/truckermudgeon/scs-sdk-plugin)                                                                                                                                                                                                                                            | Including installation instructions |
-| F1 2016                       | [D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information)                                                                                                                                                    |                                     |
-| F1 2017                       | [D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/)                                                                                                                                                 |                                     |
-| F1 2018                       | [UDP Specification](https://web.archive.org/web/20230208110311/https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/)                                                                                                                                                                                   |                                     |
-| F1 2019                       | [UDP Specification](https://web.archive.org/web/20220930165800/https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/)                                                                                                                                                                                   |                                     |
-| F1 2020                       | [UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/)                                                                                                                                                                                   |                                     |
-| F1 2021                       | [UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/)                                                                                                                                                                                   | Dead download link                  |
-| F1 2021                       | [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)                                                                                                                                                                                         |                                     |
-| F1 2022                       | [UDP Specification](https://forums.ea.com/discussions/f1-games-franchise-discussion-en/f1-22-udp-specification/8418392)                                                                                                                                                                                                 | Official Link                       |
-| F1 2023                       | [UDP Specification](https://forums.ea.com/discussions/f1-23-en/f1-23-udp-specification/8390745)                                                                                                                                                                                                                         | Official Link                       |
-| F1 2024                       | [UDP Specification](https://forums.ea.com/discussions/f1-24-general-discussion-en/f1-24-udp-specification/8369125)                                                                                                                                                                                                      | Official Link                       |
-| F1 2025 / F1 2026             | [2026 Season Pack UDP Specification](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)                                                                                                                                                    | Official Link                       |
-| Forza Horizon 4               | [Forza-data-tools on GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat)                                                                                                                                                                                                           |                                     |
-| Forza Horizon 5               | [Data Out format](https://pastebin.com/GFbbzbg3)                                                                                                                                                                                                                                                                        | Pastebin Link                       |
-| Forza Horizon 6               | [Data Out Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)                                                                                                                                                                                             | Official Link                       |
-| Forza Motorsport 7            | [Data Out feature details](https://web.archive.org/web/20211203164310/https://forums.forzamotorsport.net/turn10_postst128499_Forza-Motorsport-7--Data-Out--feature-details.aspx)                                                                                                                                        |                                     |
-| Forza Motorsport 8            | [Data Out Documentation](https://web.archive.org/web/20260515015144/https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333)                                                                                                                                                                             | Structure and Car ID                |
-| Forza Motorsport 8            | [Data Out Documentation](https://support.forza.net/hc/en-us/articles/21742934024211-Forza-Motorsport-Data-Out-Documentation) - [Data Out Documentation Archive](https://web.archive.org/web/20260303125422/https://support.forzamotorsport.net/hc/en-us/articles/21742934024211-Forza-Motorsport-Data-Out-Documentation) | Just output structure               |
-| Gran Turismo 7                | [gt7-udp on GitHub](https://github.com/MacManley/gt7-udp)                                                                                                                                                                                                                                                               |                                     |
-| Project CARS (UDP)            | [Companion App UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming)                                                                                                                                                    |                                     |
-| Project CARS (shared memory)  | [Shared Memory API discussion](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)                                                                                                 |                                     |
-| Project CARS 2                | [project-cars-2-udp on GitHub](https://github.com/MacManley/project-cars-2-udp)                                                                                                                                                                                                                                         |                                     |
+| Game                          | Link                                       | Notes                               |
+| ----------------------------- | ------------------------------------------ | ----------------------------------- |
+| Assetto Corsa (UDP)           | [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub)          | Official Link     |
+| Assetto Corsa (UDP)           | [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/)    | PDF Download      |
+| Assetto Corsa (shared memory) | [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/)          |               |
+| Assetto Corsa Competizione    | [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/)    |               |
+| Assetto Corsa EVO             | [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/)    |               |
+| Assetto Corsa EVO             | [ACE_SharedFileOut_Documentation_v1](https://docs.google.com/document/d/1WzqMLkW2o_C0LGcvdMRelAV31ZIifux0CSHD9k6ddz0/edit?tab=t.0)    |               |
+| BeamNG.drive                  | [Protocols](https://documentation.beamng.com/modding/protocols/)                                                                  | Official Link     |
+| Dirt 4                        | [Setting up UDP output](https://web.archive.org/web/20181117092858/http://forums.codemasters.com/discussion/52950/setting-up-udp-output-for-dirt-4)   |               |
+| Dirt 4                        | [Configuring UDP Output](https://www.scribd.com/document/350826037/UDP-output-setup)                                              |               |
+| Dirt Rally                    | [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0)             |               |
+| Euro Truck Simulator 2        | [scs-sdk-plugin on GitHub](https://github.com/truckermudgeon/scs-sdk-plugin)                                                      | Including installation instructions |
+| F1 2016                       | [D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information)      |               |
+| F1 2017                       | [D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/)   |               |
+| F1 2018                       | [UDP Specification](https://web.archive.org/web/20230208110311/https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/)     |               |
+| F1 2019                       | [UDP Specification](https://web.archive.org/web/20220930165800/https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/)     |               |
+| F1 2020                       | [UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/)     |               |
+| F1 2021                       | [UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/)     | Dead download link        |
+| F1 2021                       | [raweceek-telemetry/f1-2021-udp](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021)           |               |
+| F1 2022                       | [UDP Specification](https://forums.ea.com/discussions/f1-games-franchise-discussion-en/f1-22-udp-specification/8418392)                   | Official Link     |
+| F1 2023                       | [UDP Specification](https://forums.ea.com/discussions/f1-23-en/f1-23-udp-specification/8390745)                                           | Official Link     |
+| F1 2024                       | [UDP Specification](https://forums.ea.com/discussions/f1-24-general-discussion-en/f1-24-udp-specification/8369125)                        | Official Link     |
+| F1 2025 / F1 2026             | [2026 Season Pack UDP Specification](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347)      | Official Link     |
+| Forza Horizon 4               | [Forza-data-tools on GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat)                 |               |
+| Forza Horizon 5               | [Data Out format](https://pastebin.com/GFbbzbg3)                                                                              | Pastebin Link     |
+| Forza Horizon 6               | [Data Out Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation)   | Official Link     |
+| Forza Motorsport 7            | [Data Out feature details](https://web.archive.org/web/20211203164310/https://forums.forzamotorsport.net/turn10_postst128499_Forza-Motorsport-7--Data-Out--feature-details.aspx)      |               |
+| Forza Motorsport 8            | [Data Out Documentation](https://web.archive.org/web/20260515015144/https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333)   | Structure and Car ID                |
+| Forza Motorsport 8            | [Data Out Documentation](https://support.forza.net/hc/en-us/articles/21742934024211-Forza-Motorsport-Data-Out-Documentation) - [Data Out Documentation Archive](https://web.archive.org/web/20260303125422/https://support.forzamotorsport.net/hc/en-us/articles/21742934024211-Forza-Motorsport-Data-Out-Documentation)      | Just output structure     |
+| Gran Turismo 7                | [gt7-udp on GitHub](https://github.com/MacManley/gt7-udp)                         |               |
+| Project CARS (UDP)            | [Companion App UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming)      |               |
+| Project CARS (shared memory)  | [Shared Memory API discussion](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)       |               |
+| Project CARS 2                | [project-cars-2-udp on GitHub](https://github.com/MacManley/project-cars-2-udp)               |               |
+| iRacing                       | [pyirsdk on GitHub](https://github.com/kutu/pyirsdk)                                          | currently unsupported due to dynamic packet structure |
 
-<!-- - Assetto Corsa (UDP) — [AC Remote Telemetry Documentation](https://docs.google.com/document/d/1KfkZiIluXZ6mMhLWfDX1qAGbvhGRC3ZUzjVIt5FQpp4/pub) (official), [AC UDP Remote Telemetry](https://www.assettocorsa.net/forum/index.php?threads/ac-udp-remote-telemetry-update-31-03-2016.222/) (PDF download) -->
-
-<!-- - Assetto Corsa (shared memory) — [Shared Memory Reference](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-reference-25-05-2017.3352/) -->
-
-<!-- - Assetto Corsa Competizione — [ACC Shared Memory Documentation](https://www.assettocorsa.net/forum/index.php?threads/acc-shared-memory-documentation.59965/) -->
-
-<!-- - Assetto Corsa EVO — [Shared Memory API Documentation](https://www.assettocorsa.net/forum/index.php?threads/shared-memory-api-documentation.83659/) -->
-
-<!-- - BeamNG.drive — [Protocols](https://documentation.beamng.com/modding/protocols/) (official) -->
-
-<!-- - Dirt 4 — [Configuring UDP Output](https://www.scribd.com/document/350826037/UDP-output-setup), [Setting up UDP output](https://web.archive.org/web/20181117092858/http://forums.codemasters.com/discussion/52950/setting-up-udp-output-for-dirt-4) -->
-
-<!-- - Dirt Rally — [UDP Telemetry](https://docs.google.com/spreadsheets/d/1UTgeE7vbnGIzDz-URRk2eBIPc_LR1vWcZklp7xD9N0Y/edit?gid=0#gid=0) -->
-
-<!-- - Euro Truck Simulator 2 — [scs-sdk-plugin on GitHub](https://github.com/truckermudgeon/scs-sdk-plugin), including installation instructions -->
-
-<!-- - F1 2016 — [D-Box and UDP Telemetry Information](https://web.archive.org/web/20180302011401/http://forums.codemasters.com/discussion/46726/d-box-and-udp-telemetry-information) (web archive) -->
-
-<!-- - F1 2017 — [D-Box and UDP Output Specification](https://web.archive.org/web/20230208144303/https://forums.codemasters.com/topic/20215-f1-2017-d-box-and-udp-output-specification/) (web archive) -->
-
-<!-- - F1 2018 — [UDP Specification](https://web.archive.org/web/20230208110311/https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/) (web archive) -->
-
-<!-- - F1 2019 — [UDP Specification](https://web.archive.org/web/20220930165800/https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/) (web archive) -->
-
-<!-- - F1 2020 — [UDP Specification](https://web.archive.org/web/20221127112921/https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/) (web archive) -->
-
-<!-- - F1 2021 — [UDP Specification](https://web.archive.org/web/20220525102004/https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/) (web archive, dead download link), [alternative reference](https://github.com/raweceek-temeletry/f1-2021-udp?tab=readme-ov-file#data-output-from-f1-2021) -->
-
-<!-- - F1 2022 — [UDP Specification](https://forums.ea.com/discussions/f1-games-franchise-discussion-en/f1-22-udp-specification/8418392) -->
-
-<!-- - F1 2023 — [UDP Specification](https://forums.ea.com/discussions/f1-23-en/f1-23-udp-specification/8390745) -->
-
-<!-- - F1 2024 — [UDP Specification](https://forums.ea.com/discussions/f1-24-general-discussion-en/f1-24-udp-specification/8369125) -->
-
-<!-- - F1 2025 / F1 2026 — [2026 Season Pack UDP Specification](https://forums.ea.com/blog/f1-games-game-info-hub-en/ea-sports%E2%84%A2-f1%C2%AE25-2026-season-pack-udp-specification/12187347) -->
-
-<!-- - Forza Horizon 4 — [Forza-data-tools on GitHub](https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat) -->
-
-<!-- - Forza Horizon 5 — [Data Out format](https://pastebin.com/GFbbzbg3) (Pastebin) -->
-
-<!-- - Forza Horizon 6 — [Data Out Documentation](https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation) -->
 
 <!-- - Forza Motorsport 7 — [Data Out feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013) -->
 
 <!-- - Forza Motorsport 8 — [Data Out feature](https://forums.forza.net/t/data-out-feature-in-forza-motorsport/651333/2) -->
 
-<!-- - Gran Turismo 7 — [gt7-udp on GitHub](https://github.com/MacManley/gt7-udp) -->
-
-<!-- - Project CARS (UDP) — [Companion App UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming) -->
-
-<!-- - Project CARS (shared memory) — [Shared Memory API discussion](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616) -->
-
-<!-- - Project CARS 2 — [project-cars-2-udp on GitHub](https://github.com/MacManley/project-cars-2-udp) -->
 
 ### Other Titles
 
-| Game                | Link                                                                                                                                                            | Notes                                                 |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| EA Sports WRC 2023  | [How to use UDP on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068) |                                                       |
-| Le Mans Ultimate    | [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)       |                                                       |
-| RaceRoom            | [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)                                                                      |                                                       |
-| iRacing             | [pyirsdk on GitHub](https://github.com/kutu/pyirsdk)                                                                                                             | currently unsupported due to dynamic packet structure |
-| Richard Burns Rally | [rbr-udp-telem on GitHub](https://github.com/groybe/rbr-udp-telem)                                                                                               |                                                       |
-| KartKraft           | [kartkraft-telemetry schema on GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs)                                      |                                                       |
-| Project CARS 3      | likely shares a protocol with Project CARS 2, not yet confirmed                                                                                                 |                                                       |
-| MotoGP 18           | [MotoGP-18-UDP-Telemetry](https://github.com/SHWotever/MotoGP-18-UDP-Telemetry/tree/master)                                                                      | still missing some data                               |
+| Game                | Link                            | Notes         |
+| ------------------- | ------------------------------- | ------------- |
+| EA Sports WRC 2023  | [How to use UDP on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068) |          |
+| Le Mans Ultimate    | [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)       |           |
+| RaceRoom            | [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)     |           |
+| Richard Burns Rally | [rbr-udp-telem on GitHub](https://github.com/groybe/rbr-udp-telem)      |           |
+| KartKraft           | [kartkraft-telemetry schema on GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs)     |           |
+| Project CARS 3      | likely shares a protocol with Project CARS 2, not yet confirmed         |           |
+| MotoGP 18           | [MotoGP-18-UDP-Telemetry](https://github.com/SHWotever/MotoGP-18-UDP-Telemetry/tree/master)     | still missing some data       |
 
-<!-- - EA Sports WRC 2023 — [How to use UDP on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068) -->
-
-<!-- - Le Mans Ultimate — [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/) -->
-
-<!-- - RaceRoom — [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/) -->
-
-<!-- - iRacing — [pyirsdk on GitHub](https://github.com/kutu/pyirsdk) — currently unsupported here due to iRacing's dynamic packet structure -->
-
-<!-- - Richard Burns Rally — [rbr-udp-telem on GitHub](https://github.com/groybe/rbr-udp-telem) -->
-
-<!-- - KartKraft — [kartkraft-telemetry schema on GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs) -->
-
-<!-- - Project CARS 3 — likely shares a protocol with Project CARS 2, not yet confirmed -->
 
 ## Contributing
 

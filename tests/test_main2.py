@@ -43,7 +43,13 @@ class TestTelemetryGenerator:
     def test_shared_memory_generator_is_selected_when_enabled(self, manager, monkeypatch):
         raw_data = [b"raw-packet"]
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]
-        manager.shared_memory = True
+
+        shared_memory_metadata = type(
+            "SharedMemoryMetadata",
+            (Metadata,),
+            {"transportMode": "shared_memory"},
+        )
+        manager.updateMeta(shared_memory_metadata)
         manager._fetchTransport()
         manager._fetchDecoder()
         monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)

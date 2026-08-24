@@ -10,15 +10,17 @@ import logging
 from datetime import datetime
 from typing import Generator, Any, Callable, TYPE_CHECKING
 
+from .transport import TRANSPORT_REGISTER
+from .decoders import DECODER_REGISTER
 from .digestion import dynamic_ingest
 from .config import TelemetryConfig
 from .threads import ThreadSupervisor
-from .transport import UDPTransport, SharedMemoryTransport
 from .storage import CentralStorage, ReadOnlyStorage
 
 if TYPE_CHECKING:
     from types import SimpleNamespace
-    from .decoders import StaticDecoding
+    from .transport import UDPTransport, SharedMemoryTransport
+    from .decoders import IracingDynamicDecoder, StaticDecoding
 
 # ---------------------------------------------------------------------------
 # Other Setups
@@ -45,7 +47,7 @@ class TelemetryManager:
         self.readOnlyStorage: ReadOnlyStorage | None = None
 
         self.transport_mode_class: UDPTransport | SharedMemoryTransport | None = None
-        self.decoder_mode_class: StaticDecoding | None = None
+        self.decoder_mode_class: StaticDecoding | IracingDynamicDecoder | None = None
 
         self.shared_memory: bool = False
         self.dynamic_packet: bool = False
@@ -99,17 +101,19 @@ class TelemetryManager:
         """
         return self.config.set_enum_mode(target)
 
-    def isSharedMemory(self, target: bool = False) -> bool:
-        """
-        Call this to set whether to use shared memory or UDP for telemetry.
-        Default is False (UDP).
-        """
-        if not isinstance(target, bool):
-            LOGGER.error("Invalid type for shared memory setting. Expected bool.")
-            return False
+    # -- strucuture dependant ------------------------------------------
 
-        self.shared_memory = target
-        return True
+    # def isSharedMemory(self, target: bool = False) -> bool:
+    #     """
+    #     Call this to set whether to use shared memory or UDP for telemetry.
+    #     Default is False (UDP).
+    #     """
+    #     if not isinstance(target, bool):
+    #         LOGGER.error("Invalid type for shared memory setting. Expected bool.")
+    #         return False
+
+    #     self.shared_memory = target
+    #     return True
 
     # -- thread supervision passthroughs ---------------------------------
 
@@ -139,26 +143,28 @@ class TelemetryManager:
     def _fetchTransport(self):
         transportArg: tuple[TelemetryConfig, ThreadSupervisor] = (self.config, self.supervisor)
 
-        LOGGER.debug("Fetching and initializing transport mode.")
+        LOGGER.debug("Fetching transport mode.")
+        transport_mode = TRANSPORT_REGISTER.get(self.config.transport_mode)
 
-        if self.shared_memory:
-            from .transport import SharedMemoryTransport
+        if not transport_mode:
+            LOGGER.error("Unsupported transport mode: %r", transport_mode)
+            raise ValueError("Unsupported transport mode: %r", transport_mode)
 
-            self.transport_mode_class = SharedMemoryTransport(*transportArg)
-        else:
-            from .transport import UDPTransport
-
-            self.transport_mode_class = UDPTransport(*transportArg)
+        LOGGER.debug("Initializing transport mode.")
+        self.transport_mode_class = transport_mode(*transportArg)
+        LOGGER.debug("Transport mode intialized.")
 
     def _fetchDecoder(self):
-        LOGGER.debug("Fetching and initializing decoder mode.")
+        LOGGER.debug("Fetching decoder mode.")
+        decoder_mode = DECODER_REGISTER.get(self.config.decoder_mode)
 
-        if self.dynamic_packet:
-            pass
-        else:
-            from .decoders import StaticDecoding
+        if not decoder_mode:
+            LOGGER.error("Unsupported decoder mode: %r", decoder_mode)
+            raise ValueError("Unsupported decoder mode: %r", decoder_mode)
 
-            self.decoder_mode_class = StaticDecoding(self.config)
+        LOGGER.debug("Initializing decoder mode.")
+        self.decoder_mode_class = decoder_mode(self.config)
+        LOGGER.debug("Decoder mode intialized.")
 
     # -- telemetry -------------------------------------------------------
 
@@ -252,19 +258,3 @@ class TelemetryManager:
         self.supervisor._trigger_stop()
         self.supervisor._stop_threads()
         LOGGER.info("Stop signal sent to all threads.")
-
-    # ------------------------------------------------------------------
-    # Deprecated or changed aliases — kept so existing callers
-    # using the original camelCase/PascalCase API keep working unchanged.
-    # ------------------------------------------------------------------
-
-    # updateMeta = update_meta
-    # updateLocalIP = update_local_ip
-    # updateSendIP = update_send_ip
-    # addWorkerThread = add_worker_thread
-    # manualStop = manual_stop
-    # isMultiThreaded = is_multi_threaded
-    # isSharedMemory = is_shared_memory
-    # setEnumMode = set_enum_mode
-    # StartTelemetry = start_telemetry
-    # GetTelemetry = get_telemetry

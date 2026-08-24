@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
-from ..src.RaceTelemetry.decoders import StaticDecoding
+from ..src.RaceTelemetry.decoders import IracingDynamicDecoder, StaticDecoding
 from ..src.RaceTelemetry.transport import SharedMemoryTransport, UDPTransport
 
 
@@ -28,6 +28,15 @@ class Metadata:
     packetIDAttribute = None
     allSharedMemoryNames = None
     packetInfo = {1: (Packet,), 2: (OtherPacket,)}
+
+
+class SharedMemoryMetadata(Metadata):
+    transportMode = "shared_memory"
+
+
+class IracingMetadata(Metadata):
+    transportMode = "shared_memory"
+    decoderMode = "iracing_dynamic"
 
 
 @pytest.fixture
@@ -76,8 +85,9 @@ class TestTelemetryManager:
         assert manager.config.active_metadata is None
         assert manager.transport_mode_class is None
         assert manager.decoder_mode_class is None
-        assert manager.shared_memory is False
-        assert manager.dynamic_packet is False
+        assert manager.config.transport_mode == "udp"
+        assert manager.config.decoder_mode == "static"
+        assert manager.readOnlyStorage is None
 
     def test_update_meta_builds_storage(self, configured_manager):
         assert configured_manager.config.active_metadata is Metadata
@@ -89,17 +99,26 @@ class TestTelemetryManager:
 
         assert isinstance(configured_manager.transport_mode_class, UDPTransport)
 
-    def test_fetch_transport_selects_shared_memory_when_enabled(self, configured_manager):
-        configured_manager.isSharedMemory(True)
-
-        configured_manager._fetchTransport()
-
-        assert isinstance(configured_manager.transport_mode_class, SharedMemoryTransport)
-
     def test_fetch_decoder_selects_static_decoder_by_default(self, configured_manager):
         configured_manager._fetchDecoder()
 
         assert isinstance(configured_manager.decoder_mode_class, StaticDecoding)
+
+    @pytest.mark.parametrize(
+        ("metadata", "transport_type", "decoder_type"),
+        [
+            (SharedMemoryMetadata, SharedMemoryTransport, StaticDecoding),
+            (IracingMetadata, SharedMemoryTransport, IracingDynamicDecoder),
+        ],
+    )
+    def test_fetches_modes_declared_by_metadata(self, manager, metadata, transport_type, decoder_type):
+        manager.updateMeta(metadata)
+
+        manager._fetchDecoder()
+        manager._fetchTransport()
+
+        assert isinstance(manager.transport_mode_class, transport_type)
+        assert isinstance(manager.decoder_mode_class, decoder_type)
 
     def test_update_meta_same_metadata_keeps_existing_storage(self, configured_manager):
         storage = configured_manager.activeStorage
@@ -116,15 +135,6 @@ class TestTelemetryManager:
 
         assert configured_manager.activeStorage is storage
         assert "Tried to update meta after telemetry has started" in caplog.text
-
-    @pytest.mark.parametrize("value", ["bad", 1, None])
-    def test_is_shared_memory_rejects_non_boolean_values(self, manager, value):
-        assert manager.isSharedMemory(value) is False
-        assert manager.shared_memory is False
-
-    def test_is_shared_memory_accepts_boolean_values(self, manager):
-        assert manager.isSharedMemory(True) is True
-        assert manager.shared_memory is True
 
     def test_configuration_methods_delegate_to_config(self, manager):
         assert manager.updateLocalIP("192.168.1.10") is True

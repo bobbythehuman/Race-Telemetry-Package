@@ -174,7 +174,7 @@ def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> An
 # ---------------------------------------------------------------------------
 
 
-def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | SimpleNamespace | None, enumMode: int = 0) -> SimpleNamespace | None:
+def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamespace | None, enumMode: int = 0) -> SimpleNamespace | None:
     """
     Takes a packet and dynamically ingests it, converting:
     - floats to rounded floats
