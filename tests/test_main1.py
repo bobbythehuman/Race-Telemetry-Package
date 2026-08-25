@@ -6,7 +6,7 @@ import pytest
 
 from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
 from ..src.RaceTelemetry.decoders import IracingDynamicDecoder, StaticDecoding
-from ..src.RaceTelemetry.transport import SharedMemoryTransport, UDPTransport
+from ..src.RaceTelemetry.receivers import SharedMemoryReceiver, UDPReceiver
 
 
 class Packet:
@@ -31,11 +31,11 @@ class Metadata:
 
 
 class SharedMemoryMetadata(Metadata):
-    transportMode = "shared_memory"
+    receiverMode = "shared_memory"
 
 
 class IracingMetadata(Metadata):
-    transportMode = "shared_memory"
+    receiverMode = "shared_memory"
     decoderMode = "iracing_dynamic"
 
 
@@ -83,21 +83,30 @@ class TestStorage:
 class TestTelemetryManager:
     def test_initializes_unconfigured(self, manager):
         assert manager.config.active_metadata is None
-        assert manager.transport_mode_class is None
+        assert manager.receiver_mode_class is None
         assert manager.decoder_mode_class is None
-        assert manager.config.transport_mode == "udp"
+        assert manager.config.receiver_mode == "udp"
         assert manager.config.decoder_mode == "static"
         assert manager.readOnlyStorage is None
+        assert manager.use_shared_memory is False
 
     def test_update_meta_builds_storage(self, configured_manager):
         assert configured_manager.config.active_metadata is Metadata
         assert isinstance(configured_manager.activeStorage, CentralStorage)
         assert isinstance(configured_manager.readOnlyStorage, ReadOnlyStorage)
 
-    def test_fetch_transport_selects_udp_by_default(self, configured_manager):
-        configured_manager._fetchTransport()
+    def test_fetch_receiver_selects_udp_by_default(self, configured_manager):
+        configured_manager._fetchReceiver()
 
-        assert isinstance(configured_manager.transport_mode_class, UDPTransport)
+        assert isinstance(configured_manager.receiver_mode_class, UDPReceiver)
+
+    def test_fetch_transport_selects_shared_memory_when_enabled(self, configured_manager):
+        configured_manager.config.all_shared_memory_names = "$testLocation"
+        configured_manager.useSharedMemory(True)
+
+        configured_manager._fetchReceiver()
+
+        assert isinstance(configured_manager.receiver_mode_class, SharedMemoryReceiver)
 
     def test_fetch_decoder_selects_static_decoder_by_default(self, configured_manager):
         configured_manager._fetchDecoder()
@@ -105,19 +114,19 @@ class TestTelemetryManager:
         assert isinstance(configured_manager.decoder_mode_class, StaticDecoding)
 
     @pytest.mark.parametrize(
-        ("metadata", "transport_type", "decoder_type"),
+        ("metadata", "receiver_type", "decoder_type"),
         [
-            (SharedMemoryMetadata, SharedMemoryTransport, StaticDecoding),
-            (IracingMetadata, SharedMemoryTransport, IracingDynamicDecoder),
+            (SharedMemoryMetadata, SharedMemoryReceiver, StaticDecoding),
+            (IracingMetadata, SharedMemoryReceiver, IracingDynamicDecoder),
         ],
     )
-    def test_fetches_modes_declared_by_metadata(self, manager, metadata, transport_type, decoder_type):
+    def test_fetches_modes_declared_by_metadata(self, manager, metadata, receiver_type, decoder_type):
         manager.updateMeta(metadata)
 
         manager._fetchDecoder()
-        manager._fetchTransport()
+        manager._fetchReceiver()
 
-        assert isinstance(manager.transport_mode_class, transport_type)
+        assert isinstance(manager.receiver_mode_class, receiver_type)
         assert isinstance(manager.decoder_mode_class, decoder_type)
 
     def test_update_meta_same_metadata_keeps_existing_storage(self, configured_manager):
@@ -135,6 +144,17 @@ class TestTelemetryManager:
 
         assert configured_manager.activeStorage is storage
         assert "Tried to update meta after telemetry has started" in caplog.text
+
+    @pytest.mark.parametrize("value", ["bad", 1, None])
+    def test_use_shared_memory_rejects_non_boolean_values(self, manager, value):
+        assert manager.useSharedMemory(value) is False
+        assert manager.use_shared_memory is False
+
+    def test_use_shared_memory_accepts_boolean_values(self, manager):
+        manager.config.all_shared_memory_names = "$testLocation"
+        assert manager.useSharedMemory(True) is True
+        assert manager.use_shared_memory is True
+
 
     def test_configuration_methods_delegate_to_config(self, manager):
         assert manager.updateLocalIP("192.168.1.10") is True

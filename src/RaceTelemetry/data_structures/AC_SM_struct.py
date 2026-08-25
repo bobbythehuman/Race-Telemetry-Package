@@ -229,6 +229,9 @@ class MetaData:
             "SPageFileGraphicData": "Local\\acpmf_graphics"
         }
     
+    # define the receiver and decoder modes
+    receiverMode: str = "shared_memory"
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (SPageFileStaticData, SPageFilePhysicsData, SPageFileGraphicData),

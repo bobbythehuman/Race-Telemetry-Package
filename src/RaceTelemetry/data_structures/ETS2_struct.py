@@ -409,6 +409,9 @@ class MetaData:
     # use for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = "Local\\SCSTelemetry"
     
+    # define the receiver and decoder modes
+    receiverMode: str = "shared_memory"
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (scsTelemetryMapData, ),

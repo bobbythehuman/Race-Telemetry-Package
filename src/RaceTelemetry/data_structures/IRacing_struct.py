@@ -128,9 +128,9 @@ class MetaData:
     # use for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = "Local\\IRSDKMemMapFileName"
     
-    # define the transport and decoder modes
-    transport_mode: str = "shared_memory"
-    decoder_mode: str = "iracing_dynamic"
+    # define the receiver and decoder modes
+    receiverMode: str = "shared_memory"
+    decoderMode: str = "iracing_dynamic"
     
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {

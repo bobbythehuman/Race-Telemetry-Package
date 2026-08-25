@@ -12,13 +12,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# UDP transport
+# UDP receiver
 # ---------------------------------------------------------------------------
 
 
-class UDPTransport:
+class UDPReceiver:
     """
-    Class to handle UDP transport for telemetry data.
+    Class to handle UDP receiver for telemetry data.
     This class manages the lifecycle of a UDP socket and provides a generator to yield packets.
     """
 
@@ -35,7 +35,7 @@ class UDPTransport:
 
         self._packet_counter: int = 0
         self._full_buffer_size: int = 0
-        LOGGER.debug("UDPTransport initialized with config: %r", config.__class__.__name__)
+        LOGGER.debug("UDPReceiver initialized with config: %r", config.__class__.__name__)
 
     def call_handshake(self, sock: socket.socket, mode: str) -> None:
         """
@@ -137,13 +137,13 @@ class UDPTransport:
 
 
 # ---------------------------------------------------------------------------
-# Shared-memory transport
+# Shared-memory receiver
 # ---------------------------------------------------------------------------
 
 
-class SharedMemoryTransport:
+class SharedMemoryReceiver:
     """
-    Class to handle shared memory transport for telemetry data.
+    Class to handle shared memory receiver for telemetry data.
     This class manages the lifecycle of shared memory mappings and provides a generator to yield packets.
     """
 
@@ -154,7 +154,7 @@ class SharedMemoryTransport:
         # self.stop_event = stop_event
         self.supervisor = supervisor
 
-        LOGGER.debug("SharedMemoryTransport initialized with config: %r", config.__class__.__name__)
+        LOGGER.debug("SharedMemoryReceiver initialized with config: %r", config.__class__.__name__)
 
     def connect_map(self, name: str, struct: type | None = None) -> dict[mmap.mmap, int]:
         if struct:
@@ -246,9 +246,9 @@ class SharedMemoryTransport:
         return
 
 
-# --- Transport Registor ---------------------------
+# --- Receiver Registor ---------------------------
 
-TRANSPORT_REGISTER: dict[str, type] = {
-    "udp": UDPTransport,
-    "shared_memory": SharedMemoryTransport,
+RECEIVER_REGISTER: dict[str, type] = {
+    "udp": UDPReceiver,
+    "shared_memory": SharedMemoryReceiver,
 }

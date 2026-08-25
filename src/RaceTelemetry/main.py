@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 from typing import Generator, Any, Callable, TYPE_CHECKING
 
-from .transport import TRANSPORT_REGISTER
+from .receivers import RECEIVER_REGISTER
 from .decoders import DECODER_REGISTER
 from .digestion import dynamic_ingest
 from .config import TelemetryConfig
@@ -19,7 +19,7 @@ from .storage import CentralStorage, ReadOnlyStorage
 
 if TYPE_CHECKING:
     from types import SimpleNamespace
-    from .transport import UDPTransport, SharedMemoryTransport
+    from .receivers import UDPReceiver, SharedMemoryReceiver
     from .decoders import IracingDynamicDecoder, StaticDecoding
 
 # ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# telemetry manager — orchestrates config, storage, router, transport, and threads.
+# telemetry manager — orchestrates config, storage, router, receiver, and threads.
 # ---------------------------------------------------------------------------
 
 
@@ -46,11 +46,13 @@ class TelemetryManager:
         self.activeStorage: CentralStorage | None = None
         self.readOnlyStorage: ReadOnlyStorage | None = None
 
-        self.transport_mode_class: UDPTransport | SharedMemoryTransport | None = None
+        self.receiver_mode_class: UDPReceiver | SharedMemoryReceiver | None = None
         self.decoder_mode_class: StaticDecoding | IracingDynamicDecoder | None = None
 
         self.shared_memory: bool = False
         self.dynamic_packet: bool = False
+
+        self.use_shared_memory: bool = False
 
         LOGGER.debug("TelemetryManager initialized.")
 
@@ -103,17 +105,22 @@ class TelemetryManager:
 
     # -- strucuture dependant ------------------------------------------
 
-    # def isSharedMemory(self, target: bool = False) -> bool:
-    #     """
-    #     Call this to set whether to use shared memory or UDP for telemetry.
-    #     Default is False (UDP).
-    #     """
-    #     if not isinstance(target, bool):
-    #         LOGGER.error("Invalid type for shared memory setting. Expected bool.")
-    #         return False
+    def useSharedMemory(self, target: bool = False) -> bool:
+        """
+        Call this to set receiver mode to shared memory or UDP.
+        Default is False (UDP).
+        """
 
-    #     self.shared_memory = target
-    #     return True
+        if not isinstance(target, bool):
+            LOGGER.error("Invalid type for shared memory setting. Expected bool.")
+            return False
+
+        if not self.config.all_shared_memory_names and target:
+            LOGGER.warning("Data structure doesnt support shared memory")
+            return False
+
+        self.use_shared_memory = target
+        return True
 
     # -- thread supervision passthroughs ---------------------------------
 
@@ -138,21 +145,26 @@ class TelemetryManager:
         """
         return self.supervisor.is_multi_threaded(target)
 
-    # -- transport -------------------------------------------------------
+    # -- receiver -------------------------------------------------------
 
-    def _fetchTransport(self):
-        transportArg: tuple[TelemetryConfig, ThreadSupervisor] = (self.config, self.supervisor)
+    def _fetchReceiver(self):
+        receiverArg: tuple[TelemetryConfig, ThreadSupervisor] = (self.config, self.supervisor)
 
-        LOGGER.debug("Fetching transport mode.")
-        transport_mode = TRANSPORT_REGISTER.get(self.config.transport_mode)
+        LOGGER.debug("Fetching receiver mode.")
+        receiver_mode = RECEIVER_REGISTER.get(self.config.receiver_mode)
 
-        if not transport_mode:
-            LOGGER.error("Unsupported transport mode: %r", transport_mode)
-            raise ValueError("Unsupported transport mode: %r", transport_mode)
+        # Override the default mode
+        if self.use_shared_memory:
+            LOGGER.info("User choose to use Shared Memory.")
+            receiver_mode = RECEIVER_REGISTER.get("shared_memory")
 
-        LOGGER.debug("Initializing transport mode.")
-        self.transport_mode_class = transport_mode(*transportArg)
-        LOGGER.debug("Transport mode intialized.")
+        if not receiver_mode:
+            LOGGER.error("Unsupported receiver mode: %r", receiver_mode)
+            raise ValueError("Unsupported receiver mode: %r", receiver_mode)
+
+        LOGGER.debug("Initializing receiver mode.")
+        self.receiver_mode_class = receiver_mode(*receiverArg)
+        LOGGER.debug("Receiver mode intialized.")
 
     def _fetchDecoder(self):
         LOGGER.debug("Fetching decoder mode.")
@@ -190,15 +202,15 @@ class TelemetryManager:
         This function is used internally by GetTelemetry() and should not be called directly.
         This function is used internally by _network_listener() and should not be called directly.
         """
-        if not self.transport_mode_class:
-            LOGGER.error("Telemetry transports is not initialized. Call updateMeta() before attempting to start.")
+        if not self.receiver_mode_class:
+            LOGGER.error("Telemetry receiver is not initialized. Call updateMeta() before attempting to start.")
             return
 
         if not self.decoder_mode_class:
             LOGGER.error("Telemetry Decoder is not initialized. Call updateMeta() before attempting to start.")
             raise RuntimeError("Telemetry Decoder is not initialized. Call updateMeta() before attempting to start.")
 
-        for data in self.transport_mode_class.retreive_packets():
+        for data in self.receiver_mode_class.retreive_packets():
 
             decodedData, packetID, header = self.decoder_mode_class.decode_packet(data)
 
@@ -219,7 +231,7 @@ class TelemetryManager:
             raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
 
         self._fetchDecoder()
-        self._fetchTransport()
+        self._fetchReceiver()
 
         if self.supervisor.multi_threaded:
             LOGGER.info("Using multi-threaded telemetry with generator.")
@@ -242,7 +254,7 @@ class TelemetryManager:
         LOGGER.info("Start at %r", datetime.now().strftime("%a-%d-%b, %H-%M-%S-%f"))
 
         self._fetchDecoder()
-        self._fetchTransport()
+        self._fetchReceiver()
 
         self.supervisor._start_threads(network_target=self._network_listener)
         LOGGER.info("Running — press Ctrl+C to stop.")
