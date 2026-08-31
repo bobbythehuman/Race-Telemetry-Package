@@ -137,7 +137,7 @@ class DashData(DataTypes.STRUCTURE):
 
 class MetaData:
     # standard network info
-    port: int | None = 5300
+    port: int | None = 5607
     
     # use if a heartbeat is needed
     heartBeatPort: int | None = None
