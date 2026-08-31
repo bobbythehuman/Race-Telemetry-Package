@@ -44,8 +44,14 @@ MODULES = [
     pytest.param(PC_SM_MetaData, id="PC_SM"),
     pytest.param(PC_UDP_MetaData, id="PC_UDP"),
     pytest.param(PC2_MetaData, id="PC2"),
+    pytest.param(PC2_MetaData, id="IRacing"),
 ]
 
+INHERITANCEMODULES = [
+    pytest.param(FM7_MetaData, id="FM7"),
+    pytest.param(FM8_MetaData, id="FM8"),
+    pytest.param(GT7_MetaData, id="GT7"),
+]
 
 # ---------------------------------------------------------------------------
 # MetaData shape
@@ -209,6 +215,31 @@ class TestPacketStructSanity:
             offsets = [getattr(struct_cls, name).offset for name in field_names(struct_cls)]
             assert offsets == sorted(offsets), f"{struct_cls.__name__} fields are not laid out in " "declaration order"
 
+@pytest.mark.parametrize("module", INHERITANCEMODULES)
+class TestStructureInheritance:
+    def test_data_inherits_packet_fields(self, module):
+        packet_structs = set(all_packet_structs(module))
+        derived_structs = [
+            struct_cls
+            for struct_cls in packet_structs
+            if any(base in packet_structs for base in struct_cls.__bases__)
+        ]
+
+        assert derived_structs, f"{module.__name__} has no packet structure inheritance"
+
+        for derived_struct in derived_structs:
+            base_struct = next(base for base in derived_struct.__bases__ if base in packet_structs)
+            base_fields = field_definitions(base_struct)
+            derived_fields = field_definitions(derived_struct)
+
+            assert issubclass(derived_struct, base_struct)
+            assert derived_fields[:len(base_fields)] == base_fields
+
+            inherited_field_name = base_fields[0][0]
+            packet = derived_struct()
+            setattr(packet, inherited_field_name, 1)
+            assert getattr(packet, inherited_field_name) == 1
+
 
 # ----------------------------------------------------------------------------
 # Shared Helpers
@@ -231,8 +262,16 @@ imported by the real test files.
 
 
 def field_names(struct_cls: type) -> list[str]:
-    """Return the declared field names of a ctypes Structure/Union."""
-    return [name for name, *_ in struct_cls._fields_]
+    """Return field names declared by a ctypes class and its bases."""
+    return [name for name, *_ in field_definitions(struct_cls)]
+
+
+def field_definitions(struct_cls: type) -> list[tuple]:
+    """Return effective ctypes fields in their wire-layout order."""
+    definitions = []
+    for base in reversed(struct_cls.__mro__):
+        definitions.extend(getattr(base, "_fields_", ()))
+    return definitions
 
 
 def field_offset(struct_cls: type, name: str) -> int:
@@ -259,7 +298,7 @@ def assert_no_padding_gaps(struct_cls: type) -> None:
     prev_was_bit_field = False
     prev_offset = None
     
-    for name, field_type, *rest in struct_cls._fields_:
+    for name, field_type, *rest in field_definitions(struct_cls):
         actual = field_offset(struct_cls, name)
         bit_width = rest[0] if rest else None
         

@@ -18,8 +18,9 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 - [Features](#features)
 - [How It Works](#how-it-works)
 - [Usage](#usage)
-  - [Single-Threaded Mode](#single-threaded-mode)
-  - [Multi-Threaded Mode](#multi-threaded-mode)
+  - [Single-Threaded Mode](#Single-threaded-packet-generator)
+  - [Multi-Threaded Mode - Generator](#Multi-threaded-read-only-iterable)
+  - [Multi-Threaded Mode - Worker Threads](#Multi-threaded-listener-with-worker-threads)
 - [API Reference](#api-reference)
 - [Adding Support for a New Game](#adding-support-for-a-new-game)
 - [Supported Games](#supported-games)
@@ -27,7 +28,6 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 - [Game-Specific Notes](#game-specific-notes)
 - [Documentation &amp; Reference Links](#documentation--reference-links)
 - [Contributing](#contributing)
-- [Licence](#licence)
 
 ---
 

@@ -38,6 +38,7 @@ MODULES = [
     pytest.param(PC_SM_MetaData, id="PC_SM"),
     pytest.param(PC_UDP_MetaData, id="PC_UDP"),
     pytest.param(PC2_MetaData, id="PC2"),
+    pytest.param(PC2_MetaData, id="IRacing"),
 ]
 # ---------------------------------------------------------------------------
 # Enum Validation
@@ -221,5 +222,8 @@ def all_packet_structs(meta_data_cls: type) -> Iterable[type]:
                 yield struct_cls
 
 def field_names(struct_cls: type) -> list[str]:
-    """Return the declared field names of a ctypes Structure/Union."""
-    return [name for name, *_ in struct_cls._fields_]
+    """Return field names declared by a ctypes class and its bases."""
+    names = []
+    for base in reversed(struct_cls.__mro__):
+        names.extend(name for name, *_ in getattr(base, "_fields_", ()))
+    return names

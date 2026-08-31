@@ -285,6 +285,32 @@ class TestDynamicIngest:
         assert result.y == 9
         assert result.inner.x == 7
 
+    def test_inherited_fields(self):
+        class Parent(ctypes.Structure):
+            _fields_ = [("rpm", ctypes.c_float)]
+
+        class Child(Parent):
+            _fields_ = [("speed", ctypes.c_float)]
+
+        packet = Child(rpm=3500.0, speed=100.0)
+        result = dynamic_ingest(packet)
+
+        assert result.rpm == round(3500.0, 5)
+        assert result.speed == round(100.0, 5)
+
+    def test_inherited_enum_mapping(self):
+        class Parent(ctypes.Structure):
+            _fields_ = [("colour", ctypes.c_int)]
+            _enums_ = {Colour: ["colour"]}
+
+        class Child(Parent):
+            _fields_ = [("speed", ctypes.c_float)]
+
+        result = dynamic_ingest(Child(colour=2, speed=100.0), enumMode=2)
+
+        assert result.colour == "BLUE"
+        assert result.speed == round(100.0, 5)
+
     def test_ctypes_array_field(self):
         class WithArray(ctypes.Structure):
             _fields_ = [("values", ctypes.c_int * 3)]

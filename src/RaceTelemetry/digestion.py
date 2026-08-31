@@ -174,6 +174,14 @@ def apply_enum(value: Any, enumType: type[Enum] | None, enumMode: int = 0) -> An
 # ---------------------------------------------------------------------------
 
 
+def _packet_fields(packet_cls: type) -> list[tuple]:
+    """Return packet fields declared by the class and its bases in layout order."""
+    fields = []
+    for base_cls in reversed(packet_cls.__mro__):
+        fields.extend(getattr(base_cls, "_fields_", ()))
+    return fields
+
+
 def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamespace | None, enumMode: int = 0) -> SimpleNamespace | None:
     """
     Takes a packet and dynamically ingests it, converting:
@@ -195,7 +203,7 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamesp
         LOGGER.error("Packet %r doesnt contain a _field_ attribute", packetName)
         return newPacket
 
-    attrs = {field[0]: getattr(packet, field[0]) for field in packet._fields_}
+    attrs = {field[0]: getattr(packet, field[0]) for field in _packet_fields(packet.__class__)}
 
     # reverse enum dictionary so attribute references an enum
     inverseEnums = _inverse_enums(packet.__class__)

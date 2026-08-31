@@ -1,10 +1,10 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.FH6_struct import MetaData
+from RaceTelemetry.DataStructures import FH6_MetaData
 
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(FH6_MetaData)
 
 for packet, packetID, headerPacket in telemetry.GetTelemetry():
     if not packet:

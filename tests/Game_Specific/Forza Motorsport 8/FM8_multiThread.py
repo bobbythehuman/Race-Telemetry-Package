@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.FM8_struct import MetaData
+from RaceTelemetry.DataStructures import FM8_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -36,7 +36,7 @@ def displayFormat(worker_id: int, ro_storage, stop_event):
 
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
+activeThreads.updateMeta(FM8_MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayFormat)
 activeThreads.StartTelemetry()
