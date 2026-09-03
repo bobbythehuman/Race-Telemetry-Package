@@ -2,7 +2,7 @@ from __future__ import annotations
 from collections.abc import Callable
 import ctypes
 import struct
-from enum import Flag, StrEnum
+from enum import Flag
 from sys import version_info
 
 
