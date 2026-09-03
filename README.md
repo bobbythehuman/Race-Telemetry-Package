@@ -93,7 +93,7 @@ Data lives in `CentralStorage`, which is protected by thread-safe locking. Worke
 
 ## Usage
 
-The package provides three ways to consume telemetry. All three require `updateMeta(MetaData)` first. Metadata uses UDP and static decoding by default. A metadata class can opt into another combination by setting `transportMode` to `"udp"` or `"shared_memory"` and `decoderMode` to `"static"` or `"iracing_dynamic"` before you start telemetry.
+The package provides three ways to consume telemetry. All three require `updateMeta(MetaData)` first. Metadata uses UDP and static decoding by default. A metadata class can opt into another combination by setting `receiverMode` to `"udp"` or `"shared_memory"` and `decoderMode` to `"static"` or `"iracing_dynamic"` before you start telemetry.
 
 More examples: [`tests/Game_Specific`](tests/Game_Specific)
 

@@ -54,7 +54,7 @@ class UDPReceiver:
             LOGGER.info("Calling handshake function for stop.")
             self.config.handshake_func[1](sock, handShakeDestination)
 
-    def retreive_packets(self) -> Generator[bytes | Any]:
+    def retreive_packets(self) -> Generator[bytes | Any | None]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
         """
@@ -94,7 +94,7 @@ class UDPReceiver:
             LOGGER.info("Socket closed.")
         return
 
-    def _process_loop(self, sock: socket.socket) -> bytes | Any:
+    def _process_loop(self, sock: socket.socket) -> bytes | Any | None:
         """
         Helper function to process the main loop of receiving data, handling heartbeats, and retrieving packets.
         Returns a tuple of (packet, packetID, headerPacket) for the received data.
@@ -204,7 +204,7 @@ class SharedMemoryReceiver:
 
         return sharedMemoryInfo
 
-    def retreive_packets(self) -> Generator[bytes | Any]:
+    def retreive_packets(self) -> Generator[bytes | Any | None]:
         """
         Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet from shared memory.
         """

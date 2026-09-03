@@ -211,6 +211,8 @@ class TelemetryManager:
             raise RuntimeError("Telemetry Decoder is not initialized. Call updateMeta() before attempting to start.")
 
         for data in self.receiver_mode_class.retreive_packets():
+            if not data:
+                continue
 
             decodedData, packetID, header = self.decoder_mode_class.decode_packet(data)
 

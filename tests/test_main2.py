@@ -40,6 +40,17 @@ class TestTelemetryGenerator:
         manager.receiver_mode_class.retreive_packets.assert_called_once_with()
         manager.decoder_mode_class.decode_packet.assert_called_once_with(raw_data[0])
 
+    def test_generator_skips_none_before_decoding(self, manager, monkeypatch):
+        expected = (SimpleNamespace(__name__="Packet"), 1, None)
+        manager._fetchReceiver()
+        manager._fetchDecoder()
+        monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
+        manager.receiver_mode_class.retreive_packets = MagicMock(return_value=iter([None, b"raw-packet"]))
+        manager.decoder_mode_class.decode_packet = MagicMock(return_value=expected)
+
+        assert list(manager._telemetry_generator()) == [expected]
+        manager.decoder_mode_class.decode_packet.assert_called_once_with(b"raw-packet")
+
     def test_shared_memory_generator_is_selected_when_enabled(self, manager, monkeypatch):
         raw_data = [b"raw-packet"]
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]

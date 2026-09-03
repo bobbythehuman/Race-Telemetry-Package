@@ -223,6 +223,19 @@ class TestGetUdpPackets:
 
         mock_sock.close.assert_called_once()
 
+    @patch("RaceTelemetry.src.RaceTelemetry.receivers.socket.socket")
+    def test_process_loop_none_is_yielded_after_timeout(self, mock_socket_cls, udp_receiver, supervisor):
+        mock_sock = MagicMock()
+        mock_socket_cls.return_value = mock_sock
+        supervisor._is_still_active.side_effect = [True, False]
+        udp_receiver._process_loop = MagicMock(return_value=None)
+
+        results = list(udp_receiver.retreive_packets())
+
+        assert results == [None]
+        udp_receiver._process_loop.assert_called_once_with(mock_sock)
+        mock_sock.close.assert_called_once()
+
 
 # ---------------------------------------------------------------------------
 # UDPReceiver._process_loop
