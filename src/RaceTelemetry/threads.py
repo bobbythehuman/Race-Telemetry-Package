@@ -21,7 +21,9 @@ class ThreadSupervisor:
         self.manually_stopped: bool = False
 
         self.network_thread: threading.Thread | None = None
-        self.worker_threads: dict[int, threading.Thread] = {}
+
+        self.worker_threads: dict[int, threading.Thread] = {}  # holds info about active/ready threads
+        self._worker_specs: dict[int, tuple[Callable[..., Any], ReadOnlyStorage]] = {}  # holds info about func ready to be used in threads
 
         self.workers_are_working: bool = False
         self.thread_count: int = 0
@@ -55,6 +57,7 @@ class ThreadSupervisor:
             daemon=True,
         )
         self.worker_threads.update({self.thread_count: workerThread})
+        self._worker_specs[self.thread_count] = (mainFunc, ro_storage)
         LOGGER.debug("New worker thread added, %r", mainFunc.__name__)
         return True
 
@@ -86,6 +89,8 @@ class ThreadSupervisor:
         Does not start if metadata is not set or if IP is not set (for network thread)
         """
 
+        self._trigger_stop(False)
+
         self.network_thread = threading.Thread(
             target=network_target,
             kwargs={},
@@ -95,7 +100,13 @@ class ThreadSupervisor:
         self.network_thread.start()
         LOGGER.debug("Network thread started.")
 
-        for workerName, workerThread in self.worker_threads.items():
+        for workerName, (workerFunc, ro_storage) in self._worker_specs.items():
+            workerThread = threading.Thread(
+                target=workerFunc,
+                kwargs={"worker_id": workerName, "ro_storage": ro_storage, "stop_event": self.stop_event},
+                daemon=True,
+            )
+            self.worker_threads[workerName] = workerThread
             workerThread.start()
 
         self.workers_are_working = True

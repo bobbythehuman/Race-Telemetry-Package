@@ -232,6 +232,29 @@ class TestStartThreads:
         supervisor.network_thread.join(timeout=1)
         supervisor.worker_threads[1].join(timeout=1)
 
+    def test_start_threads_can_restart_after_stop(self, supervisor, fake_ro_storage):
+        started = threading.Event()
+
+        def network_target():
+            started.set()
+            supervisor.stop_event.wait(1)
+
+        supervisor.add_worker_thread(dummy_worker, fake_ro_storage)
+        supervisor._start_threads(network_target)
+        first_worker = supervisor.worker_threads[1]
+        assert started.wait(timeout=1) is True
+        supervisor._stop_threads()
+
+        started.clear()
+        supervisor._start_threads(network_target)
+
+        assert supervisor.stop_event.is_set() is False
+        assert supervisor.worker_threads[1] is not first_worker
+        assert started.wait(timeout=1) is True
+        assert supervisor.worker_threads[1].is_alive()
+
+        supervisor._stop_threads()
+
     def test_start_threads_with_no_workers_still_starts_network(self, supervisor):
         started = threading.Event()
 
