@@ -10,7 +10,7 @@ from sys import version_info
 try:
     from Crypto.Cipher import Salsa20 as s20
 except ImportError:
-    print("Cant use GT7 struct! Install pycryptodome. 'pip install pycryptodome'")
+    s20 = None
 
 
 if version_info < (3, 11):
@@ -190,6 +190,12 @@ def heartBeat(socket, destination: tuple[int, int], msg = b'C'):
 ### * Decryption
 
 def decrypt_data(raw: bytes) -> bytes:
+    if s20 is None:
+        raise ImportError(
+            "GT7 telemetry requires pycryptodome. Install it with "
+            "'pip install RaceTelemetry[gt7]'."
+        )
+
     def detect_packet_version(data: bytes) -> str:
         size = len(data)
         return {296: 'A', 316: 'B', 344: '~', 368: 'C'}.get(size, ' ')

@@ -29,6 +29,14 @@ classifiers = [
 license = "LGPL-2.1"
 license-files = ["LICENSE"]
 
+[project.optional-dependencies]
+iracing = [
+    "PyYAML>=6.0",
+]
+gt7 = [
+    "pycryptodome>=3.20",
+]
+
 
 [project.urls]
 Homepage = "https://github.com/bobbythehuman/Race-Telemetry-Package"

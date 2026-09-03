@@ -37,6 +37,18 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 pip install RaceTelemetry
 ```
 
+For iRacing support, install the optional dependency as well:
+
+```shell
+pip install "RaceTelemetry[iracing]"
+```
+
+For Gran Turismo 7 support, install the optional dependency as well:
+
+```shell
+pip install "RaceTelemetry[gt7]"
+```
+
 ```python
 from RaceTelemetry import TelemetryManager
 from RaceTelemetry.DataStructures import F1_2024_MetaData

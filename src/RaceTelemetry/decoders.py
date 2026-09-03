@@ -144,6 +144,12 @@ class IracingDynamicDecoder:
         self._session_info: dict | None = None
         self._session_info_update: int = -1
 
+        try:
+            import yaml
+        except ImportError:
+            LOGGER.critical("PyYAML is not installed. Session info parsing will be disabled.")
+            raise ImportError("IRacing telemetry requires pyYaml. Install it with " "'pip install RaceTelemetry[iracing]'.")
+
         LOGGER.debug("IracingDynamicDecoder initialised")
 
     # ---- public API, matches your existing decoder interface ------------
