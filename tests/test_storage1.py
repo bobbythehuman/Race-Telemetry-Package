@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..src.RaceTelemetry.storage import (
+from src.RaceTelemetry.storage import (
     CentralStorage,
     ReadOnlyStorage,
 )

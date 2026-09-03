@@ -27,7 +27,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ..src.RaceTelemetry.decoders import StaticDecoding
+from src.RaceTelemetry.decoders import StaticDecoding
+from src.RaceTelemetry.config import TelemetryConfig
 
 # --------------------------------------------------------------------------
 # ctypes packet structures used across the suite
@@ -325,8 +326,6 @@ class TestErrorHandling:
 
 class TestIntegrationWithTelemetryConfig:
     def test_decoder_end_to_end_using_real_config(self):
-        from ..src.RaceTelemetry.config import TelemetryConfig
-
         # NOTE: decode_packet matches/decodes against the FULL buffer (header
         # included), so the registered struct must be sized for
         # header + payload, not payload alone.

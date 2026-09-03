@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ..src.RaceTelemetry.main import TelemetryManager
+from src.RaceTelemetry.main import TelemetryManager
 
 
 class Packet:
@@ -32,7 +32,7 @@ class TestTelemetryGenerator:
         expected = [(SimpleNamespace(__name__="Packet"), 1, None)]
         manager._fetchReceiver()
         manager._fetchDecoder()
-        monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
+        monkeypatch.setattr("src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
         manager.receiver_mode_class.retreive_packets = MagicMock(return_value=iter(raw_data))
         manager.decoder_mode_class.decode_packet = MagicMock(return_value=expected[0])
 
@@ -44,7 +44,7 @@ class TestTelemetryGenerator:
         expected = (SimpleNamespace(__name__="Packet"), 1, None)
         manager._fetchReceiver()
         manager._fetchDecoder()
-        monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
+        monkeypatch.setattr("src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
         manager.receiver_mode_class.retreive_packets = MagicMock(return_value=iter([None, b"raw-packet"]))
         manager.decoder_mode_class.decode_packet = MagicMock(return_value=expected)
 
@@ -63,7 +63,7 @@ class TestTelemetryGenerator:
         manager.updateMeta(shared_memory_metadata)
         manager._fetchReceiver()
         manager._fetchDecoder()
-        monkeypatch.setattr("RaceTelemetry.src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
+        monkeypatch.setattr("src.RaceTelemetry.main.dynamic_ingest", lambda value, *args: value)
         manager.receiver_mode_class.retreive_packets = MagicMock(return_value=iter(raw_data))
         manager.decoder_mode_class.decode_packet = MagicMock(return_value=expected[0])
 

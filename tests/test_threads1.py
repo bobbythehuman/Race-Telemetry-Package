@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ..src.RaceTelemetry.threads import (
+from src.RaceTelemetry.threads import (
     ThreadSupervisor,
 )
 

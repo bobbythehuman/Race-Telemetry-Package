@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
-from ..src.RaceTelemetry.decoders import IracingDynamicDecoder, StaticDecoding
-from ..src.RaceTelemetry.receivers import SharedMemoryReceiver, UDPReceiver
+from src.RaceTelemetry.main import CentralStorage, ReadOnlyStorage, TelemetryManager
+from src.RaceTelemetry.decoders import IracingDynamicDecoder, StaticDecoding
+from src.RaceTelemetry.receivers import SharedMemoryReceiver, UDPReceiver
 
 
 class Packet:
@@ -154,7 +154,6 @@ class TestTelemetryManager:
         manager.config.all_shared_memory_names = "$testLocation"
         assert manager.useSharedMemory(True) is True
         assert manager.use_shared_memory is True
-
 
     def test_configuration_methods_delegate_to_config(self, manager):
         assert manager.updateLocalIP("192.168.1.10") is True

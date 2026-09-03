@@ -29,7 +29,7 @@ from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
 
-from ..src.RaceTelemetry.receivers import (
+from src.RaceTelemetry.receivers import (
     SharedMemoryReceiver,
     UDPReceiver,
 )
@@ -178,7 +178,7 @@ class TestGetUdpPackets:
         with pytest.raises(ValueError, match="Destination IP"):
             next(udp_receiver.retreive_packets())
 
-    @patch("RaceTelemetry.src.RaceTelemetry.receivers.socket.socket")
+    @patch("src.RaceTelemetry.receivers.socket.socket")
     def test_happy_path_binds_handshakes_and_yields_expected_number_of_packets(self, mock_socket_cls, udp_receiver, supervisor):
         mock_sock = MagicMock()
         mock_socket_cls.return_value = mock_sock
@@ -201,7 +201,7 @@ class TestGetUdpPackets:
         stop_fn.assert_called_once_with(mock_sock, ("10.0.0.5", 20778))
         mock_sock.close.assert_called_once()
 
-    @patch("RaceTelemetry.src.RaceTelemetry.receivers.socket.socket")
+    @patch("src.RaceTelemetry.receivers.socket.socket")
     def test_bind_failure_triggers_supervisor_stop_and_skips_loop(self, mock_socket_cls, udp_receiver, supervisor):
         mock_sock = MagicMock()
         mock_sock.bind.side_effect = OSError("Only one usage of each socket address")
@@ -213,7 +213,7 @@ class TestGetUdpPackets:
         supervisor._trigger_stop.assert_called_once()
         mock_sock.close.assert_called_once()  # finally block still runs
 
-    @patch("RaceTelemetry.src.RaceTelemetry.receivers.socket.socket")
+    @patch("src.RaceTelemetry.receivers.socket.socket")
     def test_socket_closed_even_if_never_active(self, mock_socket_cls, udp_receiver, supervisor):
         mock_sock = MagicMock()
         mock_socket_cls.return_value = mock_sock
@@ -223,7 +223,7 @@ class TestGetUdpPackets:
 
         mock_sock.close.assert_called_once()
 
-    @patch("RaceTelemetry.src.RaceTelemetry.receivers.socket.socket")
+    @patch("src.RaceTelemetry.receivers.socket.socket")
     def test_process_loop_none_is_yielded_after_timeout(self, mock_socket_cls, udp_receiver, supervisor):
         mock_sock = MagicMock()
         mock_socket_cls.return_value = mock_sock
@@ -355,7 +355,7 @@ class TestSharedMemoryTransportInit:
 
 
 class TestConnectMap:
-    @patch("RaceTelemetry.src.RaceTelemetry.receivers.mmap.mmap")
+    @patch("src.RaceTelemetry.receivers.mmap.mmap")
     def test_without_struct_uses_max_packet_size(self, mock_mmap_cls, sm_receiver, config):
         mock_map = MagicMock()
         mock_mmap_cls.return_value = mock_map
@@ -367,7 +367,7 @@ class TestConnectMap:
         mock_mmap_cls.assert_called_once_with(-1, 1500, tagname="MyMap", access=ANY)
         assert result == {mock_map: 1500}
 
-    @patch("RaceTelemetry.src.RaceTelemetry.receivers.mmap.mmap")
+    @patch("src.RaceTelemetry.receivers.mmap.mmap")
     def test_with_struct_uses_packet_size_for_that_struct(self, mock_mmap_cls, sm_receiver, config):
         mock_map = MagicMock()
         mock_mmap_cls.return_value = mock_map

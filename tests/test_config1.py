@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from ..src.RaceTelemetry.config import TelemetryConfig
+from src.RaceTelemetry.config import TelemetryConfig
 
 # --------------------------------------------------------------------------
 # Helpers / fixtures

@@ -3,11 +3,12 @@ Pattern-level tests that apply to every `<GAME>_struct.py` module.
 
 Verifies enums are setup correctly
 """
+
 from __future__ import annotations
 import pytest
 from typing import Iterable
 
-from ..src.RaceTelemetry.DataStructures import *
+from src.RaceTelemetry.DataStructures import *
 
 MODULES = [
     pytest.param(AC_SM_MetaData, id="AC_SM"),
@@ -44,6 +45,7 @@ MODULES = [
 # Enum Validation
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("module", MODULES)
 class TestEnumValidity:
     """Verify that all enums used in struct definitions are correctly set up
@@ -52,30 +54,25 @@ class TestEnumValidity:
     def test_enum_types_are_valid(self, module):
         """All enum types referenced in _enums_ must be actual enum classes."""
         import enum
-        
+
         for struct_cls in all_packet_structs(module):
             enums = getattr(struct_cls, "_enums_", None)
             if not enums:
                 continue
-            
+
             for enum_type in enums.keys():
                 # Check it's actually an enum type (IntEnum, Flag, StrEnum, etc.)
-                assert isinstance(enum_type, type), (
-                    f"{struct_cls.__name__}._enums_ references {enum_type!r}, "
-                    f"which is not a type"
-                )
+                assert isinstance(enum_type, type), f"{struct_cls.__name__}._enums_ references {enum_type!r}, " f"which is not a type"
                 # Allow for enum types or enums with a different MRO
                 try:
                     assert issubclass(enum_type, enum.Enum), (
-                        f"{struct_cls.__name__}._enums_ references {enum_type.__name__}, "
-                        f"which is not an Enum subclass"
+                        f"{struct_cls.__name__}._enums_ references {enum_type.__name__}, " f"which is not an Enum subclass"
                     )
                 except TypeError:
                     # In rare cases, the enum might have an unusual MRO
                     # At minimum, verify it has expected enum attributes
-                    assert hasattr(enum_type, '__members__') or hasattr(enum_type, '_member_names_'), (
-                        f"{struct_cls.__name__}._enums_ references {enum_type.__name__}, "
-                        f"which doesn't look like an Enum"
+                    assert hasattr(enum_type, "__members__") or hasattr(enum_type, "_member_names_"), (
+                        f"{struct_cls.__name__}._enums_ references {enum_type.__name__}, " f"which doesn't look like an Enum"
                     )
 
     def test_enum_members_are_accessible(self, module):
@@ -84,23 +81,21 @@ class TestEnumValidity:
             enums = getattr(struct_cls, "_enums_", None)
             if not enums:
                 continue
-            
+
             for enum_type, field_names_list in enums.items():
                 # Try to get members - handle both standard enums and custom implementations
-                members = getattr(enum_type, '__members__', None)
+                members = getattr(enum_type, "__members__", None)
                 if members is None:
-                    members = getattr(enum_type, '_member_names_', None)
+                    members = getattr(enum_type, "_member_names_", None)
                 if members is None:
                     # Skip if we can't find members
                     pytest.skip(f"Cannot determine members for {enum_type.__name__}")
-                
+
                 # Verify we can access each enum member
                 member_list = members if isinstance(members, (list, tuple)) else members.keys()
                 for member_name in member_list:
                     member = getattr(enum_type, member_name, None)
-                    assert member is not None, (
-                        f"{enum_type.__name__}.{member_name} is None"
-                    )
+                    assert member is not None, f"{enum_type.__name__}.{member_name} is None"
 
     def test_enum_has_members(self, module):
         """All enum types used must have at least one member."""
@@ -108,56 +103,50 @@ class TestEnumValidity:
             enums = getattr(struct_cls, "_enums_", None)
             if not enums:
                 continue
-            
+
             for enum_type in enums.keys():
                 # Try to get members - handle both standard enums and custom implementations
-                members = getattr(enum_type, '__members__', None)
+                members = getattr(enum_type, "__members__", None)
                 if members is None:
-                    members = getattr(enum_type, '_member_names_', None)
+                    members = getattr(enum_type, "_member_names_", None)
                 if members is None:
                     # Skip if we can't determine members (unusual enum implementation)
                     pytest.skip(f"Cannot determine members for {enum_type.__name__}")
-                
+
                 members_list = members if isinstance(members, (list, tuple)) else list(members.keys())
-                assert members_list, (
-                    f"{enum_type.__name__} has no members defined"
-                )
+                assert members_list, f"{enum_type.__name__} has no members defined"
 
     def test_strenum_compatibility(self, module):
         """StrEnum fields should be strings and work correctly if used."""
         from sys import version_info
-        
+
         # Only test if Python 3.11+
         if version_info < (3, 11):
             pytest.skip("StrEnum requires Python 3.11+")
-        
+
         from enum import StrEnum
-        
+
         for struct_cls in all_packet_structs(module):
             enums = getattr(struct_cls, "_enums_", None)
             if not enums:
                 continue
-            
+
             for enum_type, field_names_list in enums.items():
                 # Check if it's a StrEnum
                 try:
                     is_str_enum = issubclass(enum_type, StrEnum)
                 except TypeError:
                     is_str_enum = False
-                
+
                 if is_str_enum:
-                    members = getattr(enum_type, '__members__', {})
+                    members = getattr(enum_type, "__members__", {})
                     for member_name, member in members.items():
                         # StrEnum members should be strings
                         assert isinstance(member.value, str), (
-                            f"{enum_type.__name__}.{member_name} = {member.value!r} "
-                            f"is not a string (expected StrEnum member)"
+                            f"{enum_type.__name__}.{member_name} = {member.value!r} " f"is not a string (expected StrEnum member)"
                         )
                         # StrEnum member should equal its value
-                        assert member == member.value, (
-                            f"{enum_type.__name__}.{member_name} != its value "
-                            f"({member} vs {member.value!r})"
-                        )
+                        assert member == member.value, f"{enum_type.__name__}.{member_name} != its value " f"({member} vs {member.value!r})"
 
     def test_enum_field_names_are_valid_and_unique_per_enum(self, module):
         """Field names in _enums_ must be valid field names on the struct,
@@ -166,10 +155,10 @@ class TestEnumValidity:
             enums = getattr(struct_cls, "_enums_", None)
             if not enums:
                 continue
-            
+
             declared_fields = set(field_names(struct_cls))
             field_to_enum = {}
-            
+
             for enum_type, names_tuple in enums.items():
                 for field_name in names_tuple:
                     assert field_name in declared_fields, (
@@ -183,13 +172,8 @@ class TestEnumValidity:
                         # (e.g., different parts of a bitfield), but let's at least
                         # verify it's consistent
                         assert field_to_enum[field_name] == enum_type or (
-                            isinstance(field_to_enum[field_name], tuple) and 
-                            enum_type in field_to_enum[field_name]
-                        ), (
-                            f"{struct_cls.__name__}.{field_name} maps to both "
-                            f"{field_to_enum[field_name].__name__} and "
-                            f"{enum_type.__name__}"
-                        )
+                            isinstance(field_to_enum[field_name], tuple) and enum_type in field_to_enum[field_name]
+                        ), (f"{struct_cls.__name__}.{field_name} maps to both " f"{field_to_enum[field_name].__name__} and " f"{enum_type.__name__}")
                     else:
                         field_to_enum[field_name] = enum_type
 
@@ -212,6 +196,8 @@ These modules all follow the same shape:
 This module has no test_ prefix so pytest won't collect it directly - it's
 imported by the real test files.
 """
+
+
 def all_packet_structs(meta_data_cls: type) -> Iterable[type]:
     """Flatten every struct/union type referenced by MetaData.packetInfo."""
     seen = set()
@@ -220,6 +206,7 @@ def all_packet_structs(meta_data_cls: type) -> Iterable[type]:
             if struct_cls not in seen:
                 seen.add(struct_cls)
                 yield struct_cls
+
 
 def field_names(struct_cls: type) -> list[str]:
     """Return field names declared by a ctypes class and its bases."""

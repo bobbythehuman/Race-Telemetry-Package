@@ -13,7 +13,7 @@ from collections.abc import Callable
 
 import pytest
 
-from ..src.RaceTelemetry.DataStructures import *
+from src.RaceTelemetry.DataStructures import *
 
 MODULES = [
     pytest.param(AC_SM_MetaData, id="AC_SM"),
@@ -215,15 +215,12 @@ class TestPacketStructSanity:
             offsets = [getattr(struct_cls, name).offset for name in field_names(struct_cls)]
             assert offsets == sorted(offsets), f"{struct_cls.__name__} fields are not laid out in " "declaration order"
 
+
 @pytest.mark.parametrize("module", INHERITANCEMODULES)
 class TestStructureInheritance:
     def test_data_inherits_packet_fields(self, module):
         packet_structs = set(all_packet_structs(module))
-        derived_structs = [
-            struct_cls
-            for struct_cls in packet_structs
-            if any(base in packet_structs for base in struct_cls.__bases__)
-        ]
+        derived_structs = [struct_cls for struct_cls in packet_structs if any(base in packet_structs for base in struct_cls.__bases__)]
 
         assert derived_structs, f"{module.__name__} has no packet structure inheritance"
 
@@ -233,7 +230,7 @@ class TestStructureInheritance:
             derived_fields = field_definitions(derived_struct)
 
             assert issubclass(derived_struct, base_struct)
-            assert derived_fields[:len(base_fields)] == base_fields
+            assert derived_fields[: len(base_fields)] == base_fields
 
             inherited_field_name = base_fields[0][0]
             packet = derived_struct()
@@ -286,7 +283,7 @@ def assert_no_padding_gaps(struct_cls: type) -> None:
     verifies each field's real offset equals the running total of the sizes
     of the fields before it - i.e. nothing silently shifted due to a type
     change introducing alignment padding despite `_pack_ = 1` being set.
-    
+
     Note: Bit fields (where the tuple has a third element specifying bit width)
     may share a byte with the previous field, so they don't always increment
     the offset.
@@ -297,11 +294,11 @@ def assert_no_padding_gaps(struct_cls: type) -> None:
     running_offset = 0
     prev_was_bit_field = False
     prev_offset = None
-    
+
     for name, field_type, *rest in field_definitions(struct_cls):
         actual = field_offset(struct_cls, name)
         bit_width = rest[0] if rest else None
-        
+
         if bit_width:
             # Bit field: may share a byte with the previous field.
             if prev_was_bit_field and actual == prev_offset:
@@ -313,8 +310,7 @@ def assert_no_padding_gaps(struct_cls: type) -> None:
             else:
                 # Bit field is behind expected position: error
                 raise AssertionError(
-                    f"{struct_cls.__name__}.{name}: bit field at offset {actual}, "
-                    f"but already at {running_offset} (unexpected gap/overlap)"
+                    f"{struct_cls.__name__}.{name}: bit field at offset {actual}, " f"but already at {running_offset} (unexpected gap/overlap)"
                 )
             prev_was_bit_field = True
             prev_offset = actual

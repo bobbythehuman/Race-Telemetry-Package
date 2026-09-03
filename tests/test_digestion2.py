@@ -21,14 +21,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from ..src.RaceTelemetry.digestion import (
+from src.RaceTelemetry.digestion import (
     new_byte_to_string,
     unpack_array,
     apply_enum,
     dynamic_ingest,
     _inverse_enums,
 )
-
 
 # ===========================================================================
 # Shared fixtures / helper ctypes structures & enums
@@ -267,11 +266,14 @@ class TestApplyEnum:
         # conversion applied at all (not even an enum lookup attempt).
         assert apply_enum(1, Colour, enumMode=5) == 1
 
-    @pytest.mark.parametrize("enum_mode,expected", [
-        (0, Colour.RED),
-        (1, 0),
-        (2, "RED"),
-    ])
+    @pytest.mark.parametrize(
+        "enum_mode,expected",
+        [
+            (0, Colour.RED),
+            (1, 0),
+            (2, "RED"),
+        ],
+    )
     def test_enum_modes_parametrized(self, enum_mode, expected):
         assert apply_enum(0, Colour, enumMode=enum_mode) == expected
 
@@ -418,4 +420,3 @@ class TestDynamicIngest:
 
         assert r1.id == 1 and r1.name == "one"
         assert r2.id == 2 and r2.name == "two"
-
