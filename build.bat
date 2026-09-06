@@ -1,5 +1,12 @@
 @echo off
 setlocal enabledelayedexpansion
+set "PYTHON=%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe"
+
+if not exist "%PYTHON%" (
+    echo ERROR: Required Python interpreter was not found:
+    echo   %PYTHON%
+    exit /b 1
+)
 
 echo ============================================
 echo   Python Package Build ^& Upload Script
@@ -95,7 +102,7 @@ REM ---------------------------------------------
 REM 5. Build the package
 REM ---------------------------------------------
 echo Building package...
-python -m build
+"%PYTHON%" -m build
 
 if errorlevel 1 (
     echo.
@@ -126,9 +133,9 @@ echo.
 echo Uploading to %TARGET_NAME%...
 
 if "%TARGET%"=="testpypi" (
-    python -m twine upload --repository testpypi dist/*
+    "%PYTHON%" -m twine upload --repository testpypi dist/*
 ) else (
-    python -m twine upload dist/*
+    "%PYTHON%" -m twine upload dist/*
 )
 
 if errorlevel 1 (
