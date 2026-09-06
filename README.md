@@ -363,6 +363,11 @@ class MetaData:
     # Only needed for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = "Local\\SCSTelemetry"
 
+    # Define the receiver and decoder modes
+    # Only need for shared memory or iRacings dynamic decoding
+    receiverMode: str = "shared_memory"
+    decoderMode: str = "iracing_dynamic"
+
     # Standard packet mapping
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (PacketMotionData,),  # Packet ID: (packet_class,)
@@ -508,7 +513,7 @@ More debugging guides live in [`Supporting_Docs/`](./Supporting_Docs/), includin
 | Project CARS (UDP)            | [Companion App UDP Streaming](https://web.archive.org/web/20200224094755/http://forum.projectcarsgame.com/showthread.php?40113-COMPLETE-Companion-app-UDP-streaming)      |               |
 | Project CARS (shared memory)  | [Shared Memory API discussion](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)       |               |
 | Project CARS 2                | [project-cars-2-udp on GitHub](https://github.com/MacManley/project-cars-2-udp)               |               |
-| iRacing                       | [pyirsdk on GitHub](https://github.com/kutu/pyirsdk)                                          | currently unsupported due to dynamic packet structure |
+| iRacing                       | [pyirsdk on GitHub](https://github.com/kutu/pyirsdk)                                          |               |
 
 
 <!-- - Forza Motorsport 7 — [Data Out feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013) -->
