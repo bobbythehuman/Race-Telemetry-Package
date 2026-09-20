@@ -60,8 +60,9 @@ class TelemetryManager:
 
     def updateMeta(self, MetaData: type) -> None:
         """
-        Call this to update the metadata and reset storage.
+        Call this to update the metadata and reset storage instances if metadata changed.
         Must be called at least once before starting threads.
+        If metadata is unchanged, existing storage instances are reused.
         """
 
         if self.supervisor.workers_are_working:
@@ -82,7 +83,11 @@ class TelemetryManager:
     def updateLocalIP(self, ip: str) -> bool:
         """
         Call this to update the local IP address the server listens on.
-        Default is"""
+        Default is 0.0.0.0
+
+        Args:
+            ip: The IP address to bind the UDP receiver to.
+        """
         return self.config.update_local_ip(ip)
 
     def updateSendIP(self, ip: str) -> bool:
@@ -95,11 +100,10 @@ class TelemetryManager:
     def setEnumMode(self, target: int = 0) -> bool:
         """
         Call this to set the enum mode for handling enum values.
-        Default is 0 (no special handling).
         Modes:
-        0: No special handling (default)
-        1: Convert fields with to the raw value
-        2: Convert fields to their enum name
+        - 0: No special handling (default) - fields remain as enum types
+        - 1: Convert fields with enums to their raw integer value
+        - 2: Convert fields with enums to their named string representation
         """
         return self.config.set_enum_mode(target)
 
@@ -107,8 +111,10 @@ class TelemetryManager:
 
     def useSharedMemory(self, target: bool = False) -> bool:
         """
-        Call this to set receiver mode to shared memory or UDP.
-        Default is False (UDP).
+        Call this to enable shared memory receiver mode instead of UDP.
+
+        Args:
+            target: True to use shared memory, False for UDP. Defaults to False (UDP).
         """
 
         if not isinstance(target, bool):
@@ -126,22 +132,30 @@ class TelemetryManager:
 
     def addWorkerThread(self, mainFunc: Callable[..., Any]) -> bool:
         """
-        Call this to add a worker thread to access the data.
-        The function must accept three keyword arguments:
-        worker_id (int), ro_storage (ReadOnlyStorage), and stop_event (threading.Event).
+        Call this to register a worker thread function for processing telemetry data.
+
+        The registered function must accept three keyword arguments:
+        - worker_id (int): Unique identifier for this worker thread
+        - ro_storage (ReadOnlyStorage): Read-only access to the latest telemetry data
+        - stop_event (threading.Event): Signal to gracefully stop processing
         """
         return self.supervisor.add_worker_thread(mainFunc, self.readOnlyStorage)
 
     def manualStop(self, target: bool) -> bool:
         """
         Manually stop the program, via the terminal.
-        Enter Q to stop the program."""
+        Enter Q into the terminal to stop the program.
+        Args:
+            target: True for terminal shutdown, False to standard shutdown
+        """
         return self.supervisor.manual_stop(target)
 
     def isMultiThreaded(self, target: bool = True) -> bool:
         """
-        Call this to set whether ReadOnlyStorage retrieves data on its own thread.
-        Default is True.
+        Call this to configure whether ReadOnlyStorage retrieves data on a separate thread.
+
+        Args:
+            target: True to enable multi-threaded data retrieval (default), False for single-threaded
         """
         return self.supervisor.is_multi_threaded(target)
 
