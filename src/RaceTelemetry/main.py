@@ -194,27 +194,9 @@ class TelemetryManager:
 
     # -- telemetry -------------------------------------------------------
 
-    def _network_listener(self) -> None:
-        """
-        Listens for incoming network packets and writes them to the active storage.
-        This function runs in a separate thread and should not be called directly.
-        This function is used internally by GetTelemetry() and should not be called directly.
-        This function is used internally by StartTelemetry() and should not be called directly.
-
-        """
-        if self.activeStorage is None:
-            LOGGER.error("Storage instance is not initialized.")
-            raise ValueError("Storage instance is not initialized.")
-
-        for packet, packetID, headerPacket in self._telemetry_generator():
-            # LOGGER.debug("Received packet ID %r", packetID)
-            self.activeStorage._write(packet)
-
     def _telemetry_generator(self) -> Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
         """
         Generator that yields (packet, packetID, headerPacket) tuples for each received packet.
-        This function is used internally by GetTelemetry() and should not be called directly.
-        This function is used internally by _network_listener() and should not be called directly.
         """
         if not self.receiver_mode_class:
             LOGGER.error("Telemetry receiver is not initialized. Call updateMeta() before attempting to start.")
@@ -229,17 +211,47 @@ class TelemetryManager:
                 continue
 
             decodedData, packetID, header = self.decoder_mode_class.decode_packet(data)
-
             header = dynamic_ingest(header)
             cleanedData = dynamic_ingest(decodedData, self.config.enum_mode)
 
             yield cleanedData, packetID, header
-
         return
 
-    def GetTelemetry(self) -> ReadOnlyStorage | Generator[tuple[SimpleNamespace | None, int, SimpleNamespace | None], None, None]:
+    # multi thread loop
+    def _network_listener(self) -> None:
         """
-        Call this to get a generator that yields (packet, packetID, headerPacket) tuples for each received packet.
+        Listens for incoming network packets and writes them to the active storage.
+        This function runs in a separate thread and should not be called directly.
+        """
+        if self.activeStorage is None:
+            LOGGER.error("Storage instance is not initialized.")
+            raise ValueError("Storage instance is not initialized.")
+
+        for packet, packetID, headerPacket in self._telemetry_generator():
+            # LOGGER.debug("Received packet ID %r", packetID)
+            self.activeStorage._write(packet)
+
+    # single thread loop
+    def _single_thread_loop(self) -> Generator[dict[str, Any]]:
+        """
+        A single-threaded loop that processes telemetry packets and yields read-only storage instances.
+        """
+        if self.activeStorage is None:
+            LOGGER.error("Storage instance is not initialized.")
+            raise ValueError("Storage instance is not initialized.")
+
+        if self.readOnlyStorage is None:
+            LOGGER.error("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+            raise RuntimeError("Read-only storage is not initialized. Call updateMeta() before StartTelemetry().")
+
+        for packet, packetID, headerPacket in self._telemetry_generator():
+            # LOGGER.debug("Received packet ID %r", packetID)
+            self.activeStorage._write(packet)
+            yield self.readOnlyStorage.snapshot()
+
+    def GetTelemetry(self) -> ReadOnlyStorage | Generator[dict[str, Any]]:
+        """
+        Call this to get a generator that yields a consistent snapshot of the latest set of data including all packets and the latest packet.
         """
 
         if self.readOnlyStorage is None:
@@ -256,7 +268,7 @@ class TelemetryManager:
 
         else:
             LOGGER.info("Using single-threaded telemetry with generator.")
-            return self._telemetry_generator()
+            return self._single_thread_loop()
 
     def StartTelemetry(self) -> None:
         """

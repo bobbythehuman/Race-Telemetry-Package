@@ -76,8 +76,8 @@ class ReadOnlyStorage:
 
     def __next__(self) -> dict[str, Any]:
         """Returns the latest data snapshot."""
-        return self.snapshot().get("latestData", {"None": None})
+        return self.snapshot()
 
     def snapshot(self) -> dict[str, Any]:
-        """Returns a consistent snapshot of the latest data."""
+        """Returns a consistent snapshot of the latest set of data including all packets and the latest packet."""
         return self._storage.snapshot()
