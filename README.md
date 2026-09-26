@@ -300,6 +300,7 @@ activeThreads.StartTelemetry()
 | `packetInfo`              | `dict[int, tuple[type, ...]]` | Game packet mapping — see below                                                           |
 | `transportMode`           | `str`                         | `"udp"` or `"shared_memory"`; defaults to `"udp"`                                         |
 | `decoderMode`             | `str`                         | `"static"` or `"iracing_dynamic"`; defaults to `"static"`                                 |
+| `commonFieldMap`          | `dict[str, str]`              | Mapping of common field names to their corresponding struct attributes - does not support dynamic field names or nested fields                    |
 
 #### PacketInfo
 
@@ -367,6 +368,18 @@ class MetaData:
     # Only need for shared memory or iRacings dynamic decoding
     receiverMode: str = "shared_memory"
     decoderMode: str = "iracing_dynamic"
+
+    # define a mapping of common field names to their corresponding struct attributes.
+    # This is used to provide a consistent interface across different games and protocols.
+    # Currently, supports the following fields:
+    commonFieldMap = {
+        "speed": "speed",
+        "engineRPM": "rpm",
+        "gear": "gear",
+        "throttle": "throttle",
+        "brake": "brake",
+        "clutch": "clutch",
+    }
 
     # Standard packet mapping
     packetInfo: dict[int, tuple[type, ...]] = {
