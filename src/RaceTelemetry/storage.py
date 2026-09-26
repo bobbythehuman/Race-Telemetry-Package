@@ -20,11 +20,17 @@ class CentralStorage:
         The metadata class is expected to have a `packetInfo` attribute that
         defines the structure of the packets to be stored.
         """
+        self.common_attributes = ["speed", "engineRPM", "gear", "throttle", "brake", "clutch", "steering"]
 
         self._lock = threading.RLock()
 
         self.all_data: dict[str, list] = {}
         self.latest_data: dict[str, Any] = {}
+
+        self.mapped_data = getattr(metadata_cls, "commonFieldMap", {})
+
+        self.all_common_data: SimpleNamespace = self._create_data_object(self.common_attributes, default_value=list)
+        self.latest_common_data: SimpleNamespace = self._create_data_object(self.common_attributes)
 
         for _packet_id, packet_structs in metadata_cls.packetInfo.items():
             for packet_struct in packet_structs:
@@ -35,14 +41,36 @@ class CentralStorage:
 
         LOGGER.debug("CentralStorage initialized with metadata: %r", metadata_cls.__name__)
 
+    def _create_data_object(self, attributes: list[str], default_value: Any = None) -> SimpleNamespace:
+        data = SimpleNamespace()
+        for attr in attributes:
+            value = default_value() if callable(default_value) else default_value
+            setattr(data, attr, value)
+        return data
+
+    def _copy_data_object(self, data: SimpleNamespace, copy_lists: bool = False) -> SimpleNamespace:
+        copied = SimpleNamespace()
+        for attribute, value in vars(data).items():
+            setattr(copied, attribute, value.copy() if copy_lists else value)
+        return copied
+
     def _write(self, data: SimpleNamespace | None) -> None:
         """Called only by the network thread."""
         with self._lock:
             if data:
+                # Retrieve packet name
                 packet_name = data.__name__
 
+                # Store packet data
                 self.all_data[packet_name].append(data)
                 self.latest_data[packet_name] = data
+
+                # Store common data if present
+                for common_key, mapped_key in self.mapped_data.items():
+                    if common_key in self.common_attributes and hasattr(data, mapped_key):
+                        value = getattr(data, mapped_key)
+                        getattr(self.all_common_data, common_key).append(value)
+                        setattr(self.latest_common_data, common_key, value)
 
     def snapshot(self) -> dict[str, Any]:
         """
@@ -56,6 +84,8 @@ class CentralStorage:
             return {
                 "allData": self.all_data.copy(),
                 "latestData": self.latest_data.copy(),
+                "allCommonData": self._copy_data_object(self.all_common_data, copy_lists=True),
+                "latestCommonData": self._copy_data_object(self.latest_common_data),
             }
 
 

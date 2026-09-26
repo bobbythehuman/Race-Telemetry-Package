@@ -30,12 +30,19 @@ class PacketB:
     """Stand-in for a real packet struct class."""
 
 
-def make_metadata_cls(packet_info: dict) -> type:
+def make_metadata_cls(packet_info: dict, common_field_map: dict | None = None) -> type:
     """
     Build a throwaway class exposing a `packetInfo` attribute, mimicking
     the `metadata_cls` argument CentralStorage expects.
     """
-    return type("FakeMeta", (), {"packetInfo": packet_info})
+    return type(
+        "FakeMeta",
+        (),
+        {
+            "packetInfo": packet_info,
+            "commonFieldMap": common_field_map or {},
+        },
+    )
 
 
 def make_packet(name: str, **extra) -> SimpleNamespace:
@@ -48,6 +55,28 @@ def make_packet(name: str, **extra) -> SimpleNamespace:
     return ns
 
 
+def expected_common_data(storage, values: dict[str, object] | None = None) -> SimpleNamespace:
+    """Build common-data expectations from the storage's configured fields."""
+    values = values or {}
+    return SimpleNamespace(
+        **{
+            attribute: values.get(attribute, [])
+            for attribute in storage.common_attributes
+        }
+    )
+
+
+def expected_latest_common_data(storage, values: dict[str, object] | None = None) -> SimpleNamespace:
+    """Build latest common-data expectations from the storage's configured fields."""
+    values = values or {}
+    return SimpleNamespace(
+        **{
+            attribute: values.get(attribute)
+            for attribute in storage.common_attributes
+        }
+    )
+
+
 @pytest.fixture
 def metadata_cls():
     """Two packet ids, three packet classes, one name duplicated across ids."""
@@ -55,7 +84,8 @@ def metadata_cls():
         {
             1: [PacketA],
             2: [PacketB, PacketA],  # PacketA duplicated on purpose
-        }
+        },
+        {"speed": "speed", "engineRPM": "rpm", "gear": "gear"},
     )
 
 
@@ -78,12 +108,26 @@ class TestCentralStorageHappyPath:
         assert storage.all_data["PacketA"] == []
         assert storage.latest_data["PacketA"] is None
 
+    def test_init_starts_common_data_empty(self, storage):
+        assert storage.all_common_data == expected_common_data(storage)
+        assert storage.latest_common_data == expected_latest_common_data(storage)
+
     def test_write_appends_and_updates_latest(self, storage):
-        pkt = make_packet("PacketA", speed=100)
+        pkt = make_packet("PacketA", speed=100, rpm=8_000, gear=3)
         storage._write(pkt)
 
         assert storage.all_data["PacketA"] == [pkt]
         assert storage.latest_data["PacketA"] is pkt
+        expected_values = {
+            common_key: getattr(pkt, mapped_key)
+            for common_key, mapped_key in storage.mapped_data.items()
+            if common_key in storage.common_attributes and hasattr(pkt, mapped_key)
+        }
+        assert storage.all_common_data == expected_common_data(
+            storage,
+            {common_key: [value] for common_key, value in expected_values.items()},
+        )
+        assert storage.latest_common_data == expected_latest_common_data(storage, expected_values)
 
     def test_write_multiple_appends_in_order(self, storage):
         pkt1 = make_packet("PacketA", lap=1)
@@ -96,17 +140,29 @@ class TestCentralStorageHappyPath:
 
     def test_snapshot_shape_and_keys(self, storage):
         snap = storage.snapshot()
-        assert set(snap.keys()) == {"allData", "latestData"}
+        assert set(snap.keys()) == {"allData", "latestData", "allCommonData", "latestCommonData"}
         assert snap["allData"] == storage.all_data
         assert snap["latestData"] == storage.latest_data
+        assert snap["allCommonData"] == storage.all_common_data
+        assert snap["latestCommonData"] == storage.latest_common_data
 
     def test_snapshot_reflects_writes(self, storage):
-        pkt = make_packet("PacketB", rpm=8000)
+        pkt = make_packet("PacketB", rpm=8000, speed=120, gear=4)
         storage._write(pkt)
         snap = storage.snapshot()
 
         assert snap["latestData"]["PacketB"] is pkt
         assert snap["allData"]["PacketB"] == [pkt]
+        expected_values = {
+            common_key: getattr(pkt, mapped_key)
+            for common_key, mapped_key in storage.mapped_data.items()
+            if common_key in storage.common_attributes and hasattr(pkt, mapped_key)
+        }
+        assert snap["allCommonData"] == expected_common_data(
+            storage,
+            {common_key: [value] for common_key, value in expected_values.items()},
+        )
+        assert snap["latestCommonData"] == expected_latest_common_data(storage, expected_values)
 
 
 # --------------------------------------------------------------------------
@@ -144,6 +200,17 @@ class TestCentralStorageEdgeCases:
         # affect the original, proving the outer dict itself was copied.
         del snap["allData"]["PacketA"]
         assert "PacketA" in storage.all_data
+
+    def test_snapshot_copies_common_data_lists(self, storage):
+        common_key = next(iter(storage.common_attributes))
+        mapped_key = storage.mapped_data[common_key]
+        storage._write(make_packet("PacketA", **{mapped_key: 100}))
+        snap = storage.snapshot()
+
+        getattr(snap["allCommonData"], common_key).append("mutated")
+
+        assert getattr(snap["allCommonData"], common_key) == [100, "mutated"]
+        assert getattr(storage.all_common_data, common_key) == [100]
 
     def test_write_unknown_packet_name_raises_keyerror(self, storage):
         rogue = make_packet("NotRegisteredPacket")
@@ -229,13 +296,27 @@ class TestReadOnlyStorage:
 
     def test_next_returns_latest_data_dict(self, storage):
         ro = ReadOnlyStorage(storage)
+        
         first = next(ro)
-        assert first == {"PacketA": None, "PacketB": None}
+        expected1 = {
+            "allData": {"PacketA": [], "PacketB": []},
+            "latestData": {"PacketA": None, "PacketB": None},
+            "allCommonData": expected_common_data(storage),
+            "latestCommonData": expected_latest_common_data(storage),
+        }
+        assert first == expected1
 
         pkt = make_packet("PacketB", n=1)
         storage._write(pkt)
+        
         second = next(ro)
-        assert second["PacketB"] is pkt
+        expected2 = {
+            "allData": {"PacketA": [], "PacketB": [pkt]},
+            "latestData": {"PacketA": None, "PacketB": pkt},
+            "allCommonData": expected_common_data(storage),
+            "latestCommonData": expected_latest_common_data(storage),
+        }
+        assert second == expected2
 
     def test_repeated_iteration_never_raises_stopiteration(self, storage):
         ro = ReadOnlyStorage(storage)

@@ -78,13 +78,20 @@ class TestTelemetryGenerator:
 
 
 class TestGetTelemetry:
-    def test_single_threaded_mode_returns_transport_generator(self, manager):
+    def test_single_threaded_mode_yields_storage_snapshots(self, manager):
         manager.supervisor.multi_threaded = False
-        manager._telemetry_generator = MagicMock(return_value=iter([("packet", 1, None)]))
+        packet = SimpleNamespace(__name__="Packet", value=1)
+        manager._telemetry_generator = MagicMock(return_value=iter([(packet, 1, None)]))
 
         result = manager.GetTelemetry()
+        snapshots = list(result)
 
-        assert list(result) == [("packet", 1, None)]
+        assert len(snapshots) == 1
+        snapshot = snapshots[0]
+        assert snapshot["allData"]["Packet"] == [packet]
+        assert snapshot["latestData"]["Packet"] is packet
+        assert snapshot["allCommonData"] == manager.activeStorage.all_common_data
+        assert snapshot["latestCommonData"] == manager.activeStorage.latest_common_data
         manager._telemetry_generator.assert_called_once_with()
 
     def test_multi_threaded_mode_starts_supervisor_and_returns_storage(self, manager):

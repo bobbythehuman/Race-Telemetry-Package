@@ -64,7 +64,7 @@ def _convert_value(value: Any) -> Any:
 
     else:
         # Anything left over is assumed to be a nested Structure/Union.
-        LOGGER.info("Unknown value, assuming it is a class %r", value)
+        LOGGER.debug("Unknown value, assuming it is a class %r", value)
         return dynamic_ingest(value)
 
 
@@ -214,7 +214,7 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamesp
         value = _convert_value(value)
 
         if source_attr in inverseEnums:
-            all_enum_type = inverseEnums.get(source_attr)
+            all_enum_type = list(inverseEnums.get(source_attr))
 
             if len(all_enum_type) > 1:
                 LOGGER.critical("Multiple enum types found for attribute '%r': %r. Cannot determine which one to use.", source_attr, all_enum_type)

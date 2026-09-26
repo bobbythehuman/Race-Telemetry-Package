@@ -249,6 +249,8 @@ class TelemetryManager:
             self.activeStorage._write(packet)
             yield self.readOnlyStorage.snapshot()
 
+    # -- user controls -------------------------------------------------------
+
     def GetTelemetry(self) -> ReadOnlyStorage | Generator[dict[str, Any]]:
         """
         Call this to get a generator that yields a consistent snapshot of the latest set of data including all packets and the latest packet.
