@@ -338,6 +338,17 @@ class MetaData:
     # define the receiver and decoder modes
     receiverMode: str = "shared_memory"
 
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "mSpeed",
+        "engineRPM": "mRpm",
+        "gear": "mGear",
+        "throttle": "mThrottle",
+        "brake": "mBrake",
+        "clutch": "mClutch",
+        "steering": "mSteering",
+    }
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (mTelemetryData, mParticipantInfo, ),

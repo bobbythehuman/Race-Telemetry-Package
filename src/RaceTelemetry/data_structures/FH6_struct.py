@@ -5,7 +5,8 @@ import ctypes
 
 # source
 # https://support.forza.net/hc/en-us/articles/51744149102611-Forza-Horizon-6-Data-Out-Documentation
-
+# https://github.com/himpson/ForzaHorizon6
+# https://gist.github.com/HDR
 
 class DataTypes:
     STRUCTURE = ctypes.LittleEndianStructure
@@ -156,6 +157,17 @@ class MetaData:
     
     # use for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = None
+    
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "Speed",
+        "engineRPM": "CurrentEngineRpm",
+        "gear": "Gear",
+        "throttle": "Accel",
+        "brake": "Brake",
+        "clutch": "Clutch",
+        "steering": "Steer",
+    }
     
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {

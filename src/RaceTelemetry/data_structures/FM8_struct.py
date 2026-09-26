@@ -171,6 +171,17 @@ class MetaData:
     # use for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = None
     
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "Speed",
+        "engineRPM": "CurrentEngineRpm",
+        "gear": "Gear",
+        "throttle": "Accel",
+        "brake": "Brake",
+        "clutch": "Clutch",
+        "steering": "Steer",
+    }
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (SledData, DashData,),
