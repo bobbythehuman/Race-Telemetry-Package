@@ -232,6 +232,17 @@ class MetaData:
     # define the receiver and decoder modes
     receiverMode: str = "shared_memory"
     
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "speedKmh",
+        "engineRPM": "rpm",
+        "gear": "gear",
+        "throttle": "gas",
+        "brake": "brake",
+        "clutch": "clutch",
+        "steering": "steerAngle",
+    }
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (SPageFileStaticData, SPageFilePhysicsData, SPageFileGraphicData),

@@ -537,6 +537,17 @@ class MetaData:
             "SPageFileStaticEvoData": "Local\\acevo_pmf_static",
         }
     
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "speedKmh",
+        "engineRPM": "rpms",
+        "gear": "gear",
+        "throttle": "gas",
+        "brake": "brake",
+        "clutch": "clutch",
+        "steering": "steerAngle",
+    }
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (SPageFilePhysicsData, SPageFileGraphicEvoData, SPageFileStaticEvoData,),

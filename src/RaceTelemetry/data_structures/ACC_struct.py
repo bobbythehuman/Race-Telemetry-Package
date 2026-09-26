@@ -381,6 +381,17 @@ class MetaData:
             "SPageFileStaticData": "Local\\acpmf_static",
         }
     
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "speedKmh",
+        "engineRPM": "rpm",
+        "gear": "gear",
+        "throttle": "gas",
+        "brake": "brake",
+        "clutch": "clutch",
+        "steering": "steerAngle",
+    }
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (SPageFilePhysicsData, SPageFileGraphicData, SPageFileStaticData, ),
