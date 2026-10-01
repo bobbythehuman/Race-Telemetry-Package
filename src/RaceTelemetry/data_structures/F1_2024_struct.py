@@ -1019,7 +1019,7 @@ class PacketEventData(DataTypes.STRUCTURE):
     _enums_: dict[type, tuple[str, ...]] = {
         EVENT_STRING_CODE: ("m_eventStringCode",),
     }
-    _union_discriminators_ = {
+    _union_discriminators_: dict[str, tuple[str, dict[str, str]]] = {
         "m_eventDetails": ("m_eventStringCode", {
             "FTLP": "m_fastestLap",
             "RTMT": "m_retirement",

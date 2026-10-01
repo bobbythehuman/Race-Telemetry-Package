@@ -767,6 +767,21 @@ class PacketEventData(DataTypes.STRUCTURE):
     _enums_: dict[type, tuple[str, ...]] = {
         EVENT_STRING_CODE: ("m_eventStringCode",),
     }
+    _union_discriminators_: dict[str, tuple[str, dict[str, str]]] = {
+        "m_eventDetails": ("m_eventStringCode", {
+            "FTLP": "m_fastestLap",
+            "RTMT": "m_retirement",
+            "TMPT": "m_teamMateInPits",
+            "RCWN": "m_raceWinner",
+            "PENA": "m_penalty",
+            "SPTP": "m_speedTrap",
+            "STLG": "m_startLights",
+            "DTSV": "m_driveThroughPenaltyServed",
+            "SGSV": "m_stopGoPenaltyServed",
+            "FLBK": "m_flashback",
+            "BUTN": "m_buttons",
+        }),
+    }
     _fields_ = [
         ("m_header",            PacketHeader),			# Header
         ("m_eventStringCode",   DataTypes.CHAR * 4),	# Event string code # Using 'CHAR' to skips the decoding process
