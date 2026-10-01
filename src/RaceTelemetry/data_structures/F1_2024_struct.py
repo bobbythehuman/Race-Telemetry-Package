@@ -375,6 +375,7 @@ class DRIVER_ID(IntEnum):
     David_Tonizza = 157
     Jarno_Opmeer = 158
     Lucus_Blakeley = 159
+    UNKNOWN = 255
 
 class TRACK_ID(IntEnum):
     Unknown = -1
@@ -503,6 +504,7 @@ class NATIONALITY_ID(IntEnum):
     Algerian = 88
     Bosnian = 89
     Filipino = 90
+    UNKNOWN = 255
 
 class EVENT_STRING_CODE(*BaseStrEnum):
     Session_Started = "SSTA"
@@ -1016,6 +1018,24 @@ class PacketEventData(DataTypes.STRUCTURE):
     _pack_ = 1 # !!REQUIRED - is required or error occurs - Buffer size too small (45 instead of at least 52 bytes)
     _enums_: dict[type, tuple[str, ...]] = {
         EVENT_STRING_CODE: ("m_eventStringCode",),
+    }
+    _union_discriminators_ = {
+        "m_eventDetails": ("m_eventStringCode", {
+            "FTLP": "m_fastestLap",
+            "RTMT": "m_retirement",
+            "TMPT": "m_teamMateInPits",
+            "RCWN": "m_raceWinner",
+            "PENA": "m_penalty",
+            "SPTP": "m_speedTrap",
+            "STLG": "m_startLights",
+            "DTSV": "m_driveThroughPenaltyServed",
+            "SGSV": "m_stopGoPenaltyServed",
+            "FLBK": "m_flashback",
+            "BUTN": "m_buttons",
+            "OVTK": "m_overtake",
+            "SCAR": "m_safetyCar",
+            "COLL": "m_collision",
+        }),
     }
     _fields_ = [
         ("m_header",            PacketHeader),			# Header

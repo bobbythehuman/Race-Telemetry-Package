@@ -32,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def _convert_value(value: Any) -> Any:
+def _convert_value(value: Any, _fields_to_include= None) -> Any:
     """
     Applies the standard set of conversions to a single value:
     leave primitives as-is, round floats, decode bytes, unpack ctypes
@@ -64,8 +64,8 @@ def _convert_value(value: Any) -> Any:
 
     else:
         # Anything left over is assumed to be a nested Structure/Union.
-        LOGGER.debug("Unknown value, assuming it is a class %r", value)
-        return dynamic_ingest(value)
+        # LOGGER.debug("Unknown value, assuming it is a class %r", value)
+        return dynamic_ingest(value, _fields_to_include=_fields_to_include)
 
 
 # ---------------------------------------------------------------------------
@@ -182,7 +182,7 @@ def _packet_fields(packet_cls: type) -> list[tuple]:
     return fields
 
 
-def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamespace | None, enumMode: int = 0) -> SimpleNamespace | None:
+def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamespace | None, enumMode: int = 0, _fields_to_include=None) -> SimpleNamespace | None:
     """
     Takes a packet and dynamically ingests it, converting:
     - floats to rounded floats
@@ -203,18 +203,37 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamesp
         LOGGER.error("Packet %r doesnt contain a _field_ attribute", packetName)
         return newPacket
 
-    attrs = {field[0]: getattr(packet, field[0]) for field in _packet_fields(packet.__class__)}
+    packet_fields = _packet_fields(packet.__class__)
+    attrs = {
+        field[0]: getattr(packet, field[0])
+        for field in packet_fields
+        if _fields_to_include is None or field[0] in _fields_to_include
+    }
 
     # reverse enum dictionary so attribute references an enum
     inverseEnums = _inverse_enums(packet.__class__)
+    unionDiscriminators = getattr(packet.__class__, "_union_discriminators_", {})
 
     for source_attr, value in attrs.items():
         # TODO check if value references the parent if so return None or empty array
 
-        value = _convert_value(value)
+        discriminator = unionDiscriminators.get(source_attr)
+        if discriminator is None:
+            value = _convert_value(value)
+        else:
+            discriminator_field, member_by_value = discriminator
+            if discriminator_field not in attrs:
+                raise ValueError(f"Union discriminator field {discriminator_field!r} is missing from {packetName}")
+
+            discriminator_value = _convert_value(attrs[discriminator_field])
+            active_member = member_by_value.get(discriminator_value)
+            if active_member is None:
+                value = None
+            else:
+                value = _convert_value(value, _fields_to_include=active_member)
 
         if source_attr in inverseEnums:
-            all_enum_type = list(inverseEnums.get(source_attr))
+            all_enum_type = inverseEnums[source_attr]
 
             if len(all_enum_type) > 1:
                 LOGGER.critical("Multiple enum types found for attribute '%r': %r. Cannot determine which one to use.", source_attr, all_enum_type)

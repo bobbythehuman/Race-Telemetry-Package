@@ -16,6 +16,7 @@ module is pure in-memory data transformation over ctypes structures.
 
 import ctypes
 import logging
+from importlib import import_module
 from enum import Enum
 from types import SimpleNamespace
 
@@ -43,6 +44,38 @@ class Colour(Enum):
 class Status(Enum):
     OK = 0
     FAIL = 1
+
+
+class EventCode(Enum):
+    ACTIVE = "ACTV"
+
+
+class ActivePayloadState(Enum):
+    VALID = 1
+
+
+class InactivePayloadState(Enum):
+    OTHER = 9
+
+
+class ActivePayload(ctypes.Structure):
+    _fields_ = [("state", ctypes.c_uint8)]
+    _enums_ = {ActivePayloadState: ("state",)}
+
+
+class InactivePayload(ctypes.Structure):
+    _fields_ = [("state", ctypes.c_uint8)]
+    _enums_ = {InactivePayloadState: ("state",)}
+
+
+class DiscriminatedUnion(ctypes.Union):
+    _fields_ = [("active", ActivePayload), ("inactive", InactivePayload)]
+
+
+class DiscriminatedPacket(ctypes.Structure):
+    _fields_ = [("code", ctypes.c_char * 4), ("details", DiscriminatedUnion)]
+    _enums_ = {EventCode: ("code",)}
+    _union_discriminators_ = {"details": ("code", {"ACTV": "active"})}
 
 
 class SimplePacket(ctypes.Structure):
@@ -366,6 +399,49 @@ class TestDynamicIngest:
         assert isinstance(result.inner, SimpleNamespace)
         assert result.inner.id == 7
         assert result.inner.name == "nested"
+
+    def test_discriminator_ingests_only_the_selected_union_member(self, caplog):
+        packet = DiscriminatedPacket()
+        packet.code = b"ACTV"
+        packet.details.active.state = ActivePayloadState.VALID.value
+
+        with caplog.at_level(logging.WARNING):
+            result = dynamic_ingest(packet)
+
+        assert result.code is EventCode.ACTIVE
+        assert result.details.active.state is ActivePayloadState.VALID
+        assert not hasattr(result.details, "inactive")
+        assert not caplog.records
+
+    @pytest.mark.parametrize("year", [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026])
+    def test_f1_event_discriminator_maps_reference_declared_fields(self, year):
+        module = import_module(f"src.RaceTelemetry.data_structures.F1_{year}_struct")
+        packet_fields = dict(module.PacketEventData._fields_)
+
+        for union_field, (discriminator_field, member_by_code) in module.PacketEventData._union_discriminators_.items():
+            assert discriminator_field in packet_fields
+            union_fields = {field[0] for field in packet_fields[union_field]._fields_}
+            assert set(member_by_code.values()) <= union_fields
+
+    def test_f1_2024_penalty_event_ingests_only_penalty_payload(self):
+        from src.RaceTelemetry.data_structures.F1_2024_struct import (
+            EVENT_STRING_CODE,
+            INFRINGEMENT_TYPE,
+            PENALTY_TYPE,
+            PacketEventData,
+        )
+
+        packet = PacketEventData()
+        packet.m_eventStringCode = b"PENA"
+        packet.m_eventDetails.m_penalty.penaltyType = PENALTY_TYPE.Warning.value
+        packet.m_eventDetails.m_penalty.infringementType = INFRINGEMENT_TYPE.Big_Collision.value
+
+        result = dynamic_ingest(packet)
+
+        assert result.m_eventStringCode is EVENT_STRING_CODE.Penalty_Issued
+        assert result.m_eventDetails.m_penalty.penaltyType is PENALTY_TYPE.Warning
+        assert result.m_eventDetails.m_penalty.infringementType is INFRINGEMENT_TYPE.Big_Collision
+        assert not hasattr(result.m_eventDetails, "m_fastestLap")
 
     def test_array_fields_are_unpacked_via_unpack_array(self):
         packet = ArrayPacket()
