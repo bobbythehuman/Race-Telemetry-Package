@@ -1427,6 +1427,17 @@ class MetaData:
     # use for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = None
     
+    # Common data attributes
+    commonFieldMap = {
+        "speed": "m_carTelemetryData[m_header.m_playerCarIndex].m_speed",
+        "engineRPM": "m_carTelemetryData[m_header.m_playerCarIndex].m_engineRpm",
+        "gear": "m_carTelemetryData[m_header.m_playerCarIndex].m_gear",
+        "throttle": "m_carTelemetryData[m_header.m_playerCarIndex].m_throttle",
+        "brake": "m_carTelemetryData[m_header.m_playerCarIndex].m_brake",
+        "clutch": "m_carTelemetryData[m_header.m_playerCarIndex].m_clutch",
+        "steering": "m_carTelemetryData[m_header.m_playerCarIndex].m_steer",
+    }
+    
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {
         0: (PacketMotionData,),                 # Contains all motion data for player’s car – only sent while player is in control
