@@ -23,7 +23,7 @@ Run with:  pytest test_decoders.py -v
 import ctypes
 import logging
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+# from unittest.mock import MagicMock
 
 import pytest
 
