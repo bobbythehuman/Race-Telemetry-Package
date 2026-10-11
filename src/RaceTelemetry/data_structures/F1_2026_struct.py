@@ -219,6 +219,7 @@ class TEAM_ID(IntEnum):
     McLaren_24 = 193
     Sauber_24 = 194
     # My_Team = 255
+    UNKNOWN = 255
     Art_GP_25 = 465
     Campos_25 = 466
     Rodin_Motorsport_25 = 467
@@ -422,6 +423,7 @@ class DRIVER_ID(IntEnum):
     Max_Esterson = 195
     Sami_Meguetounif = 196
     John_Bennet = 197
+    UNKNOWN = 255
 
 class TRACK_ID(IntEnum):
     Unknown = -1
@@ -554,6 +556,7 @@ class NATIONALITY_ID(IntEnum):
     Algerian = 88
     Bosnian = 89
     Filipino = 90
+    UNKNOWN = 255
 
 class EVENT_STRING_CODE(*BaseStrEnum):
     Session_Started = "SSTA"
@@ -1623,6 +1626,17 @@ class MetaData:
     
     # use for shared memory
     allSharedMemoryNames: str | None | dict[str, str] = None
+    
+    #    Common data attributes
+    commonFieldMap = {
+        "speed": "m_carTelemetryData[m_header.m_playerCarIndex].m_speed",
+        "engineRPM": "m_carTelemetryData[m_header.m_playerCarIndex].m_engineRpm",
+        "gear": "m_carTelemetryData[m_header.m_playerCarIndex].m_gear",
+        "throttle": "m_carTelemetryData[m_header.m_playerCarIndex].m_throttle",
+        "brake": "m_carTelemetryData[m_header.m_playerCarIndex].m_brake",
+        "clutch": "m_carTelemetryData[m_header.m_playerCarIndex].m_clutch",
+        "steering": "m_carTelemetryData[m_header.m_playerCarIndex].m_steer",
+    }
     
     # standard packet info
     packetInfo: dict[int, tuple[type, ...]] = {

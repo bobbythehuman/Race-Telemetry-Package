@@ -35,36 +35,6 @@ class DataTypes:
     CHAR = ctypes.c_char
     DOUBLE = ctypes.c_double
 
-class BUTTON_FLAGS(Flag):
-    Cross_or_A = 1
-    Triangle_or_Y = 2
-    Circle_or_B = 4
-    Square_or_X = 8
-    DPad_Left = 16
-    DPad_Right = 32
-    DPad_Up = 64
-    DPad_Down = 128
-    Options_or_Menu = 256
-    L1_LB = 512
-    R1_RB = 1024
-    L2_LT = 2048
-    R2_RT = 4096
-    Left_Stick_Click = 8192
-    Right_Stick_Click = 16384
-    Special = 32768
-    UDP_Action_1 = 65536
-    UDP_Action_2 = 131072
-    UDP_Action_3 = 262144
-    UDP_Action_4 = 524288
-    UDP_Action_5 = 1048576
-    UDP_Action_6 = 2097152
-    UDP_Action_7 = 4194304
-    UDP_Action_8 = 8388608
-    UDP_Action_9 = 16777216
-    UDP_Action_10 = 33554432
-    UDP_Action_11 = 67108864
-    UDP_Action_12 = 134217728
-
 
 ### * Enums
 
@@ -223,6 +193,7 @@ class TEAM_ID(IntEnum):
     Van_Amersfoort_Racing_23 = 152
     Virtuosi_23 = 153
     # My_Team = 255
+    UNKNOWN = 255
 
 class DRIVER_ID(IntEnum):
     Carlos_Sainz = 0
@@ -675,6 +646,36 @@ class SESSION_TYPE(IntEnum):
     Race_2 = 16
     Race_3 = 17
     Time_Trial = 18
+
+class BUTTON_FLAGS(Flag):
+    Cross_or_A = 1
+    Triangle_or_Y = 2
+    Circle_or_B = 4
+    Square_or_X = 8
+    DPad_Left = 16
+    DPad_Right = 32
+    DPad_Up = 64
+    DPad_Down = 128
+    Options_or_Menu = 256
+    L1_LB = 512
+    R1_RB = 1024
+    L2_LT = 2048
+    R2_RT = 4096
+    Left_Stick_Click = 8192
+    Right_Stick_Click = 16384
+    Special = 32768
+    UDP_Action_1 = 65536
+    UDP_Action_2 = 131072
+    UDP_Action_3 = 262144
+    UDP_Action_4 = 524288
+    UDP_Action_5 = 1048576
+    UDP_Action_6 = 2097152
+    UDP_Action_7 = 4194304
+    UDP_Action_8 = 8388608
+    UDP_Action_9 = 16777216
+    UDP_Action_10 = 33554432
+    UDP_Action_11 = 67108864
+    UDP_Action_12 = 134217728
 
 
 ### * Data Structure
