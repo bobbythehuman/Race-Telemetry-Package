@@ -8,6 +8,7 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 - **UDP and shared memory support**, depending on what each game offers.
 - **Single-threaded or multi-threaded operation**, so it fits both quick scripts and always-on applications.
 - **Extensible** — add support for a new game by defining its packet structure; no changes to the core package required.
+- **Unified data access** — a common field mapping system provides a consistent set of telemetry fields across all supported games.
 
 ---
 
@@ -18,9 +19,9 @@ Racing sims each expose telemetry (speed, tyre temps, lap times, car position, a
 - [Features](#features)
 - [How It Works](#how-it-works)
 - [Usage](#usage)
-  - [Single-Threaded Mode](#Single-threaded-packet-generator)
-  - [Multi-Threaded Mode - Generator](#Multi-threaded-read-only-iterable)
-  - [Multi-Threaded Mode - Worker Threads](#Multi-threaded-listener-with-worker-threads)
+  - [Single-Threaded Mode](#single-threaded-snapshot-iterable)
+  - [Multi-Threaded Mode - Iterable](#multi-threaded-snapshot-iterable)
+  - [Multi-Threaded Mode - Worker Threads](#multi-threaded-listener-with-worker-threads)
 - [API Reference](#api-reference)
 - [Adding Support for a New Game](#adding-support-for-a-new-game)
 - [Supported Games](#supported-games)
@@ -57,13 +58,15 @@ from RaceTelemetry.DataStructures import F1_2024_MetaData
 telemetry = TelemetryManager()
 telemetry.updateMeta(F1_2024_MetaData)
 
-# Select single-threaded mode, then start pulling packets
+# Get a stream of consistent telemetry snapshots
 telemetry.isMultiThreaded(False)
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
+for data in telemetryStream:
+    latest_packets = data.get("latestData")
+    if not latest_packets:
         continue
-
-    if packetID == 6:
+    
+    telemetryData = latest_packets.get("TelemetryData")
+    if telemetryData:
         print("Received a car telemetry packet")
 ```
 
@@ -105,13 +108,13 @@ Data lives in `CentralStorage`, which is protected by thread-safe locking. Worke
 
 ## Usage
 
-The package provides three ways to consume telemetry. All three require `updateMeta(MetaData)` first. Metadata uses UDP and static decoding by default. A metadata class can opt into another combination by setting `receiverMode` to `"udp"` or `"shared_memory"` and `decoderMode` to `"static"` or `"iracing_dynamic"` before you start telemetry.
+The package provides three ways to consume telemetry. All three first require `updateMeta(MetaData)`. Metadata uses UDP and static decoding by default. A metadata class can opt into another combination by setting `receiverMode` to `"udp"` or `"shared_memory"` and `decoderMode` to `"static"` or `"iracing_dynamic"` before you start telemetry.
 
 More examples: [`tests/Game_Specific`](tests/Game_Specific)
 
-### 1. Single-threaded packet generator
+### 1. Single-threaded snapshot iterable
 
-Call `isMultiThreaded(False)` before `GetTelemetry()`. The call returns a generator that receives, decodes, and yields one packet at a time on the calling thread. Each item is a `(packet, packetID, headerPacket)` tuple. This is the simplest choice for scripts and applications that can process telemetry synchronously, but the loop is blocked while waiting for the next packet.
+Call `isMultiThreaded(False)` before `GetTelemetry()`. The call returns an iterable that receives and decodes packets on the calling thread, yielding a consistent snapshot after each packet. This is the simplest choice for scripts and applications that can process telemetry synchronously, but the loop is blocked while waiting for the next packet.
 
 ```python
 telemetry = TelemetryManager()
@@ -119,17 +122,19 @@ telemetry.updateMeta(MetaData)
 telemetry.isMultiThreaded(False)
 
 telemetryStream = telemetry.GetTelemetry()
-for packet, packetID, headerPacket in telemetryStream:
-    if not packet:
+for snapshot in telemetryStream:
+    latest_packets = snapshot.get("latestData")
+    if not latest_packets:
         continue
-
-    if packetID == 6:
-        pass  # Process the decoded packet here
+    
+    telemetryData = latest_packets.get("TelemetryData")
+    if telemetryData:
+        pass  # Process the latest decoded telemetry
 ```
 
-### 2. Multi-threaded read-only iterable
+### 2. Multi-threaded snapshot iterable
 
-With the default multi-threaded setting, `GetTelemetry()` starts the package's `_network_listener` on its own thread and returns a `ReadOnlyStorage` object. The object is iterable, so the calling thread can consume the latest decoded data without receiving UDP or shared-memory packets itself. Iteration yields the latest-data mapping.
+With the default multi-threaded setting, `GetTelemetry()` starts the package's `_network_listener` on its own thread and returns a `ReadOnlyStorage` object. The object is iterable, so the calling thread can consume consistent snapshots without receiving UDP or shared-memory packets itself. Each iteration yields a snapshot dictionary, the same shape as in single-threaded mode.
 
 This mode is useful when the main thread should remain responsible for presentation or control logic while packet reception continues in the background. Stop it with `StopTelemetry()` when the loop should end.
 
@@ -138,8 +143,12 @@ telemetry = TelemetryManager()
 telemetry.updateMeta(MetaData)
 
 telemetryStream = telemetry.GetTelemetry()
-for data in telemetryStream:
-    telemetryData = data.get("TelemetryData")
+for snapshot in telemetryStream:
+    latest_packets = snapshot.get("latestData")
+    if not latest_packets:
+        continue
+    
+    telemetryData = latest_packets.get("TelemetryData")
     if telemetryData:
         pass  # Process the latest decoded telemetry
 
@@ -155,8 +164,12 @@ This mode is best for dashboards, overlays, logging, and other long-running appl
 ```python
 def displaySpeed(worker_id, ro_storage, stop_event):
     while not stop_event.is_set():
-        data = ro_storage.snapshot().get("latestData")
-        telemetryData = data.get("TelemetryData") if data else None
+        snapshot = ro_storage.snapshot()
+        latest_packets = snapshot.get("latestData")
+        if not latest_packets:
+            continue
+
+        telemetryData = latest_packets.get("TelemetryData")
         if telemetryData:
             pass  # Process telemetry in this worker
 
@@ -176,11 +189,25 @@ telemetry.StartTelemetry()
 | `.updateSendIP()`    | `ip` (str), e.g. `"192.168.1.100"`, `"127.0.0.1"`      | Sets the destination IP address used for heartbeats and handshake packets.                |
 | `.addWorkerThread()` | `mainFunc` (callable) with signature `def worker_function(worker_id: int, ro_storage, stop_event):`    | Registers a worker thread function to process telemetry data concurrently. Worker threads receive read-only snapshots, keeping access thread-safe.    |
 | `.manualStop()`      | `target` (bool) — `True` to stop                       | Manually triggers a stop signal from outside the main thread or telemetry loop.                                                                       |
-| `.isMultiThreaded()` | `target` (bool), default `True`                        | Selects whether `GetTelemetry()` starts the listener and returns read-only storage (`True`) or returns a packet generator (`False`).               |
+| `.isMultiThreaded()` | `target` (bool), default `True`                        | Selects whether `GetTelemetry()` runs the listener on a background thread (`True`) or receives packets on the calling thread (`False`). Both modes return an iterable that yields snapshot dictionaries. |
 | `.setEnumMode()`     | `target` (int): `0` (default) returns full enum members with name and value; `1` returns raw integer values; `2` returns enum names as strings | Configures how enum fields are represented in decoded packet data.    |
-| `.GetTelemetry()`    | None   | In single-threaded mode, returns a generator of`(packet, packetID, headerPacket)` tuples. In multi-threaded mode, starts the listener and returns `ReadOnlyStorage`.                                          |
+| `.GetTelemetry()`    | None   | Starts telemetry reception and returns an iterable that yields snapshot dictionaries. |
 | `.StartTelemetry()`  | None   | Starts the telemetry system with all configured settings, creating the network listener and any registered worker threads.**Blocks until a stop signal is received** (Ctrl+C or `.manualStop()`).             |
-| `.StopTelemetry()`   | None   | Stops the network listener and worker threads. Can be called from the main thread. Used`stop_event().set()` to trigger the stop signal within a worker thread.                                                |
+| `.StopTelemetry()`   | None   | Stops the network listener and worker threads. Can be called from the main thread. Use `stop_event.set()` to trigger the stop signal within a worker thread. |
+
+
+### ReadOnlyStorage snapshots
+
+`GetTelemetry()` and worker threads yield a snapshot dictionary with the following keys:
+
+| Key | Contents |
+| --- | --- |
+| `allData` | Packet history, keyed by packet structure name |
+| `latestData` | Most recently received packet for each packet structure name |
+| `allCommonData` | History for mapped common fields |
+| `latestCommonData` | Latest values for mapped common fields |
+
+Until a packet is received, the values in `latestData` and `latestCommonData` are `None`, and the lists in `allData` and `allCommonData` are empty.
 
 ## Adding Support for a New Game
 
@@ -232,6 +259,35 @@ class PacketMotionData(DataTypes.STRUCTURE):
         ("m_carMotionData", CarMotionData * 22),     # Data for all cars on track
     ]
 ```
+
+### Handling union packets
+
+When a packet contains a `ctypes.Union`, the bytes can represent different members depending on another field in the packet. Declare `_union_discriminators_` on the containing packet structure to map each union field to its discriminator field and the union member selected by each discriminator value:
+
+```python
+class EventDetails(DataTypes.UNION):
+    _fields_ = [
+        ("m_fastestLap", FastestLap),
+        ("m_retirement", Retirement),
+    ]
+
+class PacketEventData(DataTypes.STRUCTURE):
+    _union_discriminators_ = {
+        "m_eventDetails": (
+            "m_eventStringCode",
+            {
+                "FTLP": "m_fastestLap",
+                "RTMT": "m_retirement",
+            },
+        ),
+    }
+    _fields_ = [
+        ("m_eventStringCode", DataTypes.CHAR * 4),
+        ("m_eventDetails", EventDetails),
+    ]
+```
+
+The outer dictionary keys are union field names. Each value is a `(discriminator_field, member_by_value)` pair, where `member_by_value` maps the decoded discriminator value to a field name declared in the union. The discriminator field must be present in the packet; if its value has no mapping, the decoded union field is `None`.
 
 ### Step 2: Set Up Enums (Optional)
 
@@ -298,9 +354,24 @@ activeThreads.StartTelemetry()
 | `packetIDAttribute`       | `str`                         | The header packet attribute that identifies the packet ID                                 |
 | `allSharedMemoryNames`    | `str` or `dict[str, str]`     | Name of the shared memory segment, or a dictionary mapping packet name to segment name    |
 | `packetInfo`              | `dict[int, tuple[type, ...]]` | Game packet mapping — see below                                                           |
-| `transportMode`           | `str`                         | `"udp"` or `"shared_memory"`; defaults to `"udp"`                                         |
+| `receiverMode`            | `str`                         | `"udp"` or `"shared_memory"`; defaults to `"udp"`                                         |
 | `decoderMode`             | `str`                         | `"static"` or `"iracing_dynamic"`; defaults to `"static"`                                 |
-| `commonFieldMap`          | `dict[str, str]`              | Mapping of common field names to their corresponding struct attributes - does not support dynamic field names or nested fields                    |
+| `commonFieldMap`          | `dict[str, str]`              | Optional mapping of standard field names (`speed`, `engineRPM`, `gear`, `throttle`, `brake`, `clutch`, `steering`) to packet field paths. Used to populate the common data in snapshots. |
+
+`commonFieldMap` provides a consistent set of field names across game protocols. Map each supported common name to a path in the packet structure. Paths can include nested attributes, fixed array indexes, and dynamic indexes based on another packet field. For example, F1 packet metadata can select the player's car with `m_carTelemetryData[m_header.m_playerCarIndex].m_speed`. Fields without a mapping remain at their default (`None`, or an empty list in `allCommonData`).
+
+```python
+# Example of fixed indexing
+commonFieldMap = {
+    "speed": "m_speed",
+    "gear": "m_gear",
+}
+# Example of dynamic indexing
+commonFieldMap = {
+    "speed": "m_carTelemetryData[m_header.m_playerCarIndex].m_speed",
+    "gear": "m_carTelemetryData[m_header.m_playerCarIndex].m_gear",
+}
+```
 
 #### PacketInfo
 
@@ -399,9 +470,9 @@ activeThreads = TelemetryManager()
 activeThreads.updateMeta(MetaData)
 
 # Single-threaded use
-for packet, packetID, headerPacket in activeThreads.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in activeThreads.GetTelemetry():
+    latest_packets = snapshot.get("latestData")
+    # Process latest_packets, snapshot.get("latestCommonData"), etc.
 
 # Or multi-threaded use
 activeThreads.addWorkerThread(your_worker_function)
