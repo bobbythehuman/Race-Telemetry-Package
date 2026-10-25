@@ -1,29 +1,24 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.AC_UDP_struct import MetaData
-
+from RaceTelemetry.DataStructures import AC_UDP_MetaData
 
 sourceIP = "127.0.0.1"
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(AC_UDP_MetaData)
 telemetry.updateSendIP(sourceIP)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
+        carData = data.get("RTCarData")
+        if carData:
+            packetSpeed = carData.speed_Mph
+            speedValue = round(packetSpeed, 2)
+            print(f"{speedValue} MPH")
 
-    # for the TelemetryData packet
-    if packetName == "RTCarData":
-        packetSpeed = packet.speed_Mph
-        speedValue = round(packetSpeed, 2)
-
-        print(f"{speedValue} MPH")
-
-    # for the MotionSim packet
-    if packetName == "RTLapData":
-        lap = packet.lap
-
-        print(f"Lap: {lap}")
+        lapData = data.get("RTLapData")
+        if lapData:
+            lap = lapData.lap
+            print(f"Lap: {lap}")

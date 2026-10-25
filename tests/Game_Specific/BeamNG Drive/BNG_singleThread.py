@@ -1,25 +1,21 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.BNG_struct import MetaData
+from RaceTelemetry.DataStructures import BNG_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(BNG_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
+        telemetryData = data.get("TelemetryData")
+        if telemetryData:
+            packetSpeed = telemetryData.speed
+            speedValue = round(packetSpeed * 3.6, 2)
+            print(f"{speedValue} KPH")
 
-    # for the TelemetryData packet
-    if packetName == "TelemetryData":
-        packetSpeed = packet.speed
-        speedValue = round(packetSpeed * 3.6, 2)
-
-        print(f"{speedValue} KPH")
-
-    # for the MotionSim packet
-    if packetName == "MotionSim":
-        format = packet.format
-
-        print(f"Format: {format}")
+        motionData = data.get("MotionSim")
+        if motionData:
+            format = motionData.format
+            print(f"Format: {format}")

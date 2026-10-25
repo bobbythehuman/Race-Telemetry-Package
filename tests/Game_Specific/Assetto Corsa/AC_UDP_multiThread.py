@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.AC_UDP_struct import MetaData
+from RaceTelemetry.DataStructures import AC_UDP_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -37,7 +37,7 @@ def displayLap(worker_id: int, ro_storage, stop_event):
 sourceIP = "127.0.0.1"
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
+activeThreads.updateMeta(AC_UDP_MetaData)
 activeThreads.updateSendIP(sourceIP)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayLap)

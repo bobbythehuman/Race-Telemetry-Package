@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.PC_SM_struct import MetaData
+from RaceTelemetry.DataStructures import PC_SM_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -37,7 +37,7 @@ def displayCurrentLap(worker_id: int, ro_storage, stop_event):
 
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
+activeThreads.updateMeta(PC_SM_MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayCurrentLap)
 activeThreads.StartTelemetry()

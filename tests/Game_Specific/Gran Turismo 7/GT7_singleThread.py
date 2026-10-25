@@ -1,24 +1,20 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.GT7_struct import MetaData
-
+from RaceTelemetry.DataStructures import GT7_MetaData
 
 # the IP of the PS5
 sourceIP = "192.168.1.1"
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(GT7_MetaData)
 telemetry.updateSendIP(sourceIP)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
-
-    # only if heartbeat msg is 'C'
-    if packetName == "PacketCData":
-        packetSpeed = packet.speed
-        speedValue = round(packetSpeed * 3.6, 2)
-
-        print(f"{speedValue} KPH")
+        packetData = data.get("PacketCData")
+        if packetData:
+            packetSpeed = packetData.speed
+            speedValue = round(packetSpeed * 3.6, 2)
+            print(f"{speedValue} KPH")

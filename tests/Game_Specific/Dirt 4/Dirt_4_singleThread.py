@@ -1,24 +1,21 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.Dirt_4_struct import MetaData
-
+from RaceTelemetry.DataStructures import Dirt_4_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(Dirt_4_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
+        mode1Data = data.get("Mode3")
+        if mode1Data:
+            packetSpeed = mode1Data.speed
+            speedValue = round(packetSpeed * 3.6, 2)
+            print(f"{speedValue} KPH")
 
-    if packetName == "Mode3":
-        packetSpeed = packet.speed
-        speedValue = round(packetSpeed * 3.6, 2)
-
-        print(f"{speedValue} KPH")
-
-    if packetName == "Mode1":
-        gear = packet.gear
-
-        print(f"Gear: {gear}")
+        mode2Data = data.get("Mode1")
+        if mode2Data:
+            gear = mode2Data.gear
+            print(f"Gear: {gear}")

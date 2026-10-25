@@ -1,19 +1,16 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.F1_2025_struct import MetaData
-
+from RaceTelemetry.DataStructures import F1_2025_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(F1_2025_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
-
-    if packetID == 6:
-        currnetPlayer = packet.m_carTelemetryData[0]
-        speedValue = currnetPlayer.m_speed
-
-        print(f"{speedValue} KPH")
+        telemetryData = data.get("PacketCarTelemetryData")
+        if telemetryData:
+            currnetPlayer = telemetryData.m_carTelemetryData[0]
+            speedValue = currnetPlayer.m_speed
+            print(f"{speedValue} KPH")

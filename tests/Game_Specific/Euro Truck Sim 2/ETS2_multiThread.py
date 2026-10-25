@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.ETS2_struct import MetaData
+from RaceTelemetry.DataStructures import ETS2_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -36,8 +36,7 @@ def displayRPM(worker_id: int, ro_storage, stop_event):
 
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
-activeThreads.isSharedMemory(True)
+activeThreads.updateMeta(ETS2_MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayRPM)
 activeThreads.StartTelemetry()

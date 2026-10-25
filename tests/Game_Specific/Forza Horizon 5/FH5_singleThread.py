@@ -1,19 +1,16 @@
 from RaceTelemetry import TelemetryManager
 from RaceTelemetry.DataStructures import FH5_MetaData
 
-
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
 telemetry.updateMeta(FH5_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
-
-    if packetName == "DashData":
-        packetSpeed = packet.Speed
-        speedValue = round(packetSpeed * 3.6, 2)
-
-        print(f"{speedValue} KPH")
+        dashData = data.get("DashData")
+        if dashData:
+            packetSpeed = dashData.Speed
+            speedValue = round(packetSpeed * 3.6, 2)
+            print(f"{speedValue} KPH")

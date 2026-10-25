@@ -253,7 +253,9 @@ class TelemetryManager:
 
     def GetTelemetry(self) -> ReadOnlyStorage | Generator[dict[str, Any]]:
         """
-        Call this to get a generator that yields a consistent snapshot of the latest set of data including all packets and the latest packet.
+        Call this to get a generator that fetches the latest set of data for common fields and game specific data including all packets and latest packet.
+        In single-threaded mode, this will yield a new snapshot for each packet received.
+        In multi-threaded mode, this will yield a read-only object, where you can use the .snapshot() method to get a consistent snapshot of the latest data.
         """
 
         if self.readOnlyStorage is None:

@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.Dirt_4_struct import MetaData
+from RaceTelemetry.DataStructures import Dirt_Rally_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -36,7 +36,7 @@ def displayGear(worker_id: int, ro_storage, stop_event):
 
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
+activeThreads.updateMeta(Dirt_Rally_MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayGear)
 activeThreads.StartTelemetry()

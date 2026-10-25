@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.GT7_struct import MetaData
+from RaceTelemetry.DataStructures import GT7_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -39,7 +39,7 @@ def displayGear(worker_id: int, ro_storage, stop_event):
 sourceIP = "192.168.1.1"
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
+activeThreads.updateMeta(GT7_MetaData)
 # add the source IP of the PS5
 activeThreads.updateSendIP(sourceIP)
 activeThreads.addWorkerThread(displaySpeed)

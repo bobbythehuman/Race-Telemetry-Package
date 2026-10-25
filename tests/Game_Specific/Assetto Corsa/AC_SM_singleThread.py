@@ -1,34 +1,28 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.AC_SM_struct import MetaData
+from RaceTelemetry.DataStructures import AC_SM_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
-telemetry.isSharedMemory(True)
+telemetry.updateMeta(AC_SM_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
+        staticData = data.get("SPageFileStaticData")
+        if staticData:
+            track = staticData.track
+            carModel = staticData.carModel
+            print(f"Track: {track}\t\t Car Model: {carModel}")
 
-    # for the SPageFileStaticData packet
-    if packetName == "SPageFileStaticData":
-        track = packet.track
-        carModel = packet.carModel
+        physicsData = data.get("SPageFilePhysicsData")
+        if physicsData:
+            packetSpeed = physicsData.speedKmh
+            speedValue = round(packetSpeed / 1.60934, 1)
+            print(f"{speedValue} MPH")
 
-        print(f"Track: {track}\t\t Car Model: {carModel}")
-        
-    # for the SPageFilePhysicsData packet
-    if packetName == "SPageFilePhysicsData":
-        packetSpeed = packet.speedKmh
-        speedValue = round(packetSpeed/1.60934, 1)
-
-        print(f"{speedValue} MPH")
-        
-    # for the SPageFileGraphicData packet
-    if packetName == "SPageFileGraphicData":
-        status = packet.status
-        time = packet.currentTime
-
-        print(f"status: {status}\t\t Time: {time}")
+        graphicsData = data.get("SPageFileGraphicData")
+        if graphicsData:
+            status = graphicsData.status
+            time = graphicsData.currentTime
+            print(f"status: {status}\t\t Time: {time}")

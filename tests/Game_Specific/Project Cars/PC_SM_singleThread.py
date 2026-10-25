@@ -1,19 +1,16 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.PC_SM_struct import MetaData
-
+from RaceTelemetry.DataStructures import PC_SM_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
+telemetry.updateMeta(PC_SM_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
-
-    if packetID == 0:
-        speedPacket = packet.mSpeed
-        speedValue = round(speedPacket * 3.6, 2)
-
-        print(f"{speedValue} KPH")
+        telemetryData = data.get("mTelemetryData")
+        if telemetryData:
+            packetSpeed = telemetryData.mSpeed
+            speedValue = round(packetSpeed * 3.6, 2)
+            print(f"{speedValue} KPH")
