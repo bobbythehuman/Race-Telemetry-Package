@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.ACE_struct import MetaData
+from RaceTelemetry.DataStructures import ACE_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -12,7 +12,7 @@ def displaySpeed(worker_id: int, ro_storage, stop_event):
             telemetry = data.get("SPageFilePhysicsData")
             if telemetry:
                 speed = telemetry.speedKmh
-                speedValue = round(speed/1.60934, 1)
+                speedValue = round(speed / 1.60934, 1)
                 print(f"{speedValue} MPH")
 
     print(f"[THRD] [INFO]\tWorker {worker_id} stopping.")
@@ -35,8 +35,7 @@ def displayTime(worker_id: int, ro_storage, stop_event):
 
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
-activeThreads.isSharedMemory(True)
+activeThreads.updateMeta(ACE_MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayTime)
 activeThreads.StartTelemetry()

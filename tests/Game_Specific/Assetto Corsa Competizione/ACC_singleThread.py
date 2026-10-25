@@ -1,30 +1,26 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.ACE_struct import MetaData
-
+from RaceTelemetry.DataStructures import ACC_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
-telemetry.isSharedMemory(True)
+telemetry.updateMeta(ACC_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
+        staticData = data.get("SPageFileStaticData")
+        if staticData:
+            carModel = staticData.carModel
+            print(f"Car Model: {carModel}")
 
-    # for the SPageFilePhysicsData packet
-    if packetName == "SPageFilePhysicsData":
-        speed = packet.speedKmh
-        speedValue = round(speed/1.60934, 1)
-        print(f"{speedValue} MPH")
+        physicsData = data.get("SPageFilePhysicsData")
+        if physicsData:
+            packetSpeed = physicsData.speedKmh
+            speedValue = round(packetSpeed / 1.60934, 1)
+            print(f"{speedValue} MPH")
 
-    # for the SPageFileGraphicData packet
-    if packetName == "SPageFileGraphicData":
-        distance = packet.distanceTraveled
-        print(f"Distance: {distance}")
-
-    # for the SPageFileStaticData packet
-    if packetName == "SPageFileStaticData":
-        car = packet.carModel
-        print(f"Car: {car}")
+        graphicsData = data.get("SPageFileGraphicData")
+        if graphicsData:
+            distance = graphicsData.distanceTraveled
+            print(f"Distance: {distance}")

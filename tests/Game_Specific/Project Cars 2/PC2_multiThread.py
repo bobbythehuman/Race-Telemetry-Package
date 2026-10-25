@@ -1,5 +1,5 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.PC2_struct import MetaData
+from RaceTelemetry.DataStructures import PC2_MetaData
 
 
 def displaySpeed(worker_id: int, ro_storage, stop_event):
@@ -37,7 +37,9 @@ def displayCurrentCar(worker_id: int, ro_storage, stop_event):
 
 
 activeThreads = TelemetryManager()
-activeThreads.updateMeta(MetaData)
+activeThreads.updateMeta(PC2_MetaData)
 activeThreads.addWorkerThread(displaySpeed)
 activeThreads.addWorkerThread(displayCurrentCar)
+# use the shared memory option
+activeThreads.useSharedMemory(False)
 activeThreads.StartTelemetry()

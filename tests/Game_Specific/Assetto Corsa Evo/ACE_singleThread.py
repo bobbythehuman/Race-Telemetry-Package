@@ -1,30 +1,27 @@
 from RaceTelemetry import TelemetryManager
-from RaceTelemetry.data_structures.ACE_struct import MetaData
+from RaceTelemetry.DataStructures import ACE_MetaData
 
 telemetry = TelemetryManager()
 telemetry.isMultiThreaded(False)
-telemetry.updateMeta(MetaData)
-telemetry.isSharedMemory(True)
+telemetry.updateMeta(ACE_MetaData)
 
-for packet, packetID, headerPacket in telemetry.GetTelemetry():
-    if not packet:
-        continue
+for snapshot in telemetry.GetTelemetry():
+    data = snapshot.get("latestData")
+    if data:
 
-    packetName = packet.__name__
+        staticData = data.get("SPageFileStaticEvoData")
+        if staticData:
+            session = staticData.session_name
+            track = staticData.track_configuration
+            print(f"Session: {session}\t\t Track: {track}")
 
-    # for the SPageFilePhysicsData packet
-    if packetName == "SPageFilePhysicsData":
-        speed = packet.speedKmh
-        speedValue = round(speed/1.60934, 1)
-        print(f"{speedValue} MPH")
+        physicsData = data.get("SPageFilePhysicsData")
+        if physicsData:
+            packetSpeed = physicsData.speedKmh
+            speedValue = round(packetSpeed / 1.60934, 1)
+            print(f"{speedValue} MPH")
 
-    # for the SPageFileGraphicEvoData packet
-    if packetName == "SPageFileGraphicEvoData":
-        RPM = packet.rpm_percent
-        print(f"RPM: {RPM}%")
-        
-    # for the SPageFileStaticEvoData packet
-    if packetName == "SPageFileStaticEvoData":
-        session = packet.session_name
-        track = packet.track_configuration
-        print(f"Session: {session}\t\t Track: {track}")
+        graphicsData = data.get("SPageFileGraphicEvoData")
+        if graphicsData:
+            RPM = graphicsData.rpm_percent
+            print(f"RPM: {RPM}%")

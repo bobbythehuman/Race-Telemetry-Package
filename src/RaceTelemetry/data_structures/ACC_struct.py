@@ -381,6 +381,9 @@ class MetaData:
             "SPageFileStaticData": "Local\\acpmf_static",
         }
     
+    # define the receiver and decoder modes
+    receiverMode: str = "shared_memory"
+    
     # Common data attributes
     commonFieldMap = {
         "speed": "speedKmh",

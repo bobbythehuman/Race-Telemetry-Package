@@ -537,6 +537,9 @@ class MetaData:
             "SPageFileStaticEvoData": "Local\\acevo_pmf_static",
         }
     
+    # define the receiver and decoder modes
+    receiverMode: str = "shared_memory"
+    
     # Common data attributes
     commonFieldMap = {
         "speed": "speedKmh",
