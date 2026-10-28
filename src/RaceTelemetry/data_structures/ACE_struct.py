@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 from enum import IntEnum
 
 
@@ -10,22 +10,22 @@ from enum import IntEnum
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
+    STRUCTURE = _dataTypes.STRUCTURE
     
-    SIGNED_INT = ctypes.c_int
-    SIGNED_INT8 = ctypes.c_int8
-    SIGNED_INT32 = ctypes.c_int32
+    SIGNED_INT = _dataTypes.SIGNED_INT
+    SIGNED_INT8 = _dataTypes.SIGNED_INT8
+    SIGNED_INT32 = _dataTypes.SIGNED_INT32
     
-    UNSIGNED_INT8 = ctypes.c_uint8
-    UNSIGNED_INT32 = ctypes.c_uint32
-    UNSIGNED_INT64 = ctypes.c_uint64
-    FLOAT = ctypes.c_float
+    UNSIGNED_INT8 = _dataTypes.UNSIGNED_UINT8
+    UNSIGNED_INT32 = _dataTypes.UNSIGNED_UINT32
+    UNSIGNED_INT64 = _dataTypes.UNSIGNED_UINT64
+    FLOAT = _dataTypes.FLOAT
     
-    SIGNED_SHORT = ctypes.c_short
-    UNSIGNED_SHORT = ctypes.c_ushort
+    SIGNED_SHORT = _dataTypes.SIGNED_SHORT
+    UNSIGNED_SHORT = _dataTypes.UNSIGNED_SHORT
     
-    BOOL = ctypes.c_bool
-    CHAR = ctypes.c_wchar
+    BOOL = _dataTypes.BOOL
+    WCHAR = _dataTypes.WCHAR
 
 
 ### * Enums
@@ -88,8 +88,8 @@ class SMEvoTyreState(DataTypes.STRUCTURE):
         ("tyre_temperature_left",               DataTypes.FLOAT),     # Inner-edge tyre temperature in °C
         ("tyre_temperature_center",             DataTypes.FLOAT),     # Centre-tread tyre temperature in °C
         ("tyre_temperature_right",              DataTypes.FLOAT),     # Outer-edge tyre temperature in °C
-        ("tyre_compound_front",                 DataTypes.CHAR * 33), # Name of the compound fitted on the front axle
-        ("tyre_compound_rear",                  DataTypes.CHAR * 33), # Name of the compound fitted on the rear axle
+        ("tyre_compound_front",                 DataTypes.WCHAR * 33),# Name of the compound fitted on the front axle
+        ("tyre_compound_rear",                  DataTypes.WCHAR * 33),# Name of the compound fitted on the rear axle
         ("tyre_normalized_pressure",            DataTypes.FLOAT),     # Pressure as a 0–1 fraction of the target range
         ("tyre_normalized_temperature_left",    DataTypes.FLOAT),     # Inner-edge temperature as a 0–1 fraction of optimal range
         ("tyre_normalized_temperature_center",  DataTypes.FLOAT),     # Centre temperature as a 0–1 fraction of optimal range
@@ -180,17 +180,17 @@ class SMEvoInstrumentation(DataTypes.STRUCTURE):
 class SMEvoSessionState(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("phase_name",                  DataTypes.CHAR * 15),       # Name of the current session phase (e.g. 'Race', 'Qualify')
-        ("time_left",                   DataTypes.CHAR * 15),       # Formatted remaining session time (HH:MM:SS)
+        ("phase_name",                  DataTypes.WCHAR * 15),      # Name of the current session phase (e.g. 'Race', 'Qualify')
+        ("time_left",                   DataTypes.WCHAR * 15),      # Formatted remaining session time (HH:MM:SS)
         ("time_left_ms",                DataTypes.SIGNED_INT32),    # Remaining session time in milliseconds
-        ("wait_time",                   DataTypes.CHAR * 15),       # Formatted wait time before session start
+        ("wait_time",                   DataTypes.WCHAR * 15),      # Formatted wait time before session start
         ("total_lap",                   DataTypes.SIGNED_INT32),    # Total laps scheduled for this session
         ("current_lap",                 DataTypes.SIGNED_INT32),    # Current lap number being driven
         ("lights_on",                   DataTypes.SIGNED_INT32),    # Number of starting lights currently illuminated
         ("lights_mode",                 DataTypes.SIGNED_INT32),    # Starting-light sequence mode identifier
         ("lap_length_km",               DataTypes.FLOAT),           # Track lap length in kilometres
         ("end_session_flag",            DataTypes.SIGNED_INT32),    # Non-zero when the session is ending
-        ("time_to_next_session",        DataTypes.CHAR * 15),       # Formatted countdown to the next session
+        ("time_to_next_session",        DataTypes.WCHAR * 15),      # Formatted countdown to the next session
         ("disconnected_from_server",    DataTypes.BOOL),            # Player has lost connection to the game server
         ("restart_season_enabled",      DataTypes.BOOL),            # Season restart option is available to the player
         ("ui_enable_drive",             DataTypes.BOOL),            # Drive button is enabled in the UI
@@ -204,15 +204,15 @@ class SMEvoSessionState(DataTypes.STRUCTURE):
 class SMEvoTimingState(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("current_laptime", DataTypes.CHAR * 15),     # Current lap time as a formatted string
-        ("delta_current",   DataTypes.CHAR * 15),     # Delta vs. current reference lap (formatted)
+        ("current_laptime", DataTypes.WCHAR * 15),    # Current lap time as a formatted string
+        ("delta_current",   DataTypes.WCHAR * 15),    # Delta vs. current reference lap (formatted)
         ("delta_current_p", DataTypes.SIGNED_INT32),  # Sign of delta_current: +1 slower, −1 faster, 0 = hidden
-        ("last_laptime",    DataTypes.CHAR * 15),     # Last completed lap time as a formatted string
-        ("delta_last",      DataTypes.CHAR * 15),     # Delta vs. last lap (formatted)
+        ("last_laptime",    DataTypes.WCHAR * 15),    # Last completed lap time as a formatted string
+        ("delta_last",      DataTypes.WCHAR * 15),    # Delta vs. last lap (formatted)
         ("delta_last_p",    DataTypes.SIGNED_INT32),  # Sign of delta_last: +1 slower, −1 faster, 0 = hidden
-        ("best_laptime",    DataTypes.CHAR * 15),     # Personal best lap time as a formatted string
-        ("ideal_laptime",   DataTypes.CHAR * 15),     # Theoretical best lap (sum of best sectors) as a formatted string
-        ("total_time",      DataTypes.CHAR * 15),     # Total elapsed session time as a formatted string
+        ("best_laptime",    DataTypes.WCHAR * 15),    # Personal best lap time as a formatted string
+        ("ideal_laptime",   DataTypes.WCHAR * 15),    # Theoretical best lap (sum of best sectors) as a formatted string
+        ("total_time",      DataTypes.WCHAR * 15),    # Total elapsed session time as a formatted string
         ("is_invalid",      DataTypes.BOOL),          # Current lap has been invalidated (track-limits violation, etc.)
     ]
 
@@ -237,93 +237,93 @@ class SMEvoAssistsState(DataTypes.STRUCTURE):
 class SPageFilePhysicsData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("packetId",            DataTypes.SIGNED_INT),    # Incrementing counter — detect new data packets by comparing to previous value
-        ("gas",                 DataTypes.FLOAT),         # Throttle pedal position (0.0 = released, 1.0 = full throttle)
-        ("brake",               DataTypes.FLOAT),         # Brake pedal position (0.0 = released, 1.0 = full brake)
-        ("fuel",                DataTypes.FLOAT),         # Remaining fuel in litres
-        ("gear",                DataTypes.SIGNED_INT),    # Engaged gear: 0 = reverse, 1 = neutral, 2+ = forward gears
-        ("rpms",                DataTypes.SIGNED_INT),    # Engine speed in revolutions per minute
-        ("steerAngle",          DataTypes.FLOAT),         # Normalised steering angle (−1.0 = full left, +1.0 = full right)
-        ("speedKmh",            DataTypes.FLOAT),         # Vehicle speed in km/h
-        ("velocity",            DataTypes.FLOAT * 3),     # World-space velocity vector [X, Y, Z] in m/s
-        ("accG",                DataTypes.FLOAT * 3),     # Acceleration in G [lateral X, longitudinal Y, vertical Z]
-        ("wheelSlip",           DataTypes.FLOAT * 4),     # Tyre slip value per wheel [FL, FR, RL, RR]
-        ("wheelLoad",           DataTypes.FLOAT * 4),     # Vertical tyre load in Newtons [FL, FR, RL, RR]
-        ("wheelsPressure",      DataTypes.FLOAT * 4),     # Tyre inflation pressure in PSI [FL, FR, RL, RR]
-        ("wheelAngularSpeed",   DataTypes.FLOAT * 4),     # Wheel rotational speed in rad/s [FL, FR, RL, RR]
-        ("tyreWear",            DataTypes.FLOAT * 4),     # Tyre wear level (0.0 = new, 1.0 = fully worn) [FL, FR, RL, RR]
-        ("tyreDirtyLevel",      DataTypes.FLOAT * 4),     # Amount of dirt / debris on each tyre surface [FL, FR, RL, RR]
-        ("tyreCoreTemperature", DataTypes.FLOAT * 4),     # Core temperature of each tyre in °C [FL, FR, RL, RR]
-        ("camberRAD",           DataTypes.FLOAT * 4),     # Wheel camber angle in radians per corner [FL, FR, RL, RR]
-        ("suspensionTravel",    DataTypes.FLOAT * 4),     # Suspension compression travel in metres [FL, FR, RL, RR]
-        ("drs",                 DataTypes.FLOAT),         # DRS flap state (0.0 = closed, 1.0 = fully open)
-        ("tc",                  DataTypes.FLOAT),         # Traction control cut intensity (0.0 = inactive, 1.0 = maximum)
-        ("heading",             DataTypes.FLOAT),         # Vehicle heading relative to world north in radians
-        ("pitch",               DataTypes.FLOAT),         # Chassis pitch angle in radians (positive = nose up)
-        ("roll",                DataTypes.FLOAT),         # Chassis roll angle in radians (positive = right side down)
-        ("cgHeight",            DataTypes.FLOAT),         # Height of the centre of gravity above the ground in metres
-        ("carDamage",           DataTypes.FLOAT * 5),     # Damage level per body zone [front, rear, left, right, centre] (0.0–1.0)
-        ("numberOfTyresOut",    DataTypes.SIGNED_INT),    # Number of tyres currently outside track limits
-        ("pitLimiterOn",        DataTypes.SIGNED_INT),    # Pit-speed limiter active (0 = off, 1 = on)
-        ("abs",                 DataTypes.FLOAT),         # ABS intervention intensity (0.0 = inactive, 1.0 = fully active)
-        ("kersCharge",          DataTypes.FLOAT),         # KERS/ERS battery state of charge (0.0–1.0)
-        ("kersInput",           DataTypes.FLOAT),         # KERS/ERS power delivery level currently being deployed (0.0–1.0)
-        ("autoShifterOn",       DataTypes.SIGNED_INT),    # Automatic gearshift aid active (0 = manual, 1 = auto)
-        ("rideHeight",          DataTypes.FLOAT * 2),     # Ride height at front and rear axle in metres [front, rear]
-        ("turboBoost",          DataTypes.FLOAT),         # Current turbo boost pressure in bar
-        ("ballast",             DataTypes.FLOAT),         # Additional ballast added to the car in kg
-        ("airDensity",          DataTypes.FLOAT),         # Ambient air density in kg/m³
-        ("airTemp",             DataTypes.FLOAT),         # Ambient air temperature in °C
-        ("roadTemp",            DataTypes.FLOAT),         # Road surface temperature in °C
+        ("packetId",            DataTypes.SIGNED_INT),		# Incrementing counter — detect new data packets by comparing to previous value
+        ("gas",                 DataTypes.FLOAT),			# Throttle pedal position (0.0 = released, 1.0 = full throttle)
+        ("brake",               DataTypes.FLOAT),			# Brake pedal position (0.0 = released, 1.0 = full brake)
+        ("fuel",                DataTypes.FLOAT),			# Remaining fuel in litres
+        ("gear",                DataTypes.SIGNED_INT),		# Engaged gear: 0 = reverse, 1 = neutral, 2+ = forward gears
+        ("rpms",                DataTypes.SIGNED_INT),		# Engine speed in revolutions per minute
+        ("steerAngle",          DataTypes.FLOAT),			# Normalised steering angle (−1.0 = full left, +1.0 = full right)
+        ("speedKmh",            DataTypes.FLOAT),			# Vehicle speed in km/h
+        ("velocity",            DataTypes.FLOAT * 3),		# World-space velocity vector [X, Y, Z] in m/s
+        ("accG",                DataTypes.FLOAT * 3),		# Acceleration in G [lateral X, longitudinal Y, vertical Z]
+        ("wheelSlip",           DataTypes.FLOAT * 4),		# Tyre slip value per wheel [FL, FR, RL, RR]
+        ("wheelLoad",           DataTypes.FLOAT * 4),		# Vertical tyre load in Newtons [FL, FR, RL, RR]
+        ("wheelsPressure",      DataTypes.FLOAT * 4),		# Tyre inflation pressure in PSI [FL, FR, RL, RR]
+        ("wheelAngularSpeed",   DataTypes.FLOAT * 4),		# Wheel rotational speed in rad/s [FL, FR, RL, RR]
+        ("tyreWear",            DataTypes.FLOAT * 4),		# Tyre wear level (0.0 = new, 1.0 = fully worn) [FL, FR, RL, RR]
+        ("tyreDirtyLevel",      DataTypes.FLOAT * 4),		# Amount of dirt / debris on each tyre surface [FL, FR, RL, RR]
+        ("tyreCoreTemperature", DataTypes.FLOAT * 4),		# Core temperature of each tyre in °C [FL, FR, RL, RR]
+        ("camberRAD",           DataTypes.FLOAT * 4),		# Wheel camber angle in radians per corner [FL, FR, RL, RR]
+        ("suspensionTravel",    DataTypes.FLOAT * 4),		# Suspension compression travel in metres [FL, FR, RL, RR]
+        ("drs",                 DataTypes.FLOAT),			# DRS flap state (0.0 = closed, 1.0 = fully open)
+        ("tc",                  DataTypes.FLOAT),			# Traction control cut intensity (0.0 = inactive, 1.0 = maximum)
+        ("heading",             DataTypes.FLOAT),			# Vehicle heading relative to world north in radians
+        ("pitch",               DataTypes.FLOAT),			# Chassis pitch angle in radians (positive = nose up)
+        ("roll",                DataTypes.FLOAT),			# Chassis roll angle in radians (positive = right side down)
+        ("cgHeight",            DataTypes.FLOAT),			# Height of the centre of gravity above the ground in metres
+        ("carDamage",           DataTypes.FLOAT * 5),		# Damage level per body zone [front, rear, left, right, centre] (0.0–1.0)
+        ("numberOfTyresOut",    DataTypes.SIGNED_INT),		# Number of tyres currently outside track limits
+        ("pitLimiterOn",        DataTypes.SIGNED_INT),		# Pit-speed limiter active (0 = off, 1 = on)
+        ("abs",                 DataTypes.FLOAT),			# ABS intervention intensity (0.0 = inactive, 1.0 = fully active)
+        ("kersCharge",          DataTypes.FLOAT),			# KERS/ERS battery state of charge (0.0–1.0)
+        ("kersInput",           DataTypes.FLOAT),			# KERS/ERS power delivery level currently being deployed (0.0–1.0)
+        ("autoShifterOn",       DataTypes.SIGNED_INT),		# Automatic gearshift aid active (0 = manual, 1 = auto)
+        ("rideHeight",          DataTypes.FLOAT * 2),		# Ride height at front and rear axle in metres [front, rear]
+        ("turboBoost",          DataTypes.FLOAT),			# Current turbo boost pressure in bar
+        ("ballast",             DataTypes.FLOAT),			# Additional ballast added to the car in kg
+        ("airDensity",          DataTypes.FLOAT),			# Ambient air density in kg/m³
+        ("airTemp",             DataTypes.FLOAT),			# Ambient air temperature in °C
+        ("roadTemp",            DataTypes.FLOAT),			# Road surface temperature in °C
         
-        ("localAngularVel",     DataTypes.FLOAT * 3),     # Angular velocity in the car's local frame [pitch, yaw, roll] in rad/s
-        ("finalFF",             DataTypes.FLOAT),         # Final force-feedback torque value sent to the wheel (Nm)
-        ("performanceMeter",    DataTypes.FLOAT),         # Real-time delta vs. best lap (positive = ahead of reference)
-        ("engineBrake",         DataTypes.SIGNED_INT),    # Engine-braking setting level (higher = more engine braking)
-        ("ersRecoveryLevel",    DataTypes.SIGNED_INT),    # ERS energy-recovery intensity level
-        ("ersPowerLevel",       DataTypes.SIGNED_INT),    # ERS power-deployment level
-        ("ersHeatCharging",     DataTypes.SIGNED_INT),    # ERS heat-charging mode active (0 = off, 1 = on)
-        ("ersIsCharging",       DataTypes.SIGNED_INT),    # ERS currently recovering energy (0 = deploying, 1 = charging)
-        ("kersCurrentKJ",       DataTypes.FLOAT),         # Energy stored in the KERS/ERS battery in kilojoules
-        ("drsAvailable",        DataTypes.SIGNED_INT),    # DRS can be activated (0 = no, 1 = yes)
-        ("drsEnabled",          DataTypes.SIGNED_INT),    # DRS is open and active (0 = closed, 1 = open)
-        ("brakeTemp",           DataTypes.FLOAT * 4),     # Brake disc temperature per corner in °C [FL, FR, RL, RR]
-        ("clutch",              DataTypes.FLOAT),         # Clutch pedal position (0.0 = engaged, 1.0 = fully disengaged)
-        ("tyreTempI",           DataTypes.FLOAT * 4),     # Tyre inner-edge temperature per wheel in °C [FL, FR, RL, RR]
-        ("tyreTempM",           DataTypes.FLOAT * 4),     # Tyre mid-tread temperature per wheel in °C [FL, FR, RL, RR]
-        ("tyreTempO",           DataTypes.FLOAT * 4),     # Tyre outer-edge temperature per wheel in °C [FL, FR, RL, RR]
-        ("isAIControlled",      DataTypes.SIGNED_INT),    # Car is driven by AI (0 = player, 1 = AI)
-        ("tyreContactPoint",    DataTypes.FLOAT * 4 * 3), # 3-D world-space contact point of each tyre with the road [FL,FR,RL,RR][X,Y,Z]
-        ("tyreContactNormal",   DataTypes.FLOAT * 4 * 3), # Road-surface normal vector at each tyre contact point [FL,FR,RL,RR][X,Y,Z]
-        ("tyreContactHeading",  DataTypes.FLOAT * 4 * 3), # Heading vector at each tyre contact point [FL,FR,RL,RR][X,Y,Z]
-        ("brakeBias",           DataTypes.FLOAT),         # Front brake-bias ratio (e.g. 0.56 = 56 % front)
-        ("localVelocity",       DataTypes.FLOAT * 3),     # Velocity in the car's local reference frame [X, Y, Z] in m/s
-        ("P2PActivations",      DataTypes.SIGNED_INT),    # Remaining Push-to-Pass activations 
-        ("P2PStatus",           DataTypes.SIGNED_INT),    # Push-to-Pass status (0 = inactive, 1 = active)
-        ("currentMaxRpm",       DataTypes.SIGNED_INT),    # Current rev-limiter ceiling in RPM
-        ("mz",                  DataTypes.FLOAT * 4),     # Self-aligning tyre torque (Mz) per wheel [FL, FR, RL, RR] in Nm
-        ("fx",                  DataTypes.FLOAT * 4),     # Longitudinal tyre force (Fx) per wheel [FL, FR, RL, RR] in N
-        ("fy",                  DataTypes.FLOAT * 4),     # Lateral tyre force (Fy) per wheel [FL, FR, RL, RR] in N
-        ("slipRatio",           DataTypes.FLOAT * 4),     # Longitudinal slip ratio per tyre [FL, FR, RL, RR]
-        ("slipAngle",           DataTypes.FLOAT * 4),     # Lateral slip angle per tyre in radians [FL, FR, RL, RR]
-        ("tcinAction",          DataTypes.SIGNED_INT),    # Traction control currently cutting power (0 = no, 1 = yes)
-        ("absInAction",         DataTypes.SIGNED_INT),    # ABS currently modulating brakes (0 = no, 1 = yes)
-        ("suspensionDamage",    DataTypes.FLOAT * 4),     # Suspension structural damage per corner (0.0–1.0) [FL, FR, RL, RR]
-        ("tyreTemp",            DataTypes.FLOAT * 4),     # Representative tyre surface temperature per wheel in °C [FL, FR, RL, RR]
-        ("waterTemp",           DataTypes.FLOAT),         # Engine coolant temperature in °C
-        ("brakeTorque",         DataTypes.FLOAT * 4),     # Braking torque at each wheel in Nm [FL, FR, RL, RR]
-        ("frontBrakeCompound",  DataTypes.SIGNED_INT),    # Front brake-pad compound identifier
-        ("rearBrakeCompound",   DataTypes.SIGNED_INT),    # Rear brake-pad compound identifier
-        ("padLife",             DataTypes.FLOAT * 4),     # Brake-pad remaining life per corner (0.0–1.0) [FL, FR, RL, RR]
-        ("discLife",            DataTypes.FLOAT * 4),     # Brake-disc remaining life per corner (0.0–1.0) [FL, FR, RL, RR]
-        ("ignitionOn",          DataTypes.SIGNED_INT),    # Ignition switch state (0 = off, 1 = on)
+        ("localAngularVel",     DataTypes.FLOAT * 3),		# Angular velocity in the car's local frame [pitch, yaw, roll] in rad/s
+        ("finalFF",             DataTypes.FLOAT),			# Final force-feedback torque value sent to the wheel (Nm)
+        ("performanceMeter",    DataTypes.FLOAT),			# Real-time delta vs. best lap (positive = ahead of reference)
+        ("engineBrake",         DataTypes.SIGNED_INT),		# Engine-braking setting level (higher = more engine braking)
+        ("ersRecoveryLevel",    DataTypes.SIGNED_INT),		# ERS energy-recovery intensity level
+        ("ersPowerLevel",       DataTypes.SIGNED_INT),		# ERS power-deployment level
+        ("ersHeatCharging",     DataTypes.SIGNED_INT),		# ERS heat-charging mode active (0 = off, 1 = on)
+        ("ersIsCharging",       DataTypes.SIGNED_INT),		# ERS currently recovering energy (0 = deploying, 1 = charging)
+        ("kersCurrentKJ",       DataTypes.FLOAT),			# Energy stored in the KERS/ERS battery in kilojoules
+        ("drsAvailable",        DataTypes.SIGNED_INT),		# DRS can be activated (0 = no, 1 = yes)
+        ("drsEnabled",          DataTypes.SIGNED_INT),		# DRS is open and active (0 = closed, 1 = open)
+        ("brakeTemp",           DataTypes.FLOAT * 4),		# Brake disc temperature per corner in °C [FL, FR, RL, RR]
+        ("clutch",              DataTypes.FLOAT),			# Clutch pedal position (0.0 = engaged, 1.0 = fully disengaged)
+        ("tyreTempI",           DataTypes.FLOAT * 4),		# Tyre inner-edge temperature per wheel in °C [FL, FR, RL, RR]
+        ("tyreTempM",           DataTypes.FLOAT * 4),		# Tyre mid-tread temperature per wheel in °C [FL, FR, RL, RR]
+        ("tyreTempO",           DataTypes.FLOAT * 4),		# Tyre outer-edge temperature per wheel in °C [FL, FR, RL, RR]
+        ("isAIControlled",      DataTypes.SIGNED_INT),		# Car is driven by AI (0 = player, 1 = AI)
+        ("tyreContactPoint",    DataTypes.FLOAT * 4 * 3),	# 3-D world-space contact point of each tyre with the road [FL,FR,RL,RR][X,Y,Z]
+        ("tyreContactNormal",   DataTypes.FLOAT * 4 * 3),	# Road-surface normal vector at each tyre contact point [FL,FR,RL,RR][X,Y,Z]
+        ("tyreContactHeading",  DataTypes.FLOAT * 4 * 3),	# Heading vector at each tyre contact point [FL,FR,RL,RR][X,Y,Z]
+        ("brakeBias",           DataTypes.FLOAT),			# Front brake-bias ratio (e.g. 0.56 = 56 % front)
+        ("localVelocity",       DataTypes.FLOAT * 3),		# Velocity in the car's local reference frame [X, Y, Z] in m/s
+        ("P2PActivations",      DataTypes.SIGNED_INT),		# Remaining Push-to-Pass activations 
+        ("P2PStatus",           DataTypes.SIGNED_INT),		# Push-to-Pass status (0 = inactive, 1 = active)
+        ("currentMaxRpm",       DataTypes.SIGNED_INT),		# Current rev-limiter ceiling in RPM
+        ("mz",                  DataTypes.FLOAT * 4),		# Self-aligning tyre torque (Mz) per wheel [FL, FR, RL, RR] in Nm
+        ("fx",                  DataTypes.FLOAT * 4),		# Longitudinal tyre force (Fx) per wheel [FL, FR, RL, RR] in N
+        ("fy",                  DataTypes.FLOAT * 4),		# Lateral tyre force (Fy) per wheel [FL, FR, RL, RR] in N
+        ("slipRatio",           DataTypes.FLOAT * 4),		# Longitudinal slip ratio per tyre [FL, FR, RL, RR]
+        ("slipAngle",           DataTypes.FLOAT * 4),		# Lateral slip angle per tyre in radians [FL, FR, RL, RR]
+        ("tcinAction",          DataTypes.SIGNED_INT),		# Traction control currently cutting power (0 = no, 1 = yes)
+        ("absInAction",         DataTypes.SIGNED_INT),		# ABS currently modulating brakes (0 = no, 1 = yes)
+        ("suspensionDamage",    DataTypes.FLOAT * 4),		# Suspension structural damage per corner (0.0–1.0) [FL, FR, RL, RR]
+        ("tyreTemp",            DataTypes.FLOAT * 4),		# Representative tyre surface temperature per wheel in °C [FL, FR, RL, RR]
+        ("waterTemp",           DataTypes.FLOAT),			# Engine coolant temperature in °C
+        ("brakeTorque",         DataTypes.FLOAT * 4),		# Braking torque at each wheel in Nm [FL, FR, RL, RR]
+        ("frontBrakeCompound",  DataTypes.SIGNED_INT),		# Front brake-pad compound identifier
+        ("rearBrakeCompound",   DataTypes.SIGNED_INT),		# Rear brake-pad compound identifier
+        ("padLife",             DataTypes.FLOAT * 4),		# Brake-pad remaining life per corner (0.0–1.0) [FL, FR, RL, RR]
+        ("discLife",            DataTypes.FLOAT * 4),		# Brake-disc remaining life per corner (0.0–1.0) [FL, FR, RL, RR]
+        ("ignitionOn",          DataTypes.SIGNED_INT),		# Ignition switch state (0 = off, 1 = on)
         
-        ("starterEngineOn",     DataTypes.SIGNED_INT),    # Starter motor currently cranking (0 = no, 1 = yes)
-        ("isEngineRunning",     DataTypes.SIGNED_INT),    # Engine is running (0 = stopped, 1 = running)
-        ("kerbVibration",       DataTypes.FLOAT),         # Vibration intensity transmitted from kerb strikes
-        ("slipVibrations",      DataTypes.FLOAT),         # Vibration intensity caused by tyre slip
-        ("roadVibrations",      DataTypes.FLOAT),         # Vibration intensity from road surface texture
-        ("absVibrations",       DataTypes.FLOAT),         # Vibration intensity generated by ABS pulsing
+        ("starterEngineOn",     DataTypes.SIGNED_INT),		# Starter motor currently cranking (0 = no, 1 = yes)
+        ("isEngineRunning",     DataTypes.SIGNED_INT),		# Engine is running (0 = stopped, 1 = running)
+        ("kerbVibration",       DataTypes.FLOAT),			# Vibration intensity transmitted from kerb strikes
+        ("slipVibrations",      DataTypes.FLOAT),			# Vibration intensity caused by tyre slip
+        ("roadVibrations",      DataTypes.FLOAT),			# Vibration intensity from road surface texture
+        ("absVibrations",       DataTypes.FLOAT),			# Vibration intensity generated by ABS pulsing
     ]
 
 
@@ -442,7 +442,7 @@ class SPageFileGraphicEvoData(DataTypes.STRUCTURE):
         ("engine_type",                     DataTypes.SIGNED_INT),		# Powertrain type of the car (see ACEVO_ENGINE_TYPE)
         ("has_kers",                        DataTypes.BOOL),			# Car is equipped with a KERS/ERS system
         ("is_last_lap",                     DataTypes.BOOL),			# This is the final scheduled lap of the race
-        ("performance_mode_name",           DataTypes.CHAR * 33),		# Display name of the active vehicle performance / power mode
+        ("performance_mode_name",           DataTypes.WCHAR * 33),		# Display name of the active vehicle performance / power mode
         ("diff_coast_raw_value",            DataTypes.FLOAT),			# Raw differential coast-lock value from setup
         ("diff_power_raw_value",            DataTypes.FLOAT),			# Raw differential power-lock value from setup
         ("race_cut_gained_time_ms",         DataTypes.SIGNED_INT32),	# Cumulative time penalty from track-limit cuts in ms
@@ -459,9 +459,9 @@ class SPageFileGraphicEvoData(DataTypes.STRUCTURE):
         ("player_qos_avg",      DataTypes.SIGNED_INT32),	# Average QoS score over the session
         ("player_fps",          DataTypes.SIGNED_INT32),	# Current rendered frames per second
         ("player_fps_avg",      DataTypes.SIGNED_INT32),	# Average FPS over the session
-        ("driver_name",         DataTypes.CHAR * 33),		# Driver's first name
-        ("driver_surname",      DataTypes.CHAR * 33),		# Driver's surname
-        ("car_model",           DataTypes.CHAR * 33),		# Identifier or display name of the car model
+        ("driver_name",         DataTypes.WCHAR * 33),		# Driver's first name
+        ("driver_surname",      DataTypes.WCHAR * 33),		# Driver's surname
+        ("car_model",           DataTypes.WCHAR * 33),		# Identifier or display name of the car model
         ("is_in_pit_box",       DataTypes.BOOL),			# Car is stationary inside its assigned pit box
         ("is_in_pit_lane",      DataTypes.BOOL),			# Car is anywhere within the pit lane
         ("is_valid_lap",        DataTypes.BOOL),			# Current lap is valid and counts for timing
@@ -487,10 +487,10 @@ class SPageFileStaticEvoData(DataTypes.STRUCTURE):
         ACEVO_STARTING_GRIP: ("starting_grip",),
     }
     _fields_ = [
-        ("sm_version",                      DataTypes.CHAR * 15),		# Shared-memory interface version string
-        ("ac_evo_version",                  DataTypes.CHAR * 15),		# AC Evo game build version string
+        ("sm_version",                      DataTypes.WCHAR * 15),		# Shared-memory interface version string
+        ("ac_evo_version",                  DataTypes.WCHAR * 15),		# AC Evo game build version string
         ("session",                         DataTypes.SIGNED_INT),		# Type of the current session (see ACEVO_SESSION_TYPE)
-        ("session_name",                    DataTypes.CHAR * 33),		# Human-readable session name (e.g. 'Race 1')
+        ("session_name",                    DataTypes.WCHAR * 33),		# Human-readable session name (e.g. 'Race 1')
         ("event_id",                        DataTypes.UNSIGNED_INT8),	# Unique identifier of the event within the championship
         ("session_id",                      DataTypes.UNSIGNED_INT8),	# Unique identifier of this session within the event
         ("starting_grip",                   DataTypes.SIGNED_INT),		# Tyre grip condition at session start (see ACEVO_STARTING_GRIP)
@@ -500,11 +500,11 @@ class SPageFileStaticEvoData(DataTypes.STRUCTURE):
         ("is_timed_race",                   DataTypes.BOOL),			# Session ends by elapsed time rather than lap count
         ("is_online",                       DataTypes.BOOL),			# Session is an online multiplayer event
         ("number_of_sessions",              DataTypes.SIGNED_INT),		# Total sessions in this event (e.g. 3 = practice + qualify + race)
-        ("nation",                          DataTypes.CHAR * 33),		# Country / nation name associated with the event or track
+        ("nation",                          DataTypes.WCHAR * 33),		# Country / nation name associated with the event or track
         ("longitude",                       DataTypes.FLOAT),			# Geographic longitude of the track location in decimal degree
         ("latitude",                        DataTypes.FLOAT),			# Geographic latitude of the track location in decimal degrees
-        ("track",                           DataTypes.CHAR * 33),		# Track identifier or name
-        ("track_configuration",             DataTypes.CHAR * 33),		# Track layout variant or configuration name
+        ("track",                           DataTypes.WCHAR * 33),		# Track identifier or name
+        ("track_configuration",             DataTypes.WCHAR * 33),		# Track layout variant or configuration name
         ("track_length_m",                  DataTypes.FLOAT),			# Total lap length of the track in metres
     ]
 

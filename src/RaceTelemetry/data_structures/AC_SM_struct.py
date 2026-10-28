@@ -1,18 +1,17 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 from enum import IntEnum
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
+    STRUCTURE = _dataTypes.STRUCTURE
     
-    SIGNED_INT = ctypes.c_int
+    SIGNED_INT = _dataTypes.SIGNED_INT
     
-    BOOL = ctypes.c_bool
-    FLOAT = ctypes.c_float
-    # CHAR = ctypes.c_char
-    CHAR = ctypes.c_wchar
+    BOOL = _dataTypes.BOOL
+    FLOAT = _dataTypes.FLOAT
+    WCHAR = _dataTypes.WCHAR
 
 
 ### * Enums
@@ -49,48 +48,48 @@ class AC_FLAG_TYPE(IntEnum):
 class SPageFileStaticData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("smVersion",                   DataTypes.CHAR * 15),     # Version of the Shared Memory structure
-        ("acVersion",                   DataTypes.CHAR * 15),     # Version of Assetto Corsa
-        ("numberOfSessions",            DataTypes.SIGNED_INT),    # Number of sessions in this instance
-        ("numCars",                     DataTypes.SIGNED_INT),    # Max number of possible cars on track
-        ("carModel",                    DataTypes.CHAR * 33),     # Name of the player’s car
-        ("track",                       DataTypes.CHAR * 33),     # Name of the track
-        ("playerName",                  DataTypes.CHAR * 33),     # Name of the player
-        ("playerSurname",               DataTypes.CHAR * 33),     # Surname of the player
-        ("playerNick",                  DataTypes.CHAR * 33),     # Nickname of the player
-        ("sectorCount",                 DataTypes.SIGNED_INT),    # Number of track sectors
-        ("maxTorque",                   DataTypes.FLOAT),         # Max torque value of the player’s car
-        ("maxPower",                    DataTypes.FLOAT),         # Max power value of the player’s car
-        ("maxRpm",                      DataTypes.SIGNED_INT),    # Max rpm value of the player’s car
-        ("maxFuel",                     DataTypes.FLOAT),         # Max fuel value of the player’s car
-        ("suspensionMaxTravel",         DataTypes.FLOAT * 4),     # Max travel distance of each tyre [Front Left, Front Right, Rear Left, Rear Right]
-        ("tyreRadius",                  DataTypes.FLOAT * 4),     # Radius of each tyre [Front Left, Front Right, Rear Left, Rear Right]
-        ("maxTurboBoost",               DataTypes.FLOAT),         # Max turbo boost value of the player’s car
-        ("deprecated_1",                DataTypes.FLOAT),         # Do not use it
-        ("deprecated_2",                DataTypes.FLOAT),         # Do not use it
-        ("penaltiesEnabled",            DataTypes.SIGNED_INT),    # Cut penalties enabled: 1 (true) or 0 (false)
-        ("aidFuelRate",                 DataTypes.FLOAT),         # Fuel consumption rate: 0 (no cons), 1 (normal), 2 (double cons) etc.
-        ("aidTireRate",                 DataTypes.FLOAT),         # Tire wear rate: 0 (no wear), 1 (normal), 2 (double wear) etc.
-        ("aidMechanicalDamage",         DataTypes.FLOAT),         # Damage rate: 0 (no damage) to 1 (normal)
-        ("AllowTyreBlankets",           DataTypes.SIGNED_INT),    # Player starts with hot (optimal temp) tyres: 1 (true) or 0 (false)
-        ("aidStability",                DataTypes.FLOAT),         # Stability aid: 0 (no aid) to 1 (full aid)
-        ("aidAutoclutch",               DataTypes.SIGNED_INT),    # If player’s car has the “auto clutch” feature enabled : 0 or 1
-        ("aidAutoBlip",                 DataTypes.SIGNED_INT),    # If player’s car has the “auto blip” feature enabled : 0 or 1
-        ("hasDRS",                      DataTypes.SIGNED_INT),    # If player’s car has the “DRS” system: 0 or 1
-        ("hasERS",                      DataTypes.SIGNED_INT),    # If player’s car has the “ERS” system: 0 or 1
-        ("hasKERS",                     DataTypes.SIGNED_INT),    # If player’s car has the “KERS” system: 0 or 1
-        ("kersMaxJ",                    DataTypes.FLOAT),         # Max KERS Joule value of the player’s car
-        ("engineBrakeSettingsCount",    DataTypes.SIGNED_INT),    # Count of possible engine brake settings of the player’s car
-        ("ersPowerControllerCount",     DataTypes.SIGNED_INT),    # Count of the possible power controllers of the player’s car
-        ("trackSplineLength",           DataTypes.FLOAT),         # Length of the spline of the selected track
-        ("trackConfiguration",          DataTypes.CHAR * 33),     # Name of the track’s layout (only multi-layout tracks)
-        ("ersMaxJ",                     DataTypes.FLOAT),         # Max ERS Joule value of the player’s car
-        ("isTimedRace",                 DataTypes.SIGNED_INT),    # 1 if the race is a timed one
-        ("hasExtraLap",                 DataTypes.SIGNED_INT),    # 1 if the timed race is set with an extra lap
-        ("carSkin",                     DataTypes.CHAR * 33),     # Name of the used skin
-        ("reversedGridPositions",       DataTypes.SIGNED_INT),    # How many positions are going to be swapped in the second race
-        ("PitWindowStart",              DataTypes.SIGNED_INT),    # Pit window is open on Lap/Minute
-        ("PitWindowEnd",                DataTypes.SIGNED_INT),    # Pit window is closed on Lap/Minute
+        ("smVersion",                   DataTypes.WCHAR * 15),      # Version of the Shared Memory structure
+        ("acVersion",                   DataTypes.WCHAR * 15),      # Version of Assetto Corsa
+        ("numberOfSessions",            DataTypes.SIGNED_INT),      # Number of sessions in this instance
+        ("numCars",                     DataTypes.SIGNED_INT),      # Max number of possible cars on track
+        ("carModel",                    DataTypes.WCHAR * 33),      # Name of the player’s car
+        ("track",                       DataTypes.WCHAR * 33),      # Name of the track
+        ("playerName",                  DataTypes.WCHAR * 33),      # Name of the player
+        ("playerSurname",               DataTypes.WCHAR * 33),      # Surname of the player
+        ("playerNick",                  DataTypes.WCHAR * 33),      # Nickname of the player
+        ("sectorCount",                 DataTypes.SIGNED_INT),      # Number of track sectors
+        ("maxTorque",                   DataTypes.FLOAT),           # Max torque value of the player’s car
+        ("maxPower",                    DataTypes.FLOAT),           # Max power value of the player’s car
+        ("maxRpm",                      DataTypes.SIGNED_INT),      # Max rpm value of the player’s car
+        ("maxFuel",                     DataTypes.FLOAT),           # Max fuel value of the player’s car
+        ("suspensionMaxTravel",         DataTypes.FLOAT * 4),       # Max travel distance of each tyre [Front Left, Front Right, Rear Left, Rear Right]
+        ("tyreRadius",                  DataTypes.FLOAT * 4),       # Radius of each tyre [Front Left, Front Right, Rear Left, Rear Right]
+        ("maxTurboBoost",               DataTypes.FLOAT),           # Max turbo boost value of the player’s car
+        ("deprecated_1",                DataTypes.FLOAT),           # Do not use it
+        ("deprecated_2",                DataTypes.FLOAT),           # Do not use it
+        ("penaltiesEnabled",            DataTypes.SIGNED_INT),      # Cut penalties enabled: 1 (true) or 0 (false)
+        ("aidFuelRate",                 DataTypes.FLOAT),           # Fuel consumption rate: 0 (no cons), 1 (normal), 2 (double cons) etc.
+        ("aidTireRate",                 DataTypes.FLOAT),           # Tire wear rate: 0 (no wear), 1 (normal), 2 (double wear) etc.
+        ("aidMechanicalDamage",         DataTypes.FLOAT),           # Damage rate: 0 (no damage) to 1 (normal)
+        ("AllowTyreBlankets",           DataTypes.SIGNED_INT),      # Player starts with hot (optimal temp) tyres: 1 (true) or 0 (false)
+        ("aidStability",                DataTypes.FLOAT),           # Stability aid: 0 (no aid) to 1 (full aid)
+        ("aidAutoclutch",               DataTypes.SIGNED_INT),      # If player’s car has the “auto clutch” feature enabled : 0 or 1
+        ("aidAutoBlip",                 DataTypes.SIGNED_INT),      # If player’s car has the “auto blip” feature enabled : 0 or 1
+        ("hasDRS",                      DataTypes.SIGNED_INT),      # If player’s car has the “DRS” system: 0 or 1
+        ("hasERS",                      DataTypes.SIGNED_INT),      # If player’s car has the “ERS” system: 0 or 1
+        ("hasKERS",                     DataTypes.SIGNED_INT),      # If player’s car has the “KERS” system: 0 or 1
+        ("kersMaxJ",                    DataTypes.FLOAT),           # Max KERS Joule value of the player’s car
+        ("engineBrakeSettingsCount",    DataTypes.SIGNED_INT),      # Count of possible engine brake settings of the player’s car
+        ("ersPowerControllerCount",     DataTypes.SIGNED_INT),      # Count of the possible power controllers of the player’s car
+        ("trackSplineLength",           DataTypes.FLOAT),           # Length of the spline of the selected track
+        ("trackConfiguration",          DataTypes.WCHAR * 33),      # Name of the track’s layout (only multi-layout tracks)
+        ("ersMaxJ",                     DataTypes.FLOAT),           # Max ERS Joule value of the player’s car
+        ("isTimedRace",                 DataTypes.SIGNED_INT),      # 1 if the race is a timed one
+        ("hasExtraLap",                 DataTypes.SIGNED_INT),      # 1 if the timed race is set with an extra lap
+        ("carSkin",                     DataTypes.WCHAR * 33),      # Name of the used skin
+        ("reversedGridPositions",       DataTypes.SIGNED_INT),      # How many positions are going to be swapped in the second race
+        ("PitWindowStart",              DataTypes.SIGNED_INT),      # Pit window is open on Lap/Minute
+        ("PitWindowEnd",                DataTypes.SIGNED_INT),      # Pit window is closed on Lap/Minute
     ]
 
 # The following members change at each graphic step. They all refer to the player’s car.
@@ -168,36 +167,36 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
         AC_FLAG_TYPE: ("flag",)
     }
     _fields_ = [
-        ("packetId",                DataTypes.SIGNED_INT),        # Index of the shared memory’s current step
-        ("status",                  DataTypes.SIGNED_INT),        # Status of the instance: AC_OFF 0, AC_REPLAY 1, AC_LIVE 2, AC_PAUSE 3
-        ("session",                 DataTypes.SIGNED_INT),        # Session type: AC_UNKNOWN -1, AC_PRACTICE 0, AC_QUALIFY 1, AC_RACE 2, AC_HOTLAP 3, AC_TIME_ATTACK 4, AC_DRIFT 5, AC_DRAG 6
-        ("currentTime",             DataTypes.CHAR * 15),         # Current lap time
-        ("lastTime",                DataTypes.CHAR * 15),         # Last lap time
-        ("bestTime",                DataTypes.CHAR * 15),         # Best lap time
-        ("split",                   DataTypes.CHAR * 15),         # Time in sector
-        ("completedLaps",           DataTypes.SIGNED_INT),        # Number of completed laps by the player
-        ("position",                DataTypes.SIGNED_INT),        # Current player position (standings)
-        ("iCurrentTime",            DataTypes.SIGNED_INT),        # Current lap time
-        ("iLastTime",               DataTypes.SIGNED_INT),        # Last lap time
-        ("iBestTime",               DataTypes.SIGNED_INT),        # Best lap time
-        ("sessionTimeLeft",         DataTypes.FLOAT),             # Time left until session is closed
-        ("distanceTraveled",        DataTypes.FLOAT),             # Distance traveled during the instance
-        ("isInPit",                 DataTypes.SIGNED_INT),        # If player’s car is stopped in the pit: 0 (false) or 1 (true)
-        ("currentSectorIndex",      DataTypes.SIGNED_INT),        # Current sector index
-        ("lastSectorTime",          DataTypes.SIGNED_INT),        # Last sector time
-        ("numberOfLaps",            DataTypes.SIGNED_INT),        # Number of laps needed to close the session
-        ("tyreCompound",            DataTypes.CHAR * 33),         # Current tyre compound
-        ("replayTimeMultiplier",    DataTypes.FLOAT),             # Replay multiplier
-        ("normalizedCarPosition",   DataTypes.FLOAT),             # Car position on the track’s spline
-        ("carCoordinates",          DataTypes.FLOAT * 3),         # Car position on world coordinates [x, y, z]
-        ("penaltyTime",             DataTypes.FLOAT),             # Time of penalty
-        ("flag",                    DataTypes.SIGNED_INT),        # Type of flag being shown: AC_NO_FLAG 0, AC_BLUE_FLAG 1, AC_YELLOW_FLAG 2, AC_BLACK_FLAG 3, AC_WHITE_FLAG 4, AC_CHECKERED_FLAG 5, AC_PENALTY_FLAG 6
-        ("idealLineOn",             DataTypes.SIGNED_INT),        # If ideal line is enabled: 0 (false) or 1 (true)
-        ("isInPitLane",             DataTypes.SIGNED_INT),        # If player’s car is in the pitlane: 0 (false) or 1 (true)
-        ("surfaceGrip",             DataTypes.FLOAT),             # Current grip of the track’s surface
-        ("mandatoryPitDone",        DataTypes.SIGNED_INT),        # Set to 1 if the player has done the mandatory pit
-        ("windSpeed",               DataTypes.FLOAT),             # Speed of the wind on the current session
-        ("windDirection",           DataTypes.FLOAT),             # Direction of the wind (0-359) on the current session
+        ("packetId",                DataTypes.SIGNED_INT),      # Index of the shared memory’s current step
+        ("status",                  DataTypes.SIGNED_INT),      # Status of the instance: AC_OFF 0, AC_REPLAY 1, AC_LIVE 2, AC_PAUSE 3
+        ("session",                 DataTypes.SIGNED_INT),      # Session type: AC_UNKNOWN -1, AC_PRACTICE 0, AC_QUALIFY 1, AC_RACE 2, AC_HOTLAP 3, AC_TIME_ATTACK 4, AC_DRIFT 5, AC_DRAG 6
+        ("currentTime",             DataTypes.WCHAR * 15),      # Current lap time
+        ("lastTime",                DataTypes.WCHAR * 15),      # Last lap time
+        ("bestTime",                DataTypes.WCHAR * 15),      # Best lap time
+        ("split",                   DataTypes.WCHAR * 15),      # Time in sector
+        ("completedLaps",           DataTypes.SIGNED_INT),      # Number of completed laps by the player
+        ("position",                DataTypes.SIGNED_INT),      # Current player position (standings)
+        ("iCurrentTime",            DataTypes.SIGNED_INT),      # Current lap time
+        ("iLastTime",               DataTypes.SIGNED_INT),      # Last lap time
+        ("iBestTime",               DataTypes.SIGNED_INT),      # Best lap time
+        ("sessionTimeLeft",         DataTypes.FLOAT),           # Time left until session is closed
+        ("distanceTraveled",        DataTypes.FLOAT),           # Distance traveled during the instance
+        ("isInPit",                 DataTypes.SIGNED_INT),      # If player’s car is stopped in the pit: 0 (false) or 1 (true)
+        ("currentSectorIndex",      DataTypes.SIGNED_INT),      # Current sector index
+        ("lastSectorTime",          DataTypes.SIGNED_INT),      # Last sector time
+        ("numberOfLaps",            DataTypes.SIGNED_INT),      # Number of laps needed to close the session
+        ("tyreCompound",            DataTypes.WCHAR * 33),      # Current tyre compound
+        ("replayTimeMultiplier",    DataTypes.FLOAT),           # Replay multiplier
+        ("normalizedCarPosition",   DataTypes.FLOAT),           # Car position on the track’s spline
+        ("carCoordinates",          DataTypes.FLOAT * 3),       # Car position on world coordinates [x, y, z]
+        ("penaltyTime",             DataTypes.FLOAT),           # Time of penalty
+        ("flag",                    DataTypes.SIGNED_INT),      # Type of flag being shown: AC_NO_FLAG 0, AC_BLUE_FLAG 1, AC_YELLOW_FLAG 2, AC_BLACK_FLAG 3, AC_WHITE_FLAG 4, AC_CHECKERED_FLAG 5, AC_PENALTY_FLAG 6
+        ("idealLineOn",             DataTypes.SIGNED_INT),      # If ideal line is enabled: 0 (false) or 1 (true)
+        ("isInPitLane",             DataTypes.SIGNED_INT),      # If player’s car is in the pitlane: 0 (false) or 1 (true)
+        ("surfaceGrip",             DataTypes.FLOAT),           # Current grip of the track’s surface
+        ("mandatoryPitDone",        DataTypes.SIGNED_INT),      # Set to 1 if the player has done the mandatory pit
+        ("windSpeed",               DataTypes.FLOAT),           # Speed of the wind on the current session
+        ("windDirection",           DataTypes.FLOAT),           # Direction of the wind (0-359) on the current session
     ]
 
 

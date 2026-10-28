@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 from enum import IntEnum
 
 
@@ -9,14 +9,14 @@ from enum import IntEnum
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
+    STRUCTURE = _dataTypes.STRUCTURE
     
-    SIGNED_INT = ctypes.c_int
-    FLOAT = ctypes.c_float
+    SIGNED_INT = _dataTypes.SIGNED_INT
+    FLOAT = _dataTypes.FLOAT
     
-    BOOL = ctypes.c_bool
-    DOUBLE = ctypes.c_double
-    CHAR = ctypes.c_wchar
+    BOOL = _dataTypes.BOOL
+    DOUBLE = _dataTypes.DOUBLE
+    WCHAR = _dataTypes.WCHAR
 
 
 ### * Enums
@@ -211,10 +211,10 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
         ("packetId",                DataTypes.SIGNED_INT),        # Current step index
         ("status",                  DataTypes.SIGNED_INT),         # See enums ACC_STATUS
         ("session",                 DataTypes.SIGNED_INT),         # See enums ACC_SESSION_TYPE
-        ("currentTime",             DataTypes.CHAR * 15),         # Current lap time in wide character
-        ("lastTime",                DataTypes.CHAR * 15),         # Last lap time in wide character
-        ("bestTime",                DataTypes.CHAR * 15),         # Best lap time in wide character 
-        ("split",                   DataTypes.CHAR * 15),         # Last split time in wide character
+        ("currentTime",             DataTypes.WCHAR * 15),         # Current lap time in wide character
+        ("lastTime",                DataTypes.WCHAR * 15),         # Last lap time in wide character
+        ("bestTime",                DataTypes.WCHAR * 15),         # Best lap time in wide character 
+        ("split",                   DataTypes.WCHAR * 15),         # Last split time in wide character
         ("completedLaps",           DataTypes.SIGNED_INT),        # No of completed laps
         ("position",                DataTypes.SIGNED_INT),        # Current player position 
         ("iCurrentTime",            DataTypes.SIGNED_INT),        # Current lap time in milliseconds
@@ -226,7 +226,7 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
         ("currentSectorIndex",      DataTypes.SIGNED_INT),        # Current track sector
         ("lastSectorTime",          DataTypes.SIGNED_INT),        # Last sector time in milliseconds 
         ("numberOfLaps",            DataTypes.SIGNED_INT),        # Number of completed laps
-        ("tyreCompound",            DataTypes.CHAR * 33),         # Tyre compound used
+        ("tyreCompound",            DataTypes.WCHAR * 33),         # Tyre compound used
         # ("replayTimeMultiplier",    DataTypes.FLOAT),             # Not used in ACC
         ("normalizedCarPosition",   DataTypes.FLOAT),             # Car position on track spline (0.0 start to 1.0 finish) 
         ("activeCars",              DataTypes.SIGNED_INT),        # Number of cars on track
@@ -261,15 +261,15 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
         ("rainTyres",                   DataTypes.SIGNED_INT),    # Are rain tyres equipped
         ("sessionIndex",                DataTypes.SIGNED_INT),
         ("usedFuel",                    DataTypes.FLOAT),       # Used fuel since last time refueling
-        ("deltaLapTime",                DataTypes.CHAR * 15),   # Delta time in wide character
+        ("deltaLapTime",                DataTypes.WCHAR * 15),   # Delta time in wide character
         ("iDeltaLapTime",               DataTypes.SIGNED_INT),  # Delta time time in milliseconds
-        ("estimatedLapTime",            DataTypes.CHAR * 15),   # Estimated lap time in milliseconds
+        ("estimatedLapTime",            DataTypes.WCHAR * 15),   # Estimated lap time in milliseconds
         ("iEstimatedLapTime",           DataTypes.SIGNED_INT),  # Estimated lap time in wide character
         ("isDeltaPositive",             DataTypes.SIGNED_INT),  # Delta positive (1) or negative (0)
         ("iSplit",                      DataTypes.SIGNED_INT),  # Last split time in milliseconds
         ("isValidLap",                  DataTypes.SIGNED_INT),  # Check if Lap is valid for timing
         ("fuelEstimatedLaps",           DataTypes.FLOAT),       # Laps possible with current fuel level
-        ("trackStatus",                 DataTypes.CHAR * 33),   # Status of track 
+        ("trackStatus",                 DataTypes.WCHAR * 33),   # Status of track 
         ("missingMandatoryPits",        DataTypes.SIGNED_INT),  # Mandatory pitstops the player still has to do
         ("Clock",                       DataTypes.FLOAT),       # Time of day in seconds
         ("directionLightsLeft",         DataTypes.SIGNED_INT),  # Is Blinker left on
@@ -304,15 +304,15 @@ class SPageFileGraphicData(DataTypes.STRUCTURE):
 class SPageFileStaticData(DataTypes.STRUCTURE):
     # _pack_ = 1
     _fields_ = [
-        ("smVersion",                   DataTypes.CHAR * 15),     # Shared memory version
-        ("acVersion",                   DataTypes.CHAR * 15),     # Assetto Corsa version
+        ("smVersion",                   DataTypes.WCHAR * 15),     # Shared memory version
+        ("acVersion",                   DataTypes.WCHAR * 15),     # Assetto Corsa version
         ("numberOfSessions",            DataTypes.SIGNED_INT),    # Number of sessions 
         ("numCars",                     DataTypes.SIGNED_INT),    # Number of cars 
-        ("carModel",                    DataTypes.CHAR * 33),     # Player car model see Appendix 2
-        ("track",                       DataTypes.CHAR * 33),     # Track name
-        ("playerName",                  DataTypes.CHAR * 33),     # Player name
-        ("playerSurname",               DataTypes.CHAR * 33),     # Player surname 
-        ("playerNick",                  DataTypes.CHAR * 33),     # Player nickname
+        ("carModel",                    DataTypes.WCHAR * 33),     # Player car model see Appendix 2
+        ("track",                       DataTypes.WCHAR * 33),     # Track name
+        ("playerName",                  DataTypes.WCHAR * 33),     # Player name
+        ("playerSurname",               DataTypes.WCHAR * 33),     # Player surname 
+        ("playerNick",                  DataTypes.WCHAR * 33),     # Player nickname
         ("sectorCount",                 DataTypes.SIGNED_INT),    # Number of sectors 
         # ("maxTorque",                   DataTypes.FLOAT),         # Not shown in ACC 
         # ("maxPower",                    DataTypes.FLOAT),         # Not shown in ACC 
@@ -343,13 +343,13 @@ class SPageFileStaticData(DataTypes.STRUCTURE):
         
         ("isTimedRace",             DataTypes.SIGNED_INT),    # Not used in ACC
         ("hasExtraLap",             DataTypes.SIGNED_INT),    # Not used in ACC
-        ("carSkin",                 DataTypes.CHAR * 33),     # Not used in ACC
+        ("carSkin",                 DataTypes.WCHAR * 33),     # Not used in ACC
         ("reversedGridPositions",   DataTypes.SIGNED_INT),    # Not used in ACC
         ("PitWindowStart",          DataTypes.SIGNED_INT),    # Pit window opening time
         ("PitWindowEnd",            DataTypes.SIGNED_INT),    # Pit windows closing time
         ("isOnline",                DataTypes.SIGNED_INT),    # If is a multiplayer session
-        ("dryTyresName",            DataTypes.CHAR * 33),     # Name of the dry tyres
-        ("wetTyresName",            DataTypes.CHAR * 33),     # Name of the wet tyres
+        ("dryTyresName",            DataTypes.WCHAR * 33),     # Name of the dry tyres
+        ("wetTyresName",            DataTypes.WCHAR * 33),     # Name of the wet tyres
     ]
 
 

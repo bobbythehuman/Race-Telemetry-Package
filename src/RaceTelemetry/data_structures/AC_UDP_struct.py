@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 
 
 # source
@@ -8,13 +8,13 @@ import ctypes
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
+    STRUCTURE = _dataTypes.STRUCTURE
     
-    SIGNED_INT = ctypes.c_int
+    SIGNED_INT = _dataTypes.SIGNED_INT
     
-    BOOL = ctypes.c_bool
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_wchar
+    BOOL = _dataTypes.BOOL
+    FLOAT = _dataTypes.FLOAT
+    WCHAR = _dataTypes.WCHAR
 
 
 ### * Data Structure
@@ -23,8 +23,8 @@ class DataTypes:
 class RTCarData(DataTypes.STRUCTURE):
     # _pack_ = 1 # ! Do Not Enable or data will be wrong
     _fields_ = [
-        ("identifier",  DataTypes.CHAR),          # is set to char “a” , it is used to understand that the structured data is the data that the client app wants
-        ("size",        DataTypes.SIGNED_INT),    # the size of the structured data in Bytes
+        ("identifier",  DataTypes.WCHAR),           # is set to char “a” , it is used to understand that the structured data is the data that the client app wants
+        ("size",        DataTypes.SIGNED_INT),      # the size of the structured data in Bytes
         
         ("speed_Kmh",   DataTypes.FLOAT),
         ("speed_Mph",   DataTypes.FLOAT),
@@ -81,8 +81,8 @@ class RTLapData(DataTypes.STRUCTURE):
     _fields_ = [
         ("carIdentifierNumber",     DataTypes.SIGNED_INT),
         ("lap",                     DataTypes.SIGNED_INT),
-        ("driverName",              DataTypes.CHAR * 50),
-        ("carName",                 DataTypes.CHAR * 50),
+        ("driverName",              DataTypes.WCHAR * 50),
+        ("carName",                 DataTypes.WCHAR * 50),
         ("time",                    DataTypes.SIGNED_INT),
     ]
 
@@ -112,12 +112,12 @@ class handshaker(DataTypes.STRUCTURE):
 class handshackerResponse(DataTypes.STRUCTURE): # might be 408 or 308
     _pack_ = 1
     _fields_ = [
-        ("carName",         DataTypes.CHAR * 50),     # is the name of the car that the player is driving on the AC Server
-        ("driverName",      DataTypes.CHAR * 50),     # is the name of the driver running on the AC Server
-        ("identifier",      DataTypes.SIGNED_INT),    # for now is just 4242, this code will identify different status, as “NOT AVAILABLE” for connection
-        ("version",         DataTypes.SIGNED_INT),    # for now is set to 1, this will identify the version running on the AC Server
-        ("trackName",       DataTypes.CHAR * 50),     # is the name of the track on the AC Server
-        ("trackConfig",     DataTypes.CHAR * 50),     # is the track configuration
+        ("carName",         DataTypes.WCHAR * 50),      # is the name of the car that the player is driving on the AC Server
+        ("driverName",      DataTypes.WCHAR * 50),      # is the name of the driver running on the AC Server
+        ("identifier",      DataTypes.SIGNED_INT),      # for now is just 4242, this code will identify different status, as “NOT AVAILABLE” for connection
+        ("version",         DataTypes.SIGNED_INT),      # for now is set to 1, this will identify the version running on the AC Server
+        ("trackName",       DataTypes.WCHAR * 50),      # is the name of the track on the AC Server
+        ("trackConfig",     DataTypes.WCHAR * 50),      # is the track configuration
     ]
 
 def startHandShake(socket, destination: tuple[int, int]):
