@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 from enum import Flag, IntEnum
 from sys import version_info
 
@@ -19,21 +19,20 @@ else:
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
-    UNION = ctypes.Union
+    STRUCTURE = _dataTypes.STRUCTURE
+    UNION = _dataTypes.UNION
     
-    SIGNED_INT8 = ctypes.c_int8
-    SIGNED_INT16 = ctypes.c_int16
-    # SIGNED_INT32 = ctypes.c_int32
+    SIGNED_INT8 = _dataTypes.SIGNED_INT8
+    SIGNED_INT16 = _dataTypes.SIGNED_INT16
     
-    UNSIGNED_INT8 = ctypes.c_uint8      # 1 byte 
-    UNSIGNED_INT16 = ctypes.c_uint16
-    UNSIGNED_INT32 = ctypes.c_uint32
-    UNSIGNED_INT64 = ctypes.c_uint64
+    UNSIGNED_INT8 = _dataTypes.UNSIGNED_UINT8      # 1 byte 
+    UNSIGNED_INT16 = _dataTypes.UNSIGNED_UINT16
+    UNSIGNED_INT32 = _dataTypes.UNSIGNED_UINT32
+    UNSIGNED_INT64 = _dataTypes.UNSIGNED_UINT64
     
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_char
-    DOUBLE = ctypes.c_double
+    FLOAT = _dataTypes.FLOAT
+    CHAR = _dataTypes.CHAR
+    DOUBLE = _dataTypes.DOUBLE
 
 
 ### * Enums

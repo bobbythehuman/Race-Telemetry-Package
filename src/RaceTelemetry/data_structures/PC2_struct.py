@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 from enum import Flag, IntEnum
 
 '''
@@ -14,21 +14,20 @@ https://web.archive.org/web/20230201014848/https://www.projectcarsgame.com/two/p
 '''
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
-    # UNION = ctypes.Union
+    STRUCTURE = _dataTypes.STRUCTURE
 
-    SIGNED_BYTE = ctypes.c_byte
-    SIGNED_SHORT = ctypes.c_short
+    UNSIGNED_INT = _dataTypes.UNSIGNED_UINT
+    UNSIGNED_INT16 = _dataTypes.UNSIGNED_UINT16
 
-    UNSIGNED_INT = ctypes.c_uint
-    UNSIGNED_INT16 = ctypes.c_uint16
-    # UNSIGNED_INT16 = ctypes.c_uint8
-    UNSIGNED_BYTE = ctypes.c_ubyte
-    UNSIGNED_SHORT = ctypes.c_ushort
+    SIGNED_BYTE = _dataTypes.SIGNED_BYTE
+    UNSIGNED_BYTE = _dataTypes.UNSIGNED_UBYTE
+    
+    SIGNED_SHORT = _dataTypes.SIGNED_SHORT
+    UNSIGNED_SHORT = _dataTypes.UNSIGNED_USHORT
 
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_char
-    SHORT = ctypes.c_short
+    FLOAT = _dataTypes.FLOAT
+    CHAR = _dataTypes.CHAR
+    SHORT = _dataTypes.SIGNED_SHORT
 
 
 ### * Enums

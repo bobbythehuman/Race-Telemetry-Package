@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 
 
 # source
@@ -12,37 +12,35 @@ import ctypes
 # ! Iracing Dynamically creates the structure
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
-    UNION = ctypes.Union
-
-
-    SIGNED_INT = ctypes.c_int
-    SIGNED_INT32 = ctypes.c_int32
-    SIGNED_INT64 = ctypes.c_int64
+    STRUCTURE = _dataTypes.STRUCTURE
+    UNION = _dataTypes.UNION
     
+    SIGNED_INT = _dataTypes.SIGNED_INT
+    SIGNED_INT32 = _dataTypes.SIGNED_INT32
+    SIGNED_INT64 = _dataTypes.SIGNED_INT64
     
-    # UNSIGNED_INT = ctypes.c_uint
-    UNSIGNED_INT8 = ctypes.c_uint8
-    UNSIGNED_INT32 = ctypes.c_uint32
-    UNSIGNED_INT64 = ctypes.c_uint64
-
-    DOUBLE = ctypes.c_double
+    UNSIGNED_INT = _dataTypes.UNSIGNED_UINT
+    UNSIGNED_INT8 = _dataTypes.UNSIGNED_UINT8
+    UNSIGNED_INT32 = _dataTypes.UNSIGNED_UINT32
+    UNSIGNED_INT64 = _dataTypes.UNSIGNED_UINT64
     
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_char
-    BOOL = ctypes.c_bool
-    TIME = ctypes.c_time_t
+    DOUBLE = _dataTypes.DOUBLE
+    
+    FLOAT = _dataTypes.FLOAT
+    CHAR = _dataTypes.CHAR
+    BOOL = _dataTypes.BOOL
+    TIME = _dataTypes.TIME_T
 
 
 ### * Enums
 
 VAR_TYPE_MAP = {
-    0: ctypes.c_char,
-    1: ctypes.c_bool,
-    2: ctypes.c_int,
-    3: ctypes.c_uint,   # bitField
-    4: ctypes.c_float,
-    5: ctypes.c_double,
+    0: DataTypes.CHAR,
+    1: DataTypes.BOOL,
+    2: DataTypes.SIGNED_INT,
+    3: DataTypes.UNSIGNED_INT,   # bitField
+    4: DataTypes.FLOAT,
+    5: DataTypes.DOUBLE,
 }
 
 

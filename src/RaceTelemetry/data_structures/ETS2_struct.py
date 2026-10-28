@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 
 
 # source
@@ -9,25 +9,22 @@ import ctypes
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
-    UNION = ctypes.Union
+    STRUCTURE = _dataTypes.STRUCTURE
+    UNION = _dataTypes.UNION
 
+    SIGNED_INT = _dataTypes.SIGNED_INT
+    SIGNED_INT32 = _dataTypes.SIGNED_INT32
+    SIGNED_INT64 = _dataTypes.SIGNED_INT64
 
-    SIGNED_INT = ctypes.c_int
-    SIGNED_INT32 = ctypes.c_int32
-    SIGNED_INT64 = ctypes.c_int64
-    
-    
-    # UNSIGNED_INT = ctypes.c_uint
-    UNSIGNED_INT8 = ctypes.c_uint8
-    UNSIGNED_INT32 = ctypes.c_uint32
-    UNSIGNED_INT64 = ctypes.c_uint64
+    UNSIGNED_INT8 = _dataTypes.UNSIGNED_UINT8
+    UNSIGNED_INT32 = _dataTypes.UNSIGNED_UINT32
+    UNSIGNED_INT64 = _dataTypes.UNSIGNED_UINT64
 
-    DOUBLE = ctypes.c_double
+    DOUBLE = _dataTypes.DOUBLE
     
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_char
-    BOOL = ctypes.c_bool
+    FLOAT = _dataTypes.FLOAT
+    CHAR = _dataTypes.CHAR
+    BOOL = _dataTypes.BOOL
 
 
 ### * Data Structure

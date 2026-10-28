@@ -1,20 +1,17 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
-    UNION = ctypes.Union
+    STRUCTURE = _dataTypes.STRUCTURE
+    UNION = _dataTypes.UNION
     
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_char
-    DOUBLE = ctypes.c_double
+    FLOAT = _dataTypes.FLOAT
+    CHAR = _dataTypes.CHAR
+    DOUBLE = _dataTypes.DOUBLE
     
-    BYTE = ctypes.c_byte
-
-
-### * Enums
+    BYTE = _dataTypes.BYTE
 
 
 ### * Data Structure

@@ -22,7 +22,7 @@ class DataTypes:
     FLOAT = _dataTypes.FLOAT
     
     SIGNED_SHORT = _dataTypes.SIGNED_SHORT
-    UNSIGNED_SHORT = _dataTypes.UNSIGNED_SHORT
+    UNSIGNED_SHORT = _dataTypes.UNSIGNED_USHORT
     
     BOOL = _dataTypes.BOOL
     WCHAR = _dataTypes.WCHAR

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Callable
-import ctypes
+from . import _dataTypes
 
 
 # https://www.scribd.com/document/350826037/UDP-output-setup
@@ -8,22 +8,17 @@ import ctypes
 
 
 class DataTypes:
-    STRUCTURE = ctypes.LittleEndianStructure
-    UNION = ctypes.Union
-    
-    SIGNED_INT32 = ctypes.c_int32
-    UNSIGNED_INT32 = ctypes.c_uint32
-    
-    
-    FLOAT = ctypes.c_float
-    CHAR = ctypes.c_char
-    DOUBLE = ctypes.c_double
-    
-    BYTE = ctypes.c_byte
+    STRUCTURE = _dataTypes.STRUCTURE
+    UNION = _dataTypes.UNION
 
-
-### * Enums
-
+    SIGNED_INT32 = _dataTypes.SIGNED_INT32
+    UNSIGNED_INT32 = _dataTypes.UNSIGNED_UINT32
+    
+    FLOAT = _dataTypes.FLOAT
+    CHAR = _dataTypes.CHAR
+    DOUBLE = _dataTypes.DOUBLE
+    
+    BYTE = _dataTypes.BYTE
 
 
 ### * Data Structure
