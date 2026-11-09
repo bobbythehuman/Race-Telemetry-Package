@@ -11,7 +11,7 @@ class DataTypes:
     CHAR = _dataTypes.CHAR
     DOUBLE = _dataTypes.DOUBLE
     
-    BYTE = _dataTypes.BYTE
+    BYTE = _dataTypes.SIGNED_BYTE
 
 
 ### * Data Structure
