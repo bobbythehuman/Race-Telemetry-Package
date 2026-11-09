@@ -209,6 +209,15 @@ telemetry.StartTelemetry()
 
 Until a packet is received, the values in `latestData` and `latestCommonData` are `None`, and the lists in `allData` and `allCommonData` are empty.
 
+The current common data fields are:
+- `speed`
+- `engineRPM`
+- `gear`
+- `throttle`
+- `brake`
+- `clutch`
+- `steering`
+
 ## Adding Support for a New Game
 
 Support for a new game is added by defining its packet structure; no changes to the core package are needed.
