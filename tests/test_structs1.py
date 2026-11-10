@@ -44,7 +44,8 @@ MODULES = [
     pytest.param(PC_SM_MetaData, id="PC_SM"),
     pytest.param(PC_UDP_MetaData, id="PC_UDP"),
     pytest.param(PC2_MetaData, id="PC2"),
-    pytest.param(PC2_MetaData, id="IRacing"),
+    pytest.param(IRacing_MetaData, id="IRacing"),
+    pytest.param(RaceRoom_MetaData, id="RaceRoom"),
 ]
 
 INHERITANCEMODULES = [

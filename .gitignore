@@ -1,15 +1,18 @@
-**/__pycache__/*
-.vscode/*
-dist/*
+**/__pycache__
+
+.vscode
+dist
+.pytest_cache
+
 **/RaceTelemetry_bobbythehuman.egg-info/*
 **/RaceTelemetry.egg-info/*
+
 .pypirc
 
-Packaged_Program/*
+Packaged_Program
 
 requirements.txt
 other.txt
-
 issues.txt
 
 run_test.bat

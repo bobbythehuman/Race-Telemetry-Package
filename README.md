@@ -459,6 +459,7 @@ class MetaData:
         "throttle": "throttle",
         "brake": "brake",
         "clutch": "clutch",
+        "steering": "steering",
     }
 
     # Standard packet mapping
@@ -537,6 +538,7 @@ Decoding is driven entirely by the `packetInfo` dictionary you defined. If packe
 | Project CARS               | ⚠️ Untested  |
 | Project CARS 2             | ⚠️ Untested  |
 | IRacing                    | ⚠️ Untested  |
+| RaceRoom                   | ✅           |
 
 Don't see your game listed? See [Adding Support for a New Game](#adding-support-for-a-new-game) — contributions of new packet structures are welcome.
 
@@ -607,6 +609,9 @@ More debugging guides live in [`Supporting_Docs/`](./Supporting_Docs/), includin
 | Project CARS (shared memory)  | [Shared Memory API discussion](https://web.archive.org/web/20210729083910/https://forum.projectcarsgame.com/showthread.php?30903-Project-CARS-Shared-Memory-or-how-do-I-make-my-own-app&p=984616&viewfull=1#post984616)       |               |
 | Project CARS 2                | [project-cars-2-udp on GitHub](https://github.com/MacManley/project-cars-2-udp)               |               |
 | iRacing                       | [pyirsdk on GitHub](https://github.com/kutu/pyirsdk)                                          |               |
+| RaceRoom                      | [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)   |               |
+| RaceRoom                      | [Shared Memory API Github](https://github.com/kwstudios-sweden/r3e-api)   |               |
+
 
 
 <!-- - Forza Motorsport 7 — [Data Out feature details](https://forums.forza.net/t/forza-motorsport-7-data-out-feature-details/74013) -->
@@ -620,7 +625,6 @@ More debugging guides live in [`Supporting_Docs/`](./Supporting_Docs/), includin
 | ------------------- | ------------------------------- | ------------- |
 | EA Sports WRC 2023  | [How to use UDP on PC](https://forums.ea.com/discussions/wrc-general-discussion-en/ea-sports%E2%84%A2-wrc---how-to-use-user-datagram-protocol-udp-on-pc/8365068) |          |
 | Le Mans Ultimate    | [Telemetry Socket – JSON Telemetry Plugin](https://community.lemansultimate.com/index.php?threads/telemetry-socket-%E2%80%93-json-telemetry-plugin.8229/)       |           |
-| RaceRoom            | [Shared Memory API](https://forum.kw-studios.com/index.php?threads/shared-memory-api.1525/)     |           |
 | Richard Burns Rally | [rbr-udp-telem on GitHub](https://github.com/groybe/rbr-udp-telem)      |           |
 | KartKraft           | [kartkraft-telemetry schema on GitHub](https://github.com/motorsportgames/kartkraft-telemetry/blob/master/Schema/Frame.fbs)     |           |
 | Project CARS 3      | likely shares a protocol with Project CARS 2, not yet confirmed         |           |

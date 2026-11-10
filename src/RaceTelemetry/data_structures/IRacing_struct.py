@@ -120,7 +120,7 @@ class MetaData:
     decryptionFunc: Callable | None = None
     
     # use if there is a header packet
-    headerInfo: type | None = irsdk_header
+    headerInfo: type | None = None
     packetIDAttribute: str | None = None
     
     # use for shared memory

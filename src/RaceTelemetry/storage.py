@@ -1,10 +1,10 @@
 from __future__ import annotations
 import threading
 import logging
+import re
 
 from types import SimpleNamespace
 from typing import Any
-import re
 
 LOGGER = logging.getLogger(__name__)
 

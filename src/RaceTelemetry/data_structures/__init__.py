@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from .PC2_struct import MetaData as PC2_MetaData
     from .PC_SM_struct import MetaData as PC_SM_MetaData
     from .PC_UDP_struct import MetaData as PC_UDP_MetaData
+    from .RaceRoom_struct import MetaData as RaceRoom_MetaData
 
 __all__ = [
     "AC_SM_MetaData",
@@ -68,6 +69,7 @@ __all__ = [
     "PC2_MetaData",
     "PC_SM_MetaData",
     "PC_UDP_MetaData",
+    "RaceRoom_MetaData",
 ]
 
 _ALIASES = {
@@ -100,6 +102,7 @@ _ALIASES = {
     "PC2_MetaData": "PC2_struct",
     "PC_SM_MetaData": "PC_SM_struct",
     "PC_UDP_MetaData": "PC_UDP_struct",
+    "RaceRoom_MetaData": "RaceRoom_struct",
 }
 
 

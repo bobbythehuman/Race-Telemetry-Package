@@ -36,6 +36,7 @@ if TYPE_CHECKING:
         PC2_MetaData,
         PC_SM_MetaData,
         PC_UDP_MetaData,
+        RaceRoom_MetaData,
     )
 
 __all__ = [
@@ -68,6 +69,7 @@ __all__ = [
     "PC2_MetaData",
     "PC_SM_MetaData",
     "PC_UDP_MetaData",
+    "RaceRoom_MetaData",
 ]
 
 assert __all__ == data_structures.__all__, "DataStructures.__all__ has drifted from data_structures.__all__"
