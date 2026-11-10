@@ -15,7 +15,7 @@ from .decoders import DECODER_REGISTER
 from .digestion import dynamic_ingest
 from .config import TelemetryConfig
 from .threads import ThreadSupervisor
-from .storage import CentralStorage, ReadOnlyStorage
+from .storage import CentralStorage, ReadOnlyStorage, snapshot
 
 if TYPE_CHECKING:
     from types import SimpleNamespace
@@ -232,7 +232,7 @@ class TelemetryManager:
             self.activeStorage._write(packet)
 
     # single thread loop
-    def _single_thread_loop(self) -> Generator[dict[str, Any]]:
+    def _single_thread_loop(self) -> Generator[snapshot]:
         """
         A single-threaded loop that processes telemetry packets and yields read-only storage instances.
         """
@@ -251,7 +251,7 @@ class TelemetryManager:
 
     # -- user controls -------------------------------------------------------
 
-    def GetTelemetry(self) -> ReadOnlyStorage | Generator[dict[str, Any]]:
+    def GetTelemetry(self) -> ReadOnlyStorage | Generator[snapshot]:
         """
         Call this to get a generator that fetches the latest set of data for common fields and game specific data including all packets and latest packet.
         In single-threaded mode, this will yield a new snapshot for each packet received.

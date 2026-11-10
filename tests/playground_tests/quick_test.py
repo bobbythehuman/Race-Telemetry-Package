@@ -13,7 +13,7 @@ root_logger.setLevel(logging.DEBUG)
 ###
 
 telemetry = TelemetryManager()
-telemetry.updateMeta(RaceRoom_MetaData)
+telemetry.updateMeta(BNG_MetaData)
 # telemetry.updateSendIP("127.0.0.1")
 # telemetry.useSharedMemory(True)
 

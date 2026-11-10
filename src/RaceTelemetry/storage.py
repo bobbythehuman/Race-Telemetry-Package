@@ -4,7 +4,9 @@ import logging
 import re
 
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
+from typing_extensions import TypedDict
+from dataclasses import dataclass
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,9 +28,11 @@ def prepare(text: str) -> list[list[Any]]:
             while pos < len(tokens) and tokens[pos] == "[":
                 pos += 1
                 if tokens[pos].isdigit():
-                    segment.append(int(tokens[pos])); pos += 1
+                    segment.append(int(tokens[pos]))
+                    pos += 1
                 elif tokens[pos] == "*":
-                    segment.append("*"); pos += 1
+                    segment.append("*")
+                    pos += 1
                 else:
                     segment.append(path()) # nested path as the index
                 if tokens[pos] != "]":
@@ -62,7 +66,7 @@ def fetch(root, path, obj=None):
             obj = getattr(obj, name)
         for k, i in enumerate(indices):
             if i == "*":
-                rest = [[None, *indices[k + 1:]], *path[n + 1:]]
+                rest = [[None, *indices[k + 1 :]], *path[n + 1 :]]
                 return [fetch(root, rest, item) for item in obj]
             if not isinstance(i, int):
                 i = fetch(root, i)
@@ -71,6 +75,35 @@ def fetch(root, path, obj=None):
                     raise IndexError(f"Negative index {i}")
             obj = obj[i]
     return obj
+
+
+@dataclass
+class allCommonData:
+    speed: list[float]
+    engineRPM: list[float]
+    gear: list[int]
+    throttle: list[float]
+    brake: list[float]
+    clutch: list[float]
+    steering: list[float]
+
+
+@dataclass
+class latestCommonData:
+    speed: float | None
+    engineRPM: float | None
+    gear: int | None
+    throttle: float | None
+    brake: float | None
+    clutch: float | None
+    steering: float | None
+
+
+class snapshot(TypedDict):
+    allData: dict[str, list[SimpleNamespace]]
+    latestData: dict[str, SimpleNamespace | None]
+    allCommonData: allCommonData
+    latestCommonData: latestCommonData
 
 
 class CentralStorage:
@@ -89,8 +122,8 @@ class CentralStorage:
 
         self._lock = threading.RLock()
 
-        self.all_data: dict[str, list] = {}
-        self.latest_data: dict[str, Any] = {}
+        self.all_data: dict[str, list[SimpleNamespace]] = {}
+        self.latest_data: dict[str, SimpleNamespace | None] = {}
 
         self.mapped_data = getattr(metadata_cls, "commonFieldMap", {})
         self.prepared = {key: prepare(path) for key, path in self.mapped_data.items()}
@@ -142,7 +175,7 @@ class CentralStorage:
                         getattr(self.all_common_data, common_key).append(value)
                         setattr(self.latest_common_data, common_key, value)
 
-    def snapshot(self) -> dict[str, Any]:
+    def snapshot(self) -> snapshot:
         """
         Return a consistent snapshot for worker threads.
 
@@ -151,11 +184,15 @@ class CentralStorage:
         existing public contract that worker functions rely on.
         """
         with self._lock:
+            allDataCopy = self.all_data.copy()
+            latestDataCopy = self.latest_data.copy()
+            allCommonDataCopy = cast(allCommonData, self._copy_data_object(self.all_common_data, copy_lists=True))
+            latestCommonDataCopy = cast(latestCommonData, self._copy_data_object(self.latest_common_data))
             return {
-                "allData": self.all_data.copy(),
-                "latestData": self.latest_data.copy(),
-                "allCommonData": self._copy_data_object(self.all_common_data, copy_lists=True),
-                "latestCommonData": self._copy_data_object(self.latest_common_data),
+                "allData": allDataCopy,
+                "latestData": latestDataCopy,
+                "allCommonData": allCommonDataCopy,
+                "latestCommonData": latestCommonDataCopy,
             }
 
 
@@ -174,10 +211,10 @@ class ReadOnlyStorage:
         LOGGER.debug("ReadOnlyStorage returned an iterable object of itself.")
         return self
 
-    def __next__(self) -> dict[str, Any]:
+    def __next__(self) -> snapshot:
         """Returns the latest data snapshot."""
         return self.snapshot()
 
-    def snapshot(self) -> dict[str, Any]:
+    def snapshot(self) -> snapshot:
         """Returns a consistent snapshot of the latest set of data including all packets and the latest packet."""
         return self._storage.snapshot()
