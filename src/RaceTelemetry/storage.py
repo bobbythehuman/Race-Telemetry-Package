@@ -34,7 +34,7 @@ def prepare(text: str) -> list[list[Any]]:
                     segment.append("*")
                     pos += 1
                 else:
-                    segment.append(path()) # nested path as the index
+                    segment.append(path())  # nested path as the index
                 if tokens[pos] != "]":
                     LOGGER.error("Expected ']' in %r", text)
                     raise ValueError(f"Expected ']' in {text!r}")
@@ -60,7 +60,7 @@ def fetch(root, path, obj=None):
     """Walk a prepared path. Dynamic indices are resolved from root."""
     obj = root if obj is None else obj
     for n, (name, *indices) in enumerate(path):
-        if name is not None: # None = continue after a '*'
+        if name is not None:  # None = continue after a '*'
             if not hasattr(obj, name):
                 return None
             obj = getattr(obj, name)

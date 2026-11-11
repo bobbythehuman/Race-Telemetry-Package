@@ -1,7 +1,7 @@
 [tool.black]
-line-length = 150
-include = '\.pyi?$'
-force-exclude = '''.*data_structures.*'''
+line-length = 200
+# include = '\.pyi?$'
+# force-exclude = '.*data_structures.*'
 
 
 [tool.pytest.ini_options]
@@ -17,7 +17,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "RaceTelemetry" # this is the PyPI name (can differ from import name)
-version = "v6.11.12-1"    # [major server] . [minor server] . [data structure version] - [package version]
+version = "v6.11.12-2"    # [major server] . [minor server] . [data structure version] - [package version]
 authors = [{ name = "bobbythehuman" }]
 description = "A telemetry package that can extract UDP and Shared Memory data from most racing games."
 readme = "README.md"
@@ -28,13 +28,14 @@ classifiers = [
 ]
 license = "LGPL-2.1"
 license-files = ["LICENSE"]
+dependencies = ["typing_extensions>=4.7.1"]
 
 [project.optional-dependencies]
 iracing = [
-    "PyYAML>=6.0",
+    "PyYAML>=6.0.1",
 ]
 gt7 = [
-    "pycryptodome>=3.20",
+    "pycryptodome>=3.24.1",
 ]
 
 

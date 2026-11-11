@@ -1,15 +1,16 @@
 **/__pycache__
 
+**/RaceTelemetry_bobbythehuman.egg-info
+**/RaceTelemetry.egg-info
+
+.pytest_cache
+.venv
 .vscode
 dist
-.pytest_cache
-
-**/RaceTelemetry_bobbythehuman.egg-info/*
-**/RaceTelemetry.egg-info/*
+Packaged_Program
 
 .pypirc
-
-Packaged_Program
+.python-version
 
 requirements.txt
 other.txt

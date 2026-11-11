@@ -33,7 +33,7 @@ LOGGER = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def _convert_value(value: Any, _fields_to_include= None) -> Any:
+def _convert_value(value: Any, _fields_to_include=None) -> Any:
     """
     Applies the standard set of conversions to a single value:
     leave primitives as-is, round floats, decode bytes, unpack ctypes
@@ -205,11 +205,7 @@ def dynamic_ingest(packet: ctypes.Structure | ctypes.Union | type | SimpleNamesp
         return newPacket
 
     packet_fields = _packet_fields(packet.__class__)
-    attrs = {
-        field[0]: getattr(packet, field[0])
-        for field in packet_fields
-        if _fields_to_include is None or field[0] in _fields_to_include
-    }
+    attrs = {field[0]: getattr(packet, field[0]) for field in packet_fields if _fields_to_include is None or field[0] in _fields_to_include}
 
     # reverse enum dictionary so attribute references an enum
     inverseEnums = _inverse_enums(packet.__class__)
