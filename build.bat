@@ -1,6 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
-set "PYTHON=%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe"
+@REM  set "PYTHON=%LOCALAPPDATA%\Python\pythoncore-3.14-64\python.exe"
+set "PYTHON=.\.venv\Scripts\python.exe"
 
 if not exist "%PYTHON%" (
     echo ERROR: Required Python interpreter was not found:
